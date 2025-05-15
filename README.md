@@ -4,7 +4,6 @@ O **ROS 2 (Robot Operating System 2)** é a segunda geração do **ROS**, um con
 
 Ele foi redesenhado para superar as limitações do **ROS 1**, focando em **robustez, escalabilidade, segurança** e **tempo real**, sendo mais adequado para **aplicações industriais**, **robôs autônomos**, e sistemas complexos.
 
----
 
 ## 🆚 ROS 1 vs ROS 2 — Principais Melhorias
 
@@ -17,7 +16,6 @@ Ele foi redesenhado para superar as limitações do **ROS 1**, focando em **robu
 | Multi-robô                     | Complexo               | ✅ Comunicação descentralizada       |
 | Gerenciamento de ciclo de vida | Limitado               | ✅ Com suporte nativo                |
 
----
 
 ## Estrutura do ROS 2
 
@@ -29,7 +27,6 @@ Ele foi redesenhado para superar as limitações do **ROS 1**, focando em **robu
 * **Launch system:** baseado em Python (mais poderoso que o XML do ROS 1).
 * **Packages:** unidades de software com funcionalidades específicas.
 
----
 
 ## Comunicação com DDS
 
@@ -39,7 +36,6 @@ ROS 2 usa o padrão **DDS (Data Distribution Service)** para comunicação entre
 * Comunicação mais robusta e distribuída
 * Suporte nativo a **QoS (Qualidade de Serviço)**
 
----
 
 ## Ferramentas do ROS 2
 
@@ -49,7 +45,6 @@ ROS 2 usa o padrão **DDS (Data Distribution Service)** para comunicação entre
 * **rqt:** interface gráfica para debug e visualização
 * **launch:** arquivos Python para iniciar múltiplos nodes
 
----
 
 ## Linguagens Suportadas
 
@@ -57,7 +52,7 @@ ROS 2 usa o padrão **DDS (Data Distribution Service)** para comunicação entre
 * **Python**
 * (E suporte parcial a Rust e outras via bindings)
 
----
+
 
 
  
