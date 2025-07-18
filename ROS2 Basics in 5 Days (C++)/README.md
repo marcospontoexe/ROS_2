@@ -87,3 +87,7 @@ Dentro do objeto **LaunchDescription**, gere um **nó** onde você fornecerá os
 2. **executable**='nome_executável_binário' é o nome do arquivo executável binário que você deseja executar
 3. **output**='tipo_de_saída' é o canal onde você imprimirá a saída do programa
 4. **emulate_tty**=True|False permite que arquivos de inicialização produzam mensagens de log coloridas: Verde=DEBUG, Branco=INFO, Laranja=Aviso e Vermelho=ERRO|Fatal.
+
+
+# Criando um arquivo de programa
+Os arquivos de programa (.cpp e .h) dever ser criados dentro do diretório **source**.
