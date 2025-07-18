@@ -53,6 +53,4 @@ ROS 2 usa o padrão **DDS (Data Distribution Service)** para comunicação entre
 * (E suporte parcial a Rust e outras via bindings)
 
 
-
-
  
