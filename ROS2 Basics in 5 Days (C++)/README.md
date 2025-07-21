@@ -87,15 +87,20 @@ Para isso, você precisa adicionar algumas linhas ao seu arquivo CMakeLists.txt.
 No exempplo a baixo:
 
 ```txt
-add_executable(simple_node src/simple.cpp)
-ament_target_dependencies(simple_node rclcpp)
+add_executable(simple_node src/simple.cpp)  # Quando o "simple.cpp" é compilado, é gerado um executável (simple_node) a partir do arquivo simple.cpp, que está na pasta src do seu pacote. 
+ament_target_dependencies(simple_node rclcpp)   # Esta linha adiciona todas as dependências ament de destino do executável.
 
+#Este snippet instalará nosso nó executável (simple_node) em nosso espaço de instalação dentro do espaço de trabalho do ROS2. 
+#Portanto, este executável será colocado no diretório de pacotes do seu espaço de instalação, que está localizado, por padrão, em
+# ~/ros2_ws/install/my_package/lib/my_package/.
 install(TARGETS
    simple_node
    DESTINATION lib/${PROJECT_NAME}
  )
 
-# Install launch files.
+# O objetivo deste código é instalar os arquivos de inicialização. 
+# Por exemplo, com o pacote chamado my_package, isso instalará todos os arquivos de inicialização da pasta launch/ em
+# ~/ros2_ws/install/my_package/share/my_package/launch
 install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/
