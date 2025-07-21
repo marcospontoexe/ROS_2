@@ -77,9 +77,12 @@ Dentro do objeto **LaunchDescription**, gere um **nó** onde você fornecerá os
 3. **output**='tipo_de_saída' é o canal onde você imprimirá a saída do programa
 4. **emulate_tty**=True|False permite que arquivos de inicialização produzam mensagens de log coloridas: Verde=DEBUG, Branco=INFO, Laranja=Aviso e Vermelho=ERRO|Fatal.
 
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos/launch/my_package_launch_file.launch.py).
 
 ## Criando um arquivo de programa
 Os arquivos de programa (.cpp e .h) dever ser criados dentro do diretório **src**.
+
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos/src/simple.cpp).
 
 ## CMakeLists.txt
 Ao programar em C++, você precisa **criar binários (executáveis)** dos seus programas para executá-los. Para isso, você precisará modificar o arquivo CMakeLists.txt do seu pacote para indicar que deseja criar um executável do seu arquivo C++ (.cpp).
@@ -109,7 +112,7 @@ install(DIRECTORY
 )
 ```
 
-
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos/CMakeLists.txt).
 
 ## Compilando pacotes
 Ao criar um pacote, você precisa compilá-lo para que ele funcione.
