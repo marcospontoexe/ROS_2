@@ -86,7 +86,7 @@ Para isso, você precisa adicionar algumas linhas ao seu arquivo CMakeLists.txt.
 
 No exempplo a baixo:
 
-```
+```txt
 add_executable(simple_node src/simple.cpp)
 ament_target_dependencies(simple_node rclcpp)
 
