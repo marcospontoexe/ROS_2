@@ -14,16 +14,16 @@ Dentro deste espaço de trabalho, há um diretório chamado **src**. Esta pasta 
 
 Neste ponto, você finalmente está pronto para criar seu próprio pacote! Para isso, digite o seguinte no seu terminal:
 * `cd ~/ros2_ws/src`
-* `ros2 pkg create my_package --build-type ament_cmake --dependencies rclcpp`
+* `ros2 pkg create my_package --build-type ament_cmake --dependencies rclcpp std_msgs`
 
-**my_package** é o nome do pacote que você deseja criar, e **rclcpp** são os nomes de outros pacotes ROS2 dos quais seu pacote depende.
+**my_package** é o nome do pacote que você deseja criar. **rclcpp** e **std_msgs** são os nomes de outros pacotes ROS2 dos quais seu pacote depende.
 
 Observe também que você está especificando **ament_cmake** como o tipo de compilação. Isso indica que você está **criando um pacote CMake**.
 
 É uma boa ideia **compilar** seu pacote após sua criação. É a maneira mais rápida de determinar se as dependências listadas podem ser resolvidas e verificar se não há erros nos dados inseridos:
 * `cd ~/ros2_ws/`
 * `colcon build`
-* `source install/setup.bash`
+* `source install/setup.bash` ou `source /opt/ros/humble/setup.bash`.
 
 Para confirmar que seu pacote foi criado com sucesso, use alguns comandos ROS relacionados a pacotes:
 * `ros2 pkg list`: Fornece uma lista com todos os pacotes no seu sistema ROS2.
@@ -120,10 +120,22 @@ Ao criar um pacote, você precisa compilá-lo para que ele funcione.
 O comando a seguir compilará **todo o seu diretório src** e precisa ser executado dentro do diretório home de um espaço de trabalho para funcionar (**ros2_ws**):
 * `cd ~/ros2_ws/`
 * `colcon build`
-* `source install/setup.bash`
+* `source install/setup.bash` ou `source /opt/ros/humble/setup.bash`.
 
 Às vezes (para projetos grandes), você não vai querer compilar todos os seus pacotes. Isso levaria muito tempo. Então, você pode usar o seguinte comando para compilar apenas os pacotes nos quais você fez alterações:
 * `colcon build --packages-select <package_name>`
 
 Compile sempre que alterar qualquer arquivo, mesmo arquivos Python ou de inicialização que não precisem de compilação. 
 
+# Node (nós)
+No ROS2, um único executável (um programa C++ ou Python, etc.) pode conter um ou mais nós.
+
+* Para observar nós em execução no espaço de trabalho, use o comando ROS: `ros2 node list`.
+* Para ver informações sobre seu nó, você pode usar o seguinte comando: `ros2 node info node_name`.
+
+Para encerrar seu nó, você pode pressionar **Ctrl + C** no terminal em que ele está sendo executado.
+
+# Tópics
+Os **tópicos** formam a espinha dorsal de como os nós se comunicam em um sistema baseado em ROS.
+
+## Publisher

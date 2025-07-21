@@ -1,4 +1,6 @@
 // Import the rclcpp client library
+// A biblioteca core ROS client (RCL) implementa a funcionalidade padrão necessária para diversas APIs ROS. 
+// Isso facilita a criação de bibliotecas cliente específicas para cada linguagem.
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char *argv[]) {
