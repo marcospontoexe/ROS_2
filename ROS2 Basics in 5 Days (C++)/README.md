@@ -29,6 +29,8 @@ Para confirmar que seu pacote foi criado com sucesso, use alguns comandos ROS re
 * `ros2 pkg list`: Fornece uma lista com todos os pacotes no seu sistema ROS2.
 * `ros2 pkg list | grep my_package`: Filtra, de todos os pacotes localizados no sistema ROS2, o pacote é chamado my_package.
 
+[Veja nesse diretório](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos) o pacote **marcos** criado como exemplo.
+
 ## Arquivos Launch (arquivo de inicialização)
 Para usar um arquivo de inicialização, a estrutura do comando seria a seguinte: `ros2 launch <package_name> <launch_file>`
 
