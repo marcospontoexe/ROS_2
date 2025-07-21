@@ -138,4 +138,15 @@ Para encerrar seu nó, você pode pressionar **Ctrl + C** no terminal em que ele
 # Tópics
 Os **tópicos** formam a espinha dorsal de como os nós se comunicam em um sistema baseado em ROS.
 
+Um Tópico é como um tubo. Os nós usam Tópicos para publicar informações para outros nós, permitindo a comunicação entre eles.
+* A qualquer momento, você pode verificar o número de Tópicos no sistema por meio de uma lista de tópicos ros2: `ros2 topic list`
+* Você também pode verificar informações de um tópico específico: `ros2 topic info name_of_topic`
+* Para ler as informações que estão sendo publicadas sobre um tópico: `ros2 topic echo name_of_topic`
+* verificar as diferentes opções que o comando **rostopic** possui usando o seguinte comando: `ros2 topic -h` ou pressione duas vezes rapidamente a tecla **TAB** após o digitar **ros2 topic**.
+
 ## Publisher
+Um Publicador é um nó que fica publicando uma mensagem em um Tópico
+
+[Veja no pacote **marcos_publisher**](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_publisher). O nó **simple_publisher** publica um int32 incrementado a cada 2 Hz no tópico **/counter**.
+
+Para verificar a saida do tópico /counter, use: `ros2 topic echo /counter`.
