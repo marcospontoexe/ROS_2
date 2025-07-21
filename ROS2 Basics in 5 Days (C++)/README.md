@@ -29,20 +29,7 @@ Para confirmar que seu pacote foi criado com sucesso, use alguns comandos ROS re
 * `ros2 pkg list`: Fornece uma lista com todos os pacotes no seu sistema ROS2.
 * `ros2 pkg list | grep my_package`: Filtra, de todos os pacotes localizados no sistema ROS2, o pacote é chamado my_package.
 
-## Compilando pacotes
-Ao criar um pacote, você precisa compilá-lo para que ele funcione.
-
-O comando a seguir compilará **todo o seu diretório src** e precisa ser executado dentro do diretório home de um espaço de trabalho para funcionar (**ros2_ws**):
-* `cd ~/ros2_ws/`
-* `colcon build`
-* `source install/setup.bash`
-
-Às vezes (para projetos grandes), você não vai querer compilar todos os seus pacotes. Isso levaria muito tempo. Então, você pode usar o seguinte comando para compilar apenas os pacotes nos quais você fez alterações:
-* `colcon build --packages-select <package_name>`
-
-Compile sempre que alterar qualquer arquivo, mesmo arquivos Python ou de inicialização que não precisem de compilação. 
-
-# Arquivos Launch (arquivo de inicialização)
+## Arquivos Launch (arquivo de inicialização)
 Para usar um arquivo de inicialização, a estrutura do comando seria a seguinte: `ros2 launch <package_name> <launch_file>`
 
 Veja um exemplo. Se você quiser usar um arquivo de inicialização para iniciar o executável **teleop_keyboard**, precisará escrever algo semelhante ao script Python abaixo:
@@ -84,10 +71,49 @@ def generate_launch_description():
 Dentro do objeto **LaunchDescription**, gere um **nó** onde você fornecerá os seguintes parâmetros:
 
 1. **package**='nome_do_pacote' é o nome do pacote que contém o código do programa ROS a ser executado
-2. **executable**='nome_executável_binário' é o nome do arquivo executável binário que você deseja executar
+2. **executable**='nome_executável_binário' é o nome do arquivo executável binário que você deseja executar. Esse arquivo é gerado a partir da compilação do código .cpp através do compilador *ament*. O nome do arquivo binário é definido no arquivo **CMakeLists.txt**.
 3. **output**='tipo_de_saída' é o canal onde você imprimirá a saída do programa
 4. **emulate_tty**=True|False permite que arquivos de inicialização produzam mensagens de log coloridas: Verde=DEBUG, Branco=INFO, Laranja=Aviso e Vermelho=ERRO|Fatal.
 
 
-# Criando um arquivo de programa
-Os arquivos de programa (.cpp e .h) dever ser criados dentro do diretório **source**.
+## Criando um arquivo de programa
+Os arquivos de programa (.cpp e .h) dever ser criados dentro do diretório **src**.
+
+## CMakeLists.txt
+Ao programar em C++, você precisa **criar binários (executáveis)** dos seus programas para executá-los. Para isso, você precisará modificar o arquivo CMakeLists.txt do seu pacote para indicar que deseja criar um executável do seu arquivo C++ (.cpp).
+
+Para isso, você precisa adicionar algumas linhas ao seu arquivo CMakeLists.txt.
+
+No exempplo a baixo:
+
+```
+add_executable(simple_node src/simple.cpp)
+ament_target_dependencies(simple_node rclcpp)
+
+install(TARGETS
+   simple_node
+   DESTINATION lib/${PROJECT_NAME}
+ )
+
+# Install launch files.
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
+```
+
+
+
+## Compilando pacotes
+Ao criar um pacote, você precisa compilá-lo para que ele funcione.
+
+O comando a seguir compilará **todo o seu diretório src** e precisa ser executado dentro do diretório home de um espaço de trabalho para funcionar (**ros2_ws**):
+* `cd ~/ros2_ws/`
+* `colcon build`
+* `source install/setup.bash`
+
+Às vezes (para projetos grandes), você não vai querer compilar todos os seus pacotes. Isso levaria muito tempo. Então, você pode usar o seguinte comando para compilar apenas os pacotes nos quais você fez alterações:
+* `colcon build --packages-select <package_name>`
+
+Compile sempre que alterar qualquer arquivo, mesmo arquivos Python ou de inicialização que não precisem de compilação. 
+
