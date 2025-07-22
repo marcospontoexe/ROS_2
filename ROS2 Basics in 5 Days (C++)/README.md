@@ -187,7 +187,6 @@ Um Assinante é um nó que lê informações de um Tópico.
 
 [Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_subscriber/src/simple_topic_subscriber.cpp). Um nó Assinante que escuta o tópico **/counter** e, cada vez que lê algo, chama uma função que imprime a mensagem. Para que algo seja mostrado no terminal é necessário publicar no tópcio /counter.
 
-
 # Messages (interfaces)
 Tópicos manipulam informações por meio de mensagens (interfaces). Existem diferentes tipos de mensagens. No ROS1, você as conhece como mensagens. No entanto, no ROS2, essas mensagens são conhecidas como **interfaces**.
 
@@ -195,4 +194,55 @@ No caso do código de exemplo usado na seção publisehr o tipo de interface era
 
 As interfaces para tópicos são definidas em arquivos .msg, que estão localizados dentro de um diretório **msg** de um pacote.
 
-Para obter informações sobre uma interface, use o seguinte comando: `ros2 interface show message_type` ou `ros2 interface proto message_type`, por exemplo `ros2 interface show std_msgs/msg/Int32`.
+Para obter informações sobre uma interface, use o seguinte comando: `ros2 interface show package_name/message_name/message_type` ou `ros2 interface proto package_name/message_name/message_type`, por exemplo `ros2 interface show std_msgs/msg/Int32`.
+
+## Criando uma interface (mensagem) customizada
+Você pode estar se perguntando se precisa publicar alguns dados que não sejam Int32 e que tipo de mensagem deve usar. É claro que você pode usar todas as mensagens definidas pelo ROS2 (**ros2 interface list**). No entanto, se nenhuma atender às suas necessidades, você pode criar uma nova.
+
+Para criar uma nova mensagem, siga os seguintes passos:
+
+1. Crie um diretório chamado '**msg**' dentro do seu pacote
+2. Dentro deste diretório, crie um arquivo chamado **Nome_da_sua_mensagem.msg** (mais informações abaixo)
+3. Modifique o arquivo **CMakeLists.txt** (mais informações abaixo)
+4. Modifique o arquivo **package.xml** (mais informações abaixo)
+5. **Compile** e crie o código-fonte
+6. Use no código
+
+[Veja o pacote marcos_custom_interfaces]() uma interface que indica a idade, com anos, meses e dias.
+
+### Modificabdo o arquivo CMakeLists.txt
+Edite duas funções dentro de CMakeLists.txt:
+* find_package()
+* rosidl_generate_interfaces()
+
+#### find_package()
+É aqui que vão todos os pacotes necessários para COMPILAR as mensagens dos Tópicos, Serviços e Ações. Em **package.xml**, defina-os como **build_depend** e **exec_depend**.
+
+```txt
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+```
+
+#### rosidl_generate_interfaces()
+Esta função inclui todas as mensagens do pacote (na pasta msg) a serem compiladas. 
+
+No exemplo a baixo o arquivo de mensegem se chama **Age**. A função deve ter a seguinte aparência:
+
+```txt
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Age.msg"
+)
+```
+
+### Modificabdo o arquivo package.xml
+Adicione as seguintes linhas ao arquivo package.xml.
+
+```txt
+<build_depend>rosidl_default_generators</build_depend>
+
+<exec_depend>rosidl_default_runtime</exec_depend>
+
+<member_of_group>rosidl_interface_packages</member_of_group>
+```

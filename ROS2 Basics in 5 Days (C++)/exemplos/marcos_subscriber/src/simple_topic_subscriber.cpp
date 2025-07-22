@@ -5,6 +5,14 @@
 permite usar _1 no std::bind, referenciando o primeiro argumento passado ao callback.
 */
 using std::placeholders::_1;
+/*
+O que são placeholders?
+_1, _2, _3, etc., são objetos especiais definidos em std::placeholders.
+Eles marcam posições onde os argumentos de runtime serão inseridos quando a função ligada for chamada.
+_1: representa o primeiro argumento que será passado ao chamar o functor.
+_2: representa o segundo argumento.
+_3: o terceiro, e assim por diante.
+*/
 
 class SimpleSubscriber : public rclcpp::Node
 {
