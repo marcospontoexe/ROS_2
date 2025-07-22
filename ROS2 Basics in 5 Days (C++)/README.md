@@ -329,7 +329,7 @@ Nas duas primeiras implementações, o Executor se adapta a alterações como ad
 ### Single-Threaded Executor executando um nó com duas funções de Callback
 O objetivo principal deste exemplo é demonstrar o problema que pode surgir ao usar um EXECUTOR SINGLE-THREADED.
 
-[Nesse exemplo]() é definido dois nós ROS2:
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_3.cpp) é definido dois nós ROS2:
 1. OdomSubscriber
 2. SlowTimer
 
@@ -344,4 +344,8 @@ Isso ocorre porque você tem apenas UMA THREAD no Executor, como é o caso dos t
 Portanto, a solução lógica é usar o Executor Multi-Threaded.
 
 ### Multi-Threaded Executor executando dois nós
-Neste exemplo, mantenha tudo igual, exceto que o Executor Multi-Threaded será usado.
+[Neste exemplo](), mantenha tudo igual ao exemplo anterior, exceto que o Executor Multi-Threaded será usado.
+
+Você pode ver uma mensagem "TICK" a cada três segundos, e a odometria flui em uma taxa contínua. Isso significa que ambos os Callbacks estão trabalhando simultaneamente em paralelo e sem interferir um no outro.
+
+**Observação**: neste exemplo, há um Callback por nó, então ter uma thread por nó funciona perfeitamente.
