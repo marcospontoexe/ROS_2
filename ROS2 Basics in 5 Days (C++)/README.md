@@ -307,6 +307,15 @@ No ROS 2, **executors** e **Callback Groups** são mecanismos essenciais para ge
 ## Executor
 O objetivo de um Executor é coordenar diferentes nós e retornos de chamada executando-os em vários threads para execução em paralelo, de modo que os retornos de chamada (Callback) não bloqueiem a execução da parte restante do programa, o que pode melhorar significativamente o fluxo de execução e o desempenho.
 
+### Tipos de Executors
+O **rclcpp** fornece três tipos de Executor, derivados de uma classe pai compartilhada:
+
+1. O Executor **Single-threaded** usa uma thread para executar todas as instruções do Node. 
+2. O Executor **Multi-threaded** cria um número variável de threads que permite que múltiplas mensagens/eventos sejam processados em paralelo.
+3. O Executor **Static Single-threaded** executa uma varredura de Node apenas uma vez, quando o Node é adicionado ao Executor. Portanto, use-o apenas com Nodes que criam todos os Callbacks relacionados durante a inicialização.
+
+Nas duas primeiras implementações, o Executor se adapta a alterações como adicionar, remover ou alterar assinaturas, temporizadores, servidores de serviço e servidores de ação durante o tempo de execução. Use a última opção da lista acima se você não precisar desse recurso e não se importar com processos single-threaded configurados no momento da inicialização.
+
 ### Executor executando nó mínimo
 [Esse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_1.cpp) demonstra como adicionar um Nó a um Executor. São necessárias três instruções:
 
@@ -315,4 +324,24 @@ O objetivo de um Executor é coordenar diferentes nós e retornos de chamada exe
 3. Executar o Executor com o Spin() para procurar trabalho disponível e concluí-lo.
 
 ### Executor executando nó mínimo com callback
-[Neste exemplo](), adicionaremos uma função de retorno de chamada (callback) que assina o tópico /box_bot_1/odom.
+[Neste exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_2.cpp), adicionaremos uma função de retorno de chamada (callback) que assina o tópico /box_bot_1/odom.
+
+### Single-Threaded Executor executando um nó com duas funções de Callback
+O objetivo principal deste exemplo é demonstrar o problema que pode surgir ao usar um EXECUTOR SINGLE-THREADED.
+
+[Nesse exemplo]() é definido dois nós ROS2:
+1. OdomSubscriber
+2. SlowTimer
+
+Ambos os nós são instanciados e adicionados a um **SingleThreadedExecutor** dentro de main().
+
+Em comparação com o exemplo anterior, a odometria não está sendo registrada periodicamente, em intervalos regulares. Então, por que isso acontece?
+
+O problema é que a função de Callback odometry não é executada mesmo quando o tópico /box_bot_1/odom possui valores publicados. Sua execução é bloqueada pela função de Callback do timer e ainda não finalizou seu trabalho.
+
+Isso ocorre porque você tem apenas UMA THREAD no Executor, como é o caso dos tipos Executor Single-Threaded e Executor Static Single-Threaded.
+
+Portanto, a solução lógica é usar o Executor Multi-Threaded.
+
+### Multi-Threaded Executor executando dois nós
+Neste exemplo, mantenha tudo igual, exceto que o Executor Multi-Threaded será usado.
