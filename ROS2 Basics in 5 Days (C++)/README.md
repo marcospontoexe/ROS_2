@@ -202,13 +202,24 @@ Você pode estar se perguntando se precisa publicar alguns dados que não sejam 
 Para criar uma nova mensagem, siga os seguintes passos:
 
 1. Crie um diretório chamado '**msg**' dentro do seu pacote
-2. Dentro deste diretório, crie um arquivo chamado **Nome_da_sua_mensagem.msg** (mais informações abaixo)
+2. Dentro deste diretório **msg**, crie um arquivo chamado **Nome_da_sua_mensagem.msg** (mais informações abaixo)
 3. Modifique o arquivo **CMakeLists.txt** (mais informações abaixo)
 4. Modifique o arquivo **package.xml** (mais informações abaixo)
 5. **Compile** e crie o código-fonte
 6. Use no código
 
-[Veja o pacote marcos_custom_interfaces]() uma interface que indica a idade, com anos, meses e dias.
+[Veja o pacote marcos_custom_interfaces](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C++)/exemplos/marcos_custom_interfaces) uma interface (Age.msg) que indica a idade, com anos, meses e dias, criada dentro do diretório **msg**, e os arquivos **CMakeLists.txt** e  **package.xml** alterados de acordo com a nova interface (Age.msg) criada.
+
+### Criando o arquivo de interface
+O arquivo de interface deve ser criado dentro do diretório **msg** do pacote em questão.
+
+No exemplo a baixo a nova interface se chamara **Age**:
+
+```txt
+int32 years
+int32 months
+int32 days
+```
 
 ### Modificabdo o arquivo CMakeLists.txt
 Edite duas funções dentro de CMakeLists.txt:
@@ -246,3 +257,44 @@ Adicione as seguintes linhas ao arquivo package.xml.
 
 <member_of_group>rosidl_interface_packages</member_of_group>
 ```
+
+Após compilar o pacote **marcos_custom_interfaces** use o comando para verificar se a interface foi criada: `ros2 interface show marcos_custom_interfaces/msg/Age`.
+
+## Usando uma interface (mensagem) customizada
+Para usar a interface criada (Age.msg do pacote marcos_custom_interfaces) em um novo pacote, adicione ao **CMakeLists.txt** do novo pacote criado as seguintes linhas extras para compilar e vincular seu executável (neste exemplo, ele é chamado publish_age.cpp):
+
+```txt
+#-----Usando a interface em um nó-------------------
+find_package(marcos_custom_interfaces REQUIRED) # This is the package that contains the custom interface
+#---------------------------------------------------
+
+#------para gerar o executável--------------------
+add_executable(publish_age_node src/publish_age.cpp)
+#------adiciona as dependencias ao nó--------------
+ament_target_dependencies(publish_age_node rclcpp std_msgs marcos_custom_interfaces) # Note that we are also adding the package which contains the custom interface as a dependency of the node that will be using this custom interface
+#---------------------------------------------------
+
+#------ Arquivos de inicialização do nó---------
+install(TARGETS
+   publish_age_node
+   DESTINATION lib/${PROJECT_NAME}
+ )
+#-----------------------------------------------
+
+```
+
+Você também precisará adicionar ao novo pacote criado como uma dependência no seu arquivo **package.xml**:
+
+```txt
+  <!-- para usar a mensagem criada em um nó-->
+  <depend>marcos_custom_interfaces</depend>
+  <!-- ################################# -->
+```
+
+**Importante**: não esqueçe da importar o pacote e interface no axecutável do novo pacote:
+
+```c++
+#include "marcos_custom_interfaces/msg/age.hpp"
+```
+
+[Veja o pacote marcos_using_custom_interfaces]() um nó publicador que indica a idade do robô. Para isso é usada a interface criada **Age.msg** do pacote **marcos_custom_interfaces**. Para executar o publisher use `ros2 run marcos_using_custom_interfaces publish_age_node` e também, `ros2 topic echo /age` em outro terminal.
