@@ -92,14 +92,22 @@ Para isso, você precisa adicionar algumas linhas ao seu arquivo CMakeLists.txt.
 No exempplo a baixo:
 
 ```txt
-add_executable(simple_node src/simple.cpp)  # Quando o "simple.cpp" é compilado, é gerado um executável (simple_node) a partir do arquivo simple.cpp, que está na pasta src do seu pacote. 
-ament_target_dependencies(simple_node rclcpp)   # Esta linha adiciona todas as dependências ament de destino do executável.
+# para gerar o executável simple_publisher_node
+add_executable(simple_publisher_node src/simple_topic_publisher.cpp)    # Quando o "simple_topic_publisher.cpp" é compilado, é gerado um executável (simple_publisher_node) a partir do arquivo simple_topic_publisher.cpp, que está na pasta src do seu pacote. 
+add_executable(simple_publisher_composable_node src/simple_topic_publisher_composable.cpp)
+
+
+# para incluir dependências 
+ament_target_dependencies(simple_publisher_node rclcpp std_msgs)    # Esta linha adiciona todas as dependências ament de destino do executável.
+ament_target_dependencies(simple_publisher_composable_node rclcpp std_msgs geometry_msgs)
+
 
 #Este snippet instalará nosso nó executável (simple_node) em nosso espaço de instalação dentro do espaço de trabalho do ROS2. 
 #Portanto, este executável será colocado no diretório de pacotes do seu espaço de instalação, que está localizado, por padrão, em
 # ~/ros2_ws/install/my_package/lib/my_package/.
 install(TARGETS
-   simple_node
+   simple_publisher_node
+   simple_publisher_composable_node
    DESTINATION lib/${PROJECT_NAME}
  )
 
@@ -112,7 +120,16 @@ install(DIRECTORY
 )
 ```
 
-[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos/CMakeLists.txt).
+Além de adicionar as linhas relacionadas aos executáveis e launch, é necessário incluir pacotes ao usar mensagens (interfaces) que não foram definidos como dependências no momento da criação do pacote. Esses pacotes são incluidos em **find_package()**:
+
+```txt
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+```
+
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_publisher/CMakeLists.txt).
 
 ## Compilando pacotes
 Ao criar um pacote, você precisa compilá-lo para que ele funcione.
@@ -140,7 +157,7 @@ No ROS2, como uma diferença notável em relação ao ROS1, o conceito de Compos
 
 Para usar a composição de nós, você deve programar seus scripts de uma forma mais orientada a objetos. 
 
-Abaixo, você pode ver um script que faz a mesma coisa, mas é codificado usando um método combinável, usando classes.
+[Veja um exemplo de uso de composição do nós](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_publisher/src/simple_topic_publisher_composable.cpp).
 
 ### Vantagens de usar múltiplos nós no mesmo executável (mesmo processo)
 
@@ -152,9 +169,10 @@ Abaixo, você pode ver um script que faz a mesma coisa, mas é codificado usando
 Os **tópicos** formam a espinha dorsal de como os nós se comunicam em um sistema baseado em ROS.
 
 Um Tópico é como um tubo. Os nós usam Tópicos para publicar informações para outros nós, permitindo a comunicação entre eles.
-* A qualquer momento, você pode verificar o número de Tópicos no sistema por meio de uma lista de tópicos ros2: `ros2 topic list`
-* Você também pode verificar informações de um tópico específico: `ros2 topic info name_of_topic`
-* Para ler as informações que estão sendo publicadas sobre um tópico: `ros2 topic echo name_of_topic`
+* A qualquer momento, você pode verificar o número de Tópicos no sistema por meio de uma lista de tópicos ros2: `ros2 topic list`.
+* Você também pode verificar informações de um tópico específico: `ros2 topic info name_of_topic`.
+* Para ler as informações que estão sendo publicadas sobre um tópico: `ros2 topic echo name_of_topic`.
+* Para publicar mensagens (interface) em um tópico: `ros2 topic pub topic_name message_type value`. Por exemplo: `ros2 topic pub /counter std_msgs/Int32 "{data: '5'}"`.
 * verificar as diferentes opções que o comando **rostopic** possui usando o seguinte comando: `ros2 topic -h` ou pressione duas vezes rapidamente a tecla **TAB** após o digitar **ros2 topic**.
 
 ## Publisher
@@ -164,5 +182,17 @@ Um Publicador é um nó que fica publicando uma mensagem em um Tópico
 
 Para verificar a saida do tópico /counter, use: `ros2 topic echo /counter`.
 
+## Subscribers (Assinante)
+Um Assinante é um nó que lê informações de um Tópico.
+
+[Veja nesse exemplo](). Um nó Assinante que escuta o tópico **/counter** e, cada vez que lê algo, chama uma função que imprime a mensagem. Para que algo seja mostrado no terminal é necessário publicar no tópcio /counter.
 
 
+# Messages (interfaces)
+Tópicos manipulam informações por meio de mensagens (interfaces). Existem diferentes tipos de mensagens. No ROS1, você as conhece como mensagens. No entanto, no ROS2, essas mensagens são conhecidas como **interfaces**.
+
+No caso do código de exemplo usado na seção publisehr o tipo de interface era std_msgs/Int32, mas o ROS2 fornece interfaces diferentes. Você pode até criar suas próprias interfaces, mas é recomendável usar as interfaces padrão do ROS2 sempre que possível.
+
+As interfaces para tópicos são definidas em arquivos .msg, que estão localizados dentro de um diretório **msg** de um pacote.
+
+Para obter informações sobre uma interface, use o seguinte comando: `ros2 interface show message_type`, por exemplo `ros2 interface show std_msgs/msg/Int32`.
