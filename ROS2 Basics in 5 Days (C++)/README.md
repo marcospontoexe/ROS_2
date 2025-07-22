@@ -305,3 +305,6 @@ Aplicações robóticas modernas frequentemente exigem que múltiplas tarefas se
 No ROS 2, **executors** e **Callback Groups** são mecanismos essenciais para gerenciar a execução multithread. Ao aproveitar o multithreading, os executors e os callback Groups, você aumentará a eficiência e a responsividade de suas aplicações ROS 2, garantindo que elas possam lidar com tarefas complexas em tempo real com eficácia.
 
 ## Executor executando nó mínimo
+[Esse exemplo](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors) demonstra como adicionar um Nó a um Executor. São necessárias três instruções:
+
+1. 
