@@ -26,9 +26,12 @@ ament_package()
 
 add_executable(simple_publisher_node src/simple_topic_publisher.cpp)
 ament_target_dependencies(simple_publisher_node rclcpp std_msgs)
+add_executable(simple_publisher_composable_node src/simple_topic_publisher_composable.cpp)
+ament_target_dependencies(simple_publisher_composable_node rclcpp std_msgs)
 
 install(TARGETS
    simple_publisher_node
+   simple_publisher_composable_node
    DESTINATION lib/${PROJECT_NAME}
  )
 

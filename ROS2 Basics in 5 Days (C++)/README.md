@@ -135,6 +135,19 @@ No ROS2, um único executável (um programa C++ ou Python, etc.) pode conter um 
 
 Para encerrar seu nó, você pode pressionar **Ctrl + C** no terminal em que ele está sendo executado.
 
+## Node Composition (composição do nós)
+No ROS2, como uma diferença notável em relação ao ROS1, o conceito de Composição é introduzido. Isso significa que você pode compor (executar) **vários nós em um único processo**. Você aprenderá mais sobre composição de nós nas próximas unidades.
+
+Para usar a composição de nós, você deve programar seus scripts de uma forma mais orientada a objetos. 
+
+Abaixo, você pode ver um script que faz a mesma coisa, mas é codificado usando um método combinável, usando classes.
+
+### Vantagens de usar múltiplos nós no mesmo executável (mesmo processo)
+
+1. Comunicação mais eficiente (Intra‑Process Communication): Nós executados no mesmo processo podem compartilhar dados diretamente pela memória, sem a necessidade de serialização ou transporte via DDS. Isso reduz **latência, overhead de CPU e uso de memória**, especialmente útil para mensagens grandes ou alta frequência.
+
+2. Menor consumo de recursos: Executar múltiplos nós dentro de um único processo reduz o overhead associado a processos diferentes (contêineres de threads, alocação de memória, etc.). Ideal para sistemas embarcados ou robôs com recursos limitados.
+
 # Tópics
 Os **tópicos** formam a espinha dorsal de como os nós se comunicam em um sistema baseado em ROS.
 
@@ -150,3 +163,6 @@ Um Publicador é um nó que fica publicando uma mensagem em um Tópico
 [Veja no pacote **marcos_publisher**](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_publisher). O nó **simple_publisher** publica um int32 incrementado a cada 2 Hz no tópico **/counter**.
 
 Para verificar a saida do tópico /counter, use: `ros2 topic echo /counter`.
+
+
+
