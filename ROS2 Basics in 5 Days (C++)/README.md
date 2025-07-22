@@ -344,8 +344,25 @@ Isso ocorre porque você tem apenas UMA THREAD no Executor, como é o caso dos t
 Portanto, a solução lógica é usar o Executor Multi-Threaded.
 
 ### Multi-Threaded Executor executando dois nós
-[Neste exemplo](), mantenha tudo igual ao exemplo anterior, exceto que o Executor Multi-Threaded será usado.
+[Neste exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_4.cpp), mantenha tudo igual ao exemplo anterior, exceto que o Executor Multi-Threaded será usado.
 
 Você pode ver uma mensagem "TICK" a cada três segundos, e a odometria flui em uma taxa contínua. Isso significa que ambos os Callbacks estão trabalhando simultaneamente em paralelo e sem interferir um no outro.
 
 **Observação**: neste exemplo, há um Callback por nó, então ter uma thread por nó funciona perfeitamente.
+
+#### Dois nós em execução em dois executors diferentes
+[Nesse exemplo](), é explorado o que acontece se você usar duas instâncias Single-ThreadedExecutor no mesmo programa ROS 2. Você está criando dois Static Single-Threaded Executors e, em seguida, atribuindo a um deles apenas UM Nó.
+
+A função de Callback de odometria funciona bem, mas onde está a mensagem de log gerada pelo Callback do temporizador? Como você pode ver, o Callback do temporizador não está sendo executado e não há mensagem de erro.
+
+Isso ocorre porque você só pode ter **UM ÚNICO EXECUTOR** por arquivo binário.
+
+Por isso, se você preferir continuar usando SingleThreadedExecutors, sua única opção é criar dois programas ROS2 diferentes, compilados como dois arquivos binários independentes.
+
+**Observação**: Em termos de desempenho, SingleThreadedExecutors consomem menos CPU do que MultiThreadedExecutors. Portanto, se atender a todas as suas necessidades, é preferível.
+
+Agora que você já entendeu os conceitos básicos do Executor, está pronto para abordar os aspectos mais avançados para lidar adequadamente com múltiplos Callbacks (Callback Groups).
+
+## Callback Groups
+
+
