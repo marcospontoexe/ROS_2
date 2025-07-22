@@ -304,7 +304,15 @@ Aplicações robóticas modernas frequentemente exigem que múltiplas tarefas se
 
 No ROS 2, **executors** e **Callback Groups** são mecanismos essenciais para gerenciar a execução multithread. Ao aproveitar o multithreading, os executors e os callback Groups, você aumentará a eficiência e a responsividade de suas aplicações ROS 2, garantindo que elas possam lidar com tarefas complexas em tempo real com eficácia.
 
-## Executor executando nó mínimo
-[Esse exemplo](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors) demonstra como adicionar um Nó a um Executor. São necessárias três instruções:
+## Executor
+O objetivo de um Executor é coordenar diferentes nós e retornos de chamada executando-os em vários threads para execução em paralelo, de modo que os retornos de chamada (Callback) não bloqueiem a execução da parte restante do programa, o que pode melhorar significativamente o fluxo de execução e o desempenho.
 
-1. 
+### Executor executando nó mínimo
+[Esse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_1.cpp) demonstra como adicionar um Nó a um Executor. São necessárias três instruções:
+
+1. Inicializar um objeto Executor.
+2. Adicionar um Nó ao Executor.
+3. Executar o Executor com o Spin() para procurar trabalho disponível e concluí-lo.
+
+### Executor executando nó mínimo com callback
+[Neste exemplo](), adicionaremos uma função de retorno de chamada (callback) que assina o tópico /box_bot_1/odom.
