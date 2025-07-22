@@ -303,3 +303,5 @@ Você também precisará adicionar ao novo pacote criado como uma dependência n
 Aplicações robóticas modernas frequentemente exigem que múltiplas tarefas sejam executadas simultaneamente, como processamento de dados de sensores, execução de planejamento de movimento e comunicação com outros sistemas. É aqui que o multithreading se torna essencial. O **multithreading** permite que diferentes partes de um programa sejam executadas simultaneamente, melhorando o desempenho e a responsividade.
 
 No ROS 2, **executors** e **Callback Groups** são mecanismos essenciais para gerenciar a execução multithread. Ao aproveitar o multithreading, os executors e os callback Groups, você aumentará a eficiência e a responsividade de suas aplicações ROS 2, garantindo que elas possam lidar com tarefas complexas em tempo real com eficácia.
+
+## Executor executando nó mínimo
