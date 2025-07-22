@@ -185,7 +185,7 @@ Para verificar a saida do tópico /counter, use: `ros2 topic echo /counter`.
 ## Subscribers (Assinante)
 Um Assinante é um nó que lê informações de um Tópico.
 
-[Veja nesse exemplo](). Um nó Assinante que escuta o tópico **/counter** e, cada vez que lê algo, chama uma função que imprime a mensagem. Para que algo seja mostrado no terminal é necessário publicar no tópcio /counter.
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_subscriber/src/simple_topic_subscriber.cpp). Um nó Assinante que escuta o tópico **/counter** e, cada vez que lê algo, chama uma função que imprime a mensagem. Para que algo seja mostrado no terminal é necessário publicar no tópcio /counter.
 
 
 # Messages (interfaces)
@@ -195,4 +195,4 @@ No caso do código de exemplo usado na seção publisehr o tipo de interface era
 
 As interfaces para tópicos são definidas em arquivos .msg, que estão localizados dentro de um diretório **msg** de um pacote.
 
-Para obter informações sobre uma interface, use o seguinte comando: `ros2 interface show message_type`, por exemplo `ros2 interface show std_msgs/msg/Int32`.
+Para obter informações sobre uma interface, use o seguinte comando: `ros2 interface show message_type` ou `ros2 interface proto message_type`, por exemplo `ros2 interface show std_msgs/msg/Int32`.

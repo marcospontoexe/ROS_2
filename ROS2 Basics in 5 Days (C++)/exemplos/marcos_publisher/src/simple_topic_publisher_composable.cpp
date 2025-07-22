@@ -46,8 +46,12 @@ private:
 };
 
 int main(int argc, char *argv[]) {
-  rclcpp::init(argc, argv);
+  rclcpp::init(argc, argv); //  inicializa o ambiente ROS 2.
+  /*
+  std::make_shared<SimplePublisher>(): cria uma instância do nó.
+  rclcpp::spin(...): mantém o nó rodando.
+  */
   rclcpp::spin(std::make_shared<SimplePublisher>());
-  rclcpp::shutdown();
+  rclcpp::shutdown(); // finaliza o ROS 2 antes de sair do programa.
   return 0;
 }

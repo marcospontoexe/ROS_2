@@ -3,7 +3,7 @@
 
 int main(int argc, char * argv[])
 {
-  rclcpp::init(argc, argv);
+  rclcpp::init(argc, argv);   //  inicializa o ambiente ROS 2.
   auto node = rclcpp::Node::make_shared("simple_publisher");
   auto publisher = node->create_publisher<std_msgs::msg::Int32>("counter", 10);
   auto message = std::make_shared<std_msgs::msg::Int32>();
@@ -15,7 +15,7 @@ int main(int argc, char * argv[])
     publisher->publish(*message);
     message->data++;
     rclcpp::spin_some(node);
-    loop_rate.sleep();
+    loop_rate.sleep();  // finaliza o ROS 2 antes de sair do programa.
   }
   rclcpp::shutdown();
   return 0;

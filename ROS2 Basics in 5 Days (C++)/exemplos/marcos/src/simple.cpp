@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     // Print a message to the terminal
     RCLCPP_INFO(node->get_logger(),
                 "Help me Obi-Wan Kenobi, you're my only hope");
-    rclcpp::spin_some(node);
+    rclcpp::spin_some(node);  // mantém o nó rodando e processando callbacks.
     // We sleep the needed time to maintain the Rate fixed above
     loop_rate.sleep();
   }
