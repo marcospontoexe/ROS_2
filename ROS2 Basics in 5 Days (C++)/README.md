@@ -351,7 +351,7 @@ Você pode ver uma mensagem "TICK" a cada três segundos, e a odometria flui em 
 **Observação**: neste exemplo, há um Callback por nó, então ter uma thread por nó funciona perfeitamente.
 
 #### Dois nós em execução em dois executors diferentes
-[Nesse exemplo](), é explorado o que acontece se você usar duas instâncias Single-ThreadedExecutor no mesmo programa ROS 2. Você está criando dois Static Single-Threaded Executors e, em seguida, atribuindo a um deles apenas UM Nó.
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_4_singlethreaded.cpp), é explorado o que acontece se você usar duas instâncias Single-ThreadedExecutor no mesmo programa ROS 2. Você está criando dois Static Single-Threaded Executors e, em seguida, atribuindo a um deles apenas UM Nó.
 
 A função de Callback de odometria funciona bem, mas onde está a mensagem de log gerada pelo Callback do temporizador? Como você pode ver, o Callback do temporizador não está sendo executado e não há mensagem de erro.
 
