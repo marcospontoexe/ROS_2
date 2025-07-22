@@ -297,4 +297,9 @@ Você também precisará adicionar ao novo pacote criado como uma dependência n
 #include "marcos_custom_interfaces/msg/age.hpp"
 ```
 
-[Veja o pacote marcos_using_custom_interfaces]() um nó publicador que indica a idade do robô. Para isso é usada a interface criada **Age.msg** do pacote **marcos_custom_interfaces**. Para executar o publisher use `ros2 run marcos_using_custom_interfaces publish_age_node` e também, `ros2 topic echo /age` em outro terminal.
+[Veja o pacote marcos_using_custom_interfaces](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_using_custom_interfaces) um nó publicador que indica a idade do robô. Para isso é usada a interface criada **Age.msg** do pacote **marcos_custom_interfaces**. Para executar o publisher use `ros2 run marcos_using_custom_interfaces publish_age_node` e também, `ros2 topic echo /age` em outro terminal.
+
+# Executors and Callback Groups
+Aplicações robóticas modernas frequentemente exigem que múltiplas tarefas sejam executadas simultaneamente, como processamento de dados de sensores, execução de planejamento de movimento e comunicação com outros sistemas. É aqui que o multithreading se torna essencial. O **multithreading** permite que diferentes partes de um programa sejam executadas simultaneamente, melhorando o desempenho e a responsividade.
+
+No ROS 2, **executors** e **Callback Groups** são mecanismos essenciais para gerenciar a execução multithread. Ao aproveitar o multithreading, os executors e os callback Groups, você aumentará a eficiência e a responsividade de suas aplicações ROS 2, garantindo que elas possam lidar com tarefas complexas em tempo real com eficácia.
