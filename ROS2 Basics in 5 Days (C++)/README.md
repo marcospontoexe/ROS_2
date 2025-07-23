@@ -350,7 +350,7 @@ Você pode ver uma mensagem "TICK" a cada três segundos, e a odometria flui em 
 
 **Observação**: neste exemplo, há um Callback por nó, então ter uma thread por nó funciona perfeitamente.
 
-#### Dois nós em execução em dois executors diferentes
+### Dois nós em execução em dois executors diferentes
 [Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_4_singlethreaded.cpp), é explorado o que acontece se você usar duas instâncias Single-ThreadedExecutor no mesmo programa ROS 2. Você está criando dois Static Single-Threaded Executors e, em seguida, atribuindo a um deles apenas UM Nó.
 
 A função de Callback de odometria funciona bem, mas onde está a mensagem de log gerada pelo Callback do temporizador? Como você pode ver, o Callback do temporizador não está sendo executado e não há mensagem de erro.
@@ -371,3 +371,29 @@ Ao executar o nó **executor_example_5_node**, somente o retorno de chamada do t
 O timer1_callback é executado porque foi instanciado primeiro no construtor.
 
 Então, como resolver esse problema? A solução é implementar **CALLBACK GROUPS**!
+
+### Tipos de Callback Groups
+Grupos de Callbacks (Callback Groups) permitem agrupar diferentes Callbacks para que alguns sejam executados em paralelo e outros não. Existem dois tipos:
+
+1. **Reentrant**: Todos os Callbacks nesses grupos podem ser executados simultaneamente, sem restrições. O Executor gerará quantas threads forem necessárias para isso.
+2. **MutuallyExclusive**: Todos os Callbacks dentro desses grupos podem ser executados um de cada vez. Isso é útil para Callbacks que, por algum motivo, afetam o mesmo sistema ou usam os mesmos recursos que outros. Além disso, esse tipo de Callback oferece melhor controle sobre o fluxo de Callbacks.
+
+### Reentrant Callback Groups
+ReentrantCallbackGroup permite que o Executor agende e execute os Callbacks do grupo da maneira que achar melhor, sem restrições. Isso significa que, além de diferentes Callbacks serem executados simultaneamente, o Executor também pode executar diferentes instâncias do mesmo Callback simultaneamente. Assim, por exemplo, a execução de um Callback de timer pode levar mais tempo do que o período de disparo do timer (embora esse caso específico deva ser evitado a todo custo no rclpy, isso é outra história).
+
+[Nesse exemplo]() a única mudança é que foi criado um grupo de retorno de chamada (Callback Groups) com a seguinte linha de código:
+
+```c++
+  callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+```
+
+Em seguida, é passado **callback_group_** como um argumento adicional para **create_wall_timer()**. Nesse caso, ambos usam o mesmo grupo de retorno de chamada do tipo Reentrant:
+
+```c++
+  timer1_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer1_callback, this), callback_group_);
+  timer2_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer2_callback, this), callback_group_);
+```
+
+Da mesma forma, é passado um grupo de retorno de chamada para assinantes, serviços ou ações.
+
+**Observação**: Não execute este código ainda. Em vez disso, crie três exemplos, um após o outro, para uma melhor comparação visual.
