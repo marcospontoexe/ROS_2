@@ -416,6 +416,10 @@ Em seguida, é passado **callback_group_** como um argumento adicional para **cr
 
 Da mesma forma, é passado um grupo de retorno de chamada para assinantes, serviços ou ações.
 
+O resultado da execução é mostrado a baixo:
+
+![executor_example_5_reentrant_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_5_reentrant_node.png)
+
 Como você pode ver, os retornos de chamada estão sendo executados sem nenhuma restrição. Isso significa que até mesmo várias instâncias do mesmo retorno de chamada estão sendo executadas em paralelo. Esse comportamento pode ser detectado, por exemplo, porque o retorno de chamada do Timer 2, que deveria ser executado apenas uma vez a cada 3 segundos, está sendo executado muito mais vezes.
 
 ### Mutually Exclusive Callback Groups
