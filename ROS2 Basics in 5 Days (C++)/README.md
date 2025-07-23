@@ -460,4 +460,8 @@ O resultado da execução é mostrado a baixo:
 
 ![executor_example_5_mutualyexclusive_multiple_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_5_mutualyexclusive_multiple_node.png)
 
+Aqui, como você está usando dois Callback Groups MutuallyExclusive separados, o Executor cria uma thread para cada um deles. Portanto, os retornos de chamada podem ser executados em paralelo, obtendo o comportamento esperado correto:
+
+* O Callback do Timer 1 é executado uma vez a cada segundo.
+* O Callback do Timer 2 é executado uma vez a cada 3 segundos.
 
