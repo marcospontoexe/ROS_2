@@ -541,5 +541,10 @@ Como o nó não está em spin(), você precisa usar o método rclcpp::spin_until
 Mas o que acontece se o nó cliente já estiver em spin por padrão? Este caso é exatamente o que vamos reproduzir no exemplo a seguir.
 
 ### Chamando um serviço a partir de um spinning node
-[Veja nesse exemplo]() um resultado bastante semelhante ao do anterior. No entanto, o código apresenta diversas diferenças importantes que você analisará na seção seguinte.
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_client_service/src/service_client_v2.cpp) um resultado bastante semelhante ao do anterior. No entanto, o código apresenta diversas diferenças importantes que você analisará na seção seguinte.
 
+Como você pode ver, agora empacotamos o código do cliente dentro de uma classe:
+
+```c++
+  class ServiceClient : public rclcpp::Node
+```
