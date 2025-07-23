@@ -456,4 +456,8 @@ Em seguida, atribua um a cada temporizador:
 
 E, neste exemplo, você está atribuindo a cada um dos temporizadores seu próprio Grupo de Retorno de Chamada.
 
+O resultado da execução é mostrado a baixo:
+
+![executor_example_5_mutualyexclusive_multiple_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_5_mutualyexclusive_multiple_node.png)
+
 
