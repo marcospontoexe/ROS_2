@@ -669,3 +669,29 @@ if (status != std::future_status::ready) {
   RCLCPP_WARN(this->get_logger(), "Response not ready yet.");
 }
 ```
+
+Na 2ª iteração, o serviço já foi chamado, portanto, apenas imprimimos a seguinte mensagem de log:
+
+```c++
+else {
+  RCLCPP_INFO(this->get_logger(), "Timer Callback Executed");
+}
+```
+
+Finalmente, a resposta do serviço está pronta, então o robô começa a se mover e o método response_callback é chamado:
+
+```c++
+void response_callback(rclcpp::Client<std_srvs::srv::Empty>::SharedFuture future) {
+  // Get response value
+  // auto response = future.get();
+  RCLCPP_INFO(this->get_logger(), "Response: success");
+  service_done_ = true;
+}
+```
+
+## Service Server
+Lembre-se de que você pode habilitar a comunicação entre nós usando Serviços. O nó que envia uma solicitação a um Serviço é chamado de Cliente, enquanto o nó que responde a essa solicitação é o Servidor. Como você deve se lembrar, no início deste módulo, você trabalhou com o Serviço /moving, com um Servidor em execução por trás deles.
+
+No próximo exemplo, mostraremos o código por trás dos Servidores com os quais você interagiu durante esta unidade. 
+
+[Nesse exemplo]() um código para implementar o serviço **/moving** usado para mover o robô.
