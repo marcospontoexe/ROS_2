@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
       std::make_shared<OdomSubscriber>("/box_bot_1/odom");
 
   // Instantiate the timer node node
-  float sleep_time = 3.0;
+  float sleep_time = 0.1;
   std::shared_ptr<SlowTimer> slow_timer_node =
       std::make_shared<SlowTimer>(sleep_time);
 
