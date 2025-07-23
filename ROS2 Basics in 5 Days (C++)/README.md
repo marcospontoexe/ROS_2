@@ -694,4 +694,117 @@ Lembre-se de que você pode habilitar a comunicação entre nós usando Serviço
 
 No próximo exemplo, mostraremos o código por trás dos Servidores com os quais você interagiu durante esta unidade. 
 
-[Nesse exemplo]() um código para implementar o serviço **/moving** usado para mover o robô.
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_client_service/src/server.cpp) um código para implementar o serviço **/moving** usado para mover o robô.
+
+Dê uma olhada nas partes mais importantes do código.
+
+Esta é a linha onde o Servidor está sendo criado:
+
+```c++
+  srv_ = create_service<Empty>("moving", std::bind(&ServerNode::moving_callback, this, _1, _2));
+```
+
+* O Serviço usa um tipo Vazio.
+* O nome do Serviço é moving.
+* O retorno de chamada do Serviço é moving_callback.
+
+Sempre que o Serviço /moving recebe uma solicitação de um Cliente, o método moving_callback é executado.
+
+Analise também o código a seguir, que foi escrito para implementar o Serviço /stop que você usa para interromper o movimento do robô. Você não encontrará muitas outras diferenças além do nome com o qual o Serviço será iniciado e dos parâmetros de velocidade para o Tópico /cmd_vel necessários para interromper o robô.
+
+```c++
+#include "rclcpp/rclcpp.hpp"
+#include "std_srvs/srv/empty.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+
+#include <memory>
+
+using Empty = std_srvs::srv::Empty;
+using std::placeholders::_1;
+using std::placeholders::_2;
+
+class ServerNode : public rclcpp::Node
+{
+public:
+  ServerNode() : Node("service_stop"){
+    srv_ = create_service<Empty>("stop", std::bind(&ServerNode::stop_callback, this, _1, _2));
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+  }
+
+private:
+  rclcpp::Service<Empty>::SharedPtr srv_;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
+
+  void stop_callback( const std::shared_ptr<Empty::Request> request, const std::shared_ptr<Empty::Response>  response){
+    auto message = geometry_msgs::msg::Twist();
+    message.linear.x = 0.0;
+    message.angular.z = 0.0;
+    publisher_->publish(message);
+  }
+};
+
+int main(int argc, char * argv[]){
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<ServerNode>());
+  rclcpp::shutdown();
+  return 0;
+}
+```
+
+## Interfaces de serviço personalizadas
+[Veja nesse exemplo]() uma interface de serviço criada. Essa interface receba como solicitação (request) três movimentos possíveis: "Turn Right," "Turn Left," and "Stop." O arquivo de interface **MyCustomServiceMessage.srv** contem as seguintes variáveis:
+
+```txt
+string move   # Signal to define the movement
+              # "Turn right" to make the robot turn in the right direction.
+              # "Turn left" to make the robot turn in the left direction. 
+              # "Stop" to make the robot stop the movement.
+
+---
+bool success  # Did it achieve it?
+```
+
+Para criar uma nova interface de serviço (srv), siga os seguintes passos:
+
+1. Crie um diretório chamado **srv** dentro do seu pacote
+2. Dentro deste diretório, crie um arquivo chamado **MyCustomServiceMessage.srv** (mais informações abaixo)
+3. Modifique o arquivo **CMakeLists.txt** (mais informações abaixo)
+4. Modifique o arquivo **package.xml** (mais informações abaixo)
+5. **Compile** e crie o código-fonte
+6. **Use** no código
+
+Para verificar se sua service_message foi criada com sucesso use: `ros2 interface show package_name/srv/MyCustomServiceMessage`.
+
+### Editando o CMakeLists.txt
+
+#### find_package()
+É aqui que vão todos os pacotes necessários para COMPILAR as mensagens dos Tópicos, Serviços e Ações. Em **package.xml**, defina-os como **build_depend** e **exec_depend**.
+
+```txt
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+```
+
+#### rosidl_generate_interfaces()
+Esta função inclui todas as mensagens deste pacote (na pasta srv) a serem compiladas. A função deve ter a seguinte aparência:
+
+```txt
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/MyCustomServiceMessage.srv"
+)
+```
+
+### Editando o package.xml
+Adicione as seguintes linhas ao arquivo package.xml:
+
+```txt
+<build_depend>rosidl_default_generators</build_depend>
+
+<exec_depend>rosidl_default_runtime</exec_depend>
+
+<member_of_group>rosidl_interface_packages</member_of_group>
+```
+
+## Usando interfaces de serviço personalizadas
