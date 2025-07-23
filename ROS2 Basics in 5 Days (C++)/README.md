@@ -367,6 +367,10 @@ O resultado da execução é mostrado a baixo:
 
 A função de Callback de odometria funciona bem, mas onde está a mensagem de log gerada pelo Callback do temporizador? Como você pode ver, o Callback do temporizador não está sendo executado e não há mensagem de erro.
 
+O resultado da execução é mostrado a baixo:
+
+![executor_example_4_singlethreaded_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_4_singlethreaded_node.png)
+
 Isso ocorre porque você só pode ter **UM ÚNICO EXECUTOR** por arquivo binário.
 
 Por isso, se você preferir continuar usando SingleThreadedExecutors, sua única opção é criar dois programas ROS2 diferentes, compilados como dois arquivos binários independentes.
