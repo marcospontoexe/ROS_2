@@ -354,7 +354,11 @@ Portanto, a solução lógica é usar o Executor Multi-Threaded.
 ### Multi-Threaded Executor executando dois nós
 [Neste exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_4.cpp), mantenha tudo igual ao exemplo anterior, exceto que o Executor Multi-Threaded será usado.
 
-Você pode ver uma mensagem "TICK" a cada três segundos, e a odometria flui em uma taxa contínua. Isso significa que ambos os Callbacks estão trabalhando simultaneamente em paralelo e sem interferir um no outro.
+Você pode ver uma mensagem "TICK" a cada 100 mili segundos, e a odometria flui em uma taxa contínua. Isso significa que ambos os Callbacks estão trabalhando simultaneamente em paralelo e sem interferir um no outro.
+
+O resultado da execução é mostrado a baixo:
+
+![executor_example_4_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_4_node.png)
 
 **Observação**: neste exemplo, há um Callback por nó, então ter uma thread por nó funciona perfeitamente.
 
