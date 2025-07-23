@@ -440,7 +440,7 @@ Aqui, o comportamento é exatamente o mesmo sem Callback Groups (como no exemplo
 ### Multiplos Mutually Exclusive Callback Groups
 MutuallyExclusiveCallbackGroup permite que o Executor execute apenas um de seus Callbacks simultaneamente, essencialmente como se os Callbacks fossem executados por um SingleThreadedExecutor. Portanto, é uma boa opção colocar quaisquer Callbacks que acessam recursos críticos e potencialmente não seguros para threads no mesmo MutuallyExclusiveCallbackGroup.
 
-[Nesse exemplo]() foi criado dois grupos de retorno de chamada:
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_5_mutualyexclusive_multiple.cpp) foi criado dois grupos de retorno de chamada:
 
 ```c++
   callback_group_1 = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -465,3 +465,16 @@ Aqui, como você está usando dois Callback Groups MutuallyExclusive separados, 
 * O Callback do Timer 1 é executado uma vez a cada segundo.
 * O Callback do Timer 2 é executado uma vez a cada 3 segundos.
 
+# Services
+Assim como os Tópicos, os Serviços também são um método de comunicação entre nós no ROS 2. Para entendê-los melhor, vamos compará-los com o que você já conhece, os tópicos. 
+
+Os Tópicos usam o modelo Publicador-Assinante (**Publisher-Subscriber**), permitindo que os nós recebam atualizações contínuas. Em contraste, os Serviços seguem um modelo Solicitação-Resposta (**Request-Response**), o que significa que eles só fornecem dados quando explicitamente solicitados por um Cliente.
+
+Ao trabalhar com Serviços, existem duas funções principais: **Clientes e Servidores**. Vários Clientes podem usar o mesmo Servidor de Serviço, mas cada Serviço pode ter apenas um Servidor para processar as solicitações.
+
+Alguns comandos básicos:
+* Este comando **listará** todos os serviços atualmente disponíveis no seu sistema ROS2: `ros2 service list`.
+* Este comando é usado para **chamar** um serviço (enviar uma solicitação): `ros2 service call service_name service_type value`.
+* Comando para saber qual é o **tipo de interface** que um serviço usa: `ros2 service type service_name`. Um exemplo de retorno `std_srvs/srv/Empty`.
+É retornado algo como:
+![interface_server](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_5_mutualyexclusive_multiple_node.png)
