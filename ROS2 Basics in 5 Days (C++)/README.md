@@ -475,7 +475,13 @@ Ao trabalhar com Serviços, existem duas funções principais: **Clientes e Serv
 Alguns comandos básicos:
 * Este comando **listará** todos os serviços atualmente disponíveis no seu sistema ROS2: `ros2 service list`.
 * Este comando é usado para **chamar** um serviço (enviar uma solicitação): `ros2 service call service_name service_type value`.
-* Comando para saber qual é o **tipo de interface** que um serviço usa: `ros2 service type service_name`. Um exemplo de retorno `std_srvs/srv/Empty`.
+* Comando para saber qual é o **tipo de interface** que um serviço usa: `ros2 service type service_name`. Um exemplo de retorno `std_srvs/srv/Empty`, que são os dados de **request**.
 É retornado algo como:
 
 ![interface_server](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/interface_server.png)
+
+Isso ocorre porque você está lidando com o tipo de serviço "Empty Service", que não contém nenhum dado (nem Request nem Response), neste caso, você não precisa enviar um valor ao chamar o Serviço.
+
+Vamos analisar outro tipo de interface de serviço: `ros2 interface show std_srvs/srv/SetBool`:
+
+![interface_server2](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/interface_server.png)
