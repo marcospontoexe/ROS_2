@@ -328,7 +328,7 @@ Nas duas primeiras implementações, o Executor se adapta a alterações como ad
 
 O resultado da execução é mostrado a baixo:
 
-![executor_example_2_node]()
+![executor_example_2_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_2_node.png)
 
 ### Single-Threaded Executor executando um nó com duas funções de Callback
 O objetivo principal deste exemplo é demonstrar o problema que pode surgir ao usar um EXECUTOR SINGLE-THREADED.
