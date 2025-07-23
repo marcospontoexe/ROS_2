@@ -170,7 +170,7 @@ Os **tópicos** formam a espinha dorsal de como os nós se comunicam em um siste
 
 Um Tópico é como um tubo. Os nós usam Tópicos para publicar informações para outros nós, permitindo a comunicação entre eles.
 * A qualquer momento, você pode verificar o número de Tópicos no sistema por meio de uma lista de tópicos ros2: `ros2 topic list`.
-* Você também pode verificar informações de um tópico específico: `ros2 topic info name_of_topic`.
+* Você também pode verificar informações de um tópico específico: `ros2 topic info name_of_topic` ou `ros2 topic info -- verbose name_of_topic` para ver informações sobre QoS.
 * Para ler as informações que estão sendo publicadas sobre um tópico: `ros2 topic echo name_of_topic`.
 * Para publicar mensagens (interface) em um tópico: `ros2 topic pub topic_name message_type value`. Por exemplo: `ros2 topic pub /counter std_msgs/Int32 "{data: '5'}"`.
 * verificar as diferentes opções que o comando **rostopic** possui usando o seguinte comando: `ros2 topic -h` ou pressione duas vezes rapidamente a tecla **TAB** após o digitar **ros2 topic**.
@@ -326,6 +326,10 @@ Nas duas primeiras implementações, o Executor se adapta a alterações como ad
 ### Executor executando nó mínimo com callback
 [Neste exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_2.cpp), adicionaremos uma função de retorno de chamada (callback) que assina o tópico /box_bot_1/odom.
 
+O resultado da execução é mostrado a baixo:
+
+![executor_example_2_node]()
+
 ### Single-Threaded Executor executando um nó com duas funções de Callback
 O objetivo principal deste exemplo é demonstrar o problema que pode surgir ao usar um EXECUTOR SINGLE-THREADED.
 
@@ -396,18 +400,36 @@ Em seguida, é passado **callback_group_** como um argumento adicional para **cr
 
 Da mesma forma, é passado um grupo de retorno de chamada para assinantes, serviços ou ações.
 
-**Observação**: Não execute este código ainda. Em vez disso, crie três exemplos, um após o outro, para uma melhor comparação visual.
+Como você pode ver, os retornos de chamada estão sendo executados sem nenhuma restrição. Isso significa que até mesmo várias instâncias do mesmo retorno de chamada estão sendo executadas em paralelo. Esse comportamento pode ser detectado, por exemplo, porque o retorno de chamada do Timer 2, que deveria ser executado apenas uma vez a cada 3 segundos, está sendo executado muito mais vezes.
 
 ### Mutually Exclusive Callback Groups
 MutuallyExclusiveCallbackGroup permite que o Executor execute apenas um de seus Callbacks simultaneamente, essencialmente como se os Callbacks fossem executados por um SingleThreadedExecutor. Portanto, é uma boa opção colocar quaisquer Callbacks que acessam recursos críticos e potencialmente não seguros para threads no mesmo MutuallyExclusiveCallbackGroup.
 
-[Nesse exemplo]() foi modificado o código de forma que ele criasse um grupo de retorno de chamada MutuallyExclusive:
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_5_mutualyexclusive.cpp) foi modificado o código de forma que ele criasse um grupo de retorno de chamada MutuallyExclusive:
 
 ```c++
   callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 ```
 
+Aqui, o comportamento é exatamente o mesmo sem Callback Groups (tópico **Dois nós em execução em dois executors diferentes**). Isso ocorre porque, por padrão, todos os retornos de chamada em um nó estão dentro do mesmo grupo de retorno de chamada do tipo mutuamente exclusivo.
+
 ### Multiplos Mutually Exclusive Callback Groups
 MutuallyExclusiveCallbackGroup permite que o Executor execute apenas um de seus Callbacks simultaneamente, essencialmente como se os Callbacks fossem executados por um SingleThreadedExecutor. Portanto, é uma boa opção colocar quaisquer Callbacks que acessam recursos críticos e potencialmente não seguros para threads no mesmo MutuallyExclusiveCallbackGroup.
 
-[Nesse exemplo]() Neste exemplo, crie dois grupos de retorno de chamada:
+[Nesse exemplo]() foi criado dois grupos de retorno de chamada:
+
+```c++
+  callback_group_1 = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  callback_group_2 = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+```
+
+Em seguida, atribua um a cada temporizador:
+
+```c++
+  timer1_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_1, this), callback_group_1);
+  timer2_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_2, this), callback_group_2);
+```
+
+E, neste exemplo, você está atribuindo a cada um dos temporizadores seu próprio Grupo de Retorno de Chamada.
+
+
