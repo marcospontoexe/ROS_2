@@ -548,3 +548,124 @@ Como você pode ver, agora empacotamos o código do cliente dentro de uma classe
 ```c++
   class ServiceClient : public rclcpp::Node
 ```
+
+Dentro da nossa classe, adicionamos um método timer que faz algumas coisas. Primeiro, ele verifica se o serviço já foi chamado ou não usando o sinalizador service_called_:
+
+```c++
+void timer_callback() {
+    if (!service_called_) {
+      RCLCPP_INFO(this->get_logger(), "Send Async Request");
+      send_async_request();
+    } else {
+      RCLCPP_INFO(this->get_logger(), "Timer Callback Executed");
+    }
+}
+```
+
+* Se o serviço ainda não tiver sido chamado, ele executará o método send_async_request().
+* Se o serviço já tiver sido chamado, ele apenas imprimirá uma mensagem de log.
+
+Em seguida, temos o método send_async_request(). Aqui, fazemos várias coisas. Primeiro, verificamos se o serviço está disponível ou não:
+
+```c++
+while (!client_->wait_for_service(1s)) {
+  if (!rclcpp::ok()) {
+    RCLCPP_ERROR(
+        this->get_logger(),
+        "Client interrupted while waiting for service. Terminating...");
+    return;
+  }
+  RCLCPP_INFO(this->get_logger(),
+              "Service Unavailable. Waiting for Service...");
+}
+```
+
+Se o serviço estiver disponível, ele enviará uma solicitação e definirá o sinalizador service_called_ como true:
+
+```c++
+auto request = std::make_shared<std_srvs::srv::Empty::Request>();
+auto result_future = client_->async_send_request(request, std::bind(&ServiceClient::response_callback, this, std::placeholders::_1));
+service_called_ = true;
+```
+
+Como você pode ver, neste caso especificamos na solicitação uma função de retorno de chamada para manipular a resposta do serviço:
+
+```c++
+&ServiceClient::response_callback
+```
+
+Voltaremos a esta função de retorno de chamada mais tarde.
+
+Em seguida, logo após enviarmos a solicitação, aguardamos a resposta por 1 segundo.
+
+```c++
+// Now check for the response after a timeout of 1 second
+auto status = result_future.wait_for(1s);
+
+if (status != std::future_status::ready) {
+  RCLCPP_WARN(this->get_logger(), "Response not ready yet.");
+}
+```
+
+Mas o que está acontecendo aqui? Um cliente assíncrono retornará imediatamente o future, um valor que indica se a chamada e a resposta foram concluídas (não o valor da resposta em si), após enviar uma solicitação a um serviço.
+
+Portanto, você pode verificar esse future para ver se há uma resposta ou não do serviço.
+
+```c++
+if (status != std::future_status::ready)
+```
+
+Se a resposta estiver pronta dentro desse tempo limite (1s), o status terá o valor "pronto".
+
+E aqui está o método de retorno de chamada da resposta:
+
+```c++
+void response_callback(rclcpp::Client<std_srvs::srv::Empty>::SharedFuture future) {
+  // Get response value
+  // auto response = future.get();
+  RCLCPP_INFO(this->get_logger(), "Response: success");
+  service_done_ = true;
+}
+```
+
+Este método será chamado quando o serviço retornar uma resposta. Aqui, imprimimos apenas um log mostrando o resultado e definimos o sinalizador service_done_ como true. Como estamos usando uma interface Empty para este serviço, não precisamos obter a resposta (pois não há valor de resposta). No entanto, é mostrado nos comentários como isso seria feito.
+
+Como você pode ver, neste caso, não estamos usando o método spin_until_future_complete(). Isso ocorre porque nosso nó já está girando (spin()). Portanto, não precisamos girar o nó até que o resultado seja concluído, mas apenas verificar se o resultado está completo.
+
+Na função main(), giramos o nó até que o serviço seja concluído:
+
+```c++
+while (!service_client->is_service_done()) {
+  rclcpp::spin_some(service_client);
+}
+```
+
+O método que define quando o serviço foi concluído é um booleano simples que verifica o valor de service_done_:
+
+```c++
+bool is_service_done() const { return this->service_done_; }
+```
+
+Para resumir, vamos verificar novamente a saída recebida da execução deste cliente:
+
+![client-service](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/client-service.png)
+
+O que acontece aqui é o seguinte:
+
+Primeiro, como o serviço não foi chamado inicialmente, enviamos uma solicitação a ele:
+
+```c++
+if (!service_called_) {
+  RCLCPP_INFO(this->get_logger(), "Send Async Request");
+  send_async_request();
+}
+```
+
+Após o envio da solicitação, a resposta não fica imediatamente pronta, por isso vemos a mensagem de log apropriada:
+
+```c++
+auto status = result_future.wait_for(1s);
+if (status != std::future_status::ready) {
+  RCLCPP_WARN(this->get_logger(), "Response not ready yet.");
+}
+```
