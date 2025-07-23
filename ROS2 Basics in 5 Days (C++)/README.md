@@ -381,7 +381,7 @@ Grupos de Callbacks (Callback Groups) permitem agrupar diferentes Callbacks para
 ### Reentrant Callback Groups
 ReentrantCallbackGroup permite que o Executor agende e execute os Callbacks do grupo da maneira que achar melhor, sem restrições. Isso significa que, além de diferentes Callbacks serem executados simultaneamente, o Executor também pode executar diferentes instâncias do mesmo Callback simultaneamente. Assim, por exemplo, a execução de um Callback de timer pode levar mais tempo do que o período de disparo do timer (embora esse caso específico deva ser evitado a todo custo no rclpy, isso é outra história).
 
-[Nesse exemplo]() a única mudança é que foi criado um grupo de retorno de chamada (Callback Groups) com a seguinte linha de código:
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_5_reentrant.cpp) a única mudança é que foi criado um grupo de retorno de chamada (Callback Groups) com a seguinte linha de código:
 
 ```c++
   callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
@@ -397,3 +397,17 @@ Em seguida, é passado **callback_group_** como um argumento adicional para **cr
 Da mesma forma, é passado um grupo de retorno de chamada para assinantes, serviços ou ações.
 
 **Observação**: Não execute este código ainda. Em vez disso, crie três exemplos, um após o outro, para uma melhor comparação visual.
+
+### Mutually Exclusive Callback Groups
+MutuallyExclusiveCallbackGroup permite que o Executor execute apenas um de seus Callbacks simultaneamente, essencialmente como se os Callbacks fossem executados por um SingleThreadedExecutor. Portanto, é uma boa opção colocar quaisquer Callbacks que acessam recursos críticos e potencialmente não seguros para threads no mesmo MutuallyExclusiveCallbackGroup.
+
+[Nesse exemplo]() foi modificado o código de forma que ele criasse um grupo de retorno de chamada MutuallyExclusive:
+
+```c++
+  callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+```
+
+### Multiplos Mutually Exclusive Callback Groups
+MutuallyExclusiveCallbackGroup permite que o Executor execute apenas um de seus Callbacks simultaneamente, essencialmente como se os Callbacks fossem executados por um SingleThreadedExecutor. Portanto, é uma boa opção colocar quaisquer Callbacks que acessam recursos críticos e potencialmente não seguros para threads no mesmo MutuallyExclusiveCallbackGroup.
+
+[Nesse exemplo]() Neste exemplo, crie dois grupos de retorno de chamada:
