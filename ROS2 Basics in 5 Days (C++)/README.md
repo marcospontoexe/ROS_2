@@ -484,4 +484,52 @@ Isso ocorre porque você está lidando com o tipo de serviço "Empty Service", q
 
 Vamos analisar outro tipo de interface de serviço: `ros2 interface show std_srvs/srv/SetBool`:
 
-![interface_server2](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/interface_server.png)
+![interface_server2](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/interface_server2.png)
+
+Nesse caso a interface se serviço **std_srvs/srv/SetBool**, contem
+* uma variável de **request** do tipo bool chamada data
+* e duas variáveis de **response**, uma do tipo bool e outra do tipo string.
+
+## Service Client
+[Veja nesse exemplo]() um nó Cliente que interage com um nó Servidor de serviçoos. Considere que o Cliente que você criou será usado apenas para chamar o Serviço /moving e iniciar o movimento do robô.
+
+Esta é a linha onde você cria o Cliente:
+
+```c++
+  rclcpp::Client<std_srvs::srv::Empty>::SharedPtr client = node->create_client<std_srvs::srv::Empty>("moving");
+```
+
+Você pode ver que criou um Cliente que usa o tipo de Serviço Vazio e se conecta a um Serviço chamado /moving.
+
+Este loop while é usado para garantir que o Service Server (neste caso, /moving) esteja ativo e em execução:
+
+```c++
+  while (!client->wait_for_service(1s))
+```
+
+Esta linha também é importante:
+
+```c++
+  auto result_future = client->async_send_request(request);
+```
+
+Envia uma solicitação assíncrona ao Servidor de Serviço usando o método async_send_request(). Em seguida, armazene a resposta do Servidor na variável result_future. Essa variável result_future conterá o que é conhecido como um objeto future. Após fazer a solicitação, o Servidor retornará imediatamente result_future, que indica se a chamada e a resposta foram concluídas (mas não contém o valor da resposta em si). 
+
+Por fim, um spin() no nó até que este result_future seja concluído (o serviço seja concluído):
+
+```c++
+  if (rclcpp::spin_until_future_complete(node, result_future) == rclcpp::FutureReturnCode::SUCCESS)
+```
+
+Se for concluído com sucesso, você obterá o valor da resposta do servidor e imprimirá uma mensagem indicando que o robô está se movendo:
+
+```c++
+  auto result = result_future.get();
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "The robot is moving");
+```
+
+Caso contrário, você imprime uma mensagem indicando que a chamada para o serviço falhou:
+
+```c++
+  RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service /moving");
+```
