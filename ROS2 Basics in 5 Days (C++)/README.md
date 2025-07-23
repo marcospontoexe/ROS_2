@@ -339,6 +339,10 @@ O objetivo principal deste exemplo é demonstrar o problema que pode surgir ao u
 
 Ambos os nós são instanciados e adicionados a um **SingleThreadedExecutor** dentro de main().
 
+O resultado da execução é mostrado a baixo:
+
+![executor_example_3_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_3_node.png)
+
 Em comparação com o exemplo anterior, a odometria não está sendo registrada periodicamente, em intervalos regulares. Então, por que isso acontece?
 
 O problema é que a função de Callback odometry não é executada mesmo quando o tópico /box_bot_1/odom possui valores publicados. Sua execução é bloqueada pela função de Callback do timer e ainda não finalizou seu trabalho.
