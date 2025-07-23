@@ -431,6 +431,10 @@ MutuallyExclusiveCallbackGroup permite que o Executor execute apenas um de seus 
   callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 ```
 
+O resultado da execução é mostrado a baixo:
+
+![executor_example_5_mutualyexclusive_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_5_mutualyexclusive_node.png)
+
 Aqui, o comportamento é exatamente o mesmo sem Callback Groups (como no exemplo tópico **Callback Groups**). Isso ocorre porque, por padrão, todos os retornos de chamada em um nó estão dentro do mesmo grupo de retorno de chamada do tipo mutuamente exclusivo.
 
 ### Multiplos Mutually Exclusive Callback Groups
