@@ -364,7 +364,7 @@ Por isso, se você preferir continuar usando SingleThreadedExecutors, sua única
 Agora que você já entendeu os conceitos básicos do Executor, está pronto para abordar os aspectos mais avançados para lidar adequadamente com múltiplos Callbacks (Callback Groups).
 
 ## Callback Groups
-[Nesse exemplo]() é declarada uma classe Node com mais de um Callback. Neste caso, dois Callbacks. Dentro da função principal, você verá que ela carrega o Node em um MultiThreadedExecutor.
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_5.cpp) é declarada uma classe Node com mais de um Callback. Neste caso, dois Callbacks. Dentro da função principal, você verá que ela carrega o Node em um MultiThreadedExecutor.
 
 Ao executar o nó **executor_example_5_node**, somente o retorno de chamada do timer 1 é executado. É por isso que apenas uma thread é criada e apenas um Callback pode ser executado. Isso ocorre porque o Executor Multi-Threaded cria uma thread por Nó, a menos que você especifique o contrário. Portanto, você tem apenas uma thread para todos os Callbacks neste Nó, portanto, ele não pode executar Callbacks em paralelo.
 
