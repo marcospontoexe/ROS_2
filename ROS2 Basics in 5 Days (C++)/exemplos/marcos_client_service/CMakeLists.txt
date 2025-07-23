@@ -27,8 +27,12 @@ ament_package()
 add_executable(service_client_node src/service_client.cpp)
 ament_target_dependencies(service_client_node rclcpp std_srvs)
 
+add_executable(service_client_v2 src/service_client_v2.cpp)
+ament_target_dependencies(service_client_v2 rclcpp std_srvs)
+
 install(TARGETS
    service_client_node
+   service_client_v2
    DESTINATION lib/${PROJECT_NAME}
  )
 

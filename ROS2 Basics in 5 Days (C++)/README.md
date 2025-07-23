@@ -491,7 +491,9 @@ Nesse caso a interface se serviço **std_srvs/srv/SetBool**, contem
 * e duas variáveis de **response**, uma do tipo bool e outra do tipo string.
 
 ## Service Client
-[Veja nesse exemplo]() um nó Cliente que interage com um nó Servidor de serviçoos. Considere que o Cliente que você criou será usado apenas para chamar o Serviço /moving e iniciar o movimento do robô.
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_client_service/src/service_client.cpp) um nó Cliente que interage com um nó Servidor de serviços. Considere que o Cliente que você criou será usado apenas para chamar o Serviço /moving e iniciar o movimento do robô.
+
+Nesse exemplo você vera como chamar um serviço de um nó básico, que não está em spin():
 
 Esta é a linha onde você cria o Cliente:
 
@@ -533,3 +535,11 @@ Caso contrário, você imprime uma mensagem indicando que a chamada para o servi
 ```c++
   RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service /moving");
 ```
+
+Como o nó não está em spin(), você precisa usar o método rclcpp::spin_until_future_complete para por o nó em spin até que o resultado esteja disponível.
+
+Mas o que acontece se o nó cliente já estiver em spin por padrão? Este caso é exatamente o que vamos reproduzir no exemplo a seguir.
+
+### Chamando um serviço a partir de um spinning node
+[Veja nesse exemplo]() um resultado bastante semelhante ao do anterior. No entanto, o código apresenta diversas diferenças importantes que você analisará na seção seguinte.
+
