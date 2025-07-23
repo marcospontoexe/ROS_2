@@ -382,6 +382,10 @@ Agora que você já entendeu os conceitos básicos do Executor, está pronto par
 ## Callback Groups
 [Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_executors/src/executor_example_5.cpp) é declarada uma classe Node com mais de um Callback. Neste caso, dois Callbacks. Dentro da função principal, você verá que ela carrega o Node em um MultiThreadedExecutor.
 
+O resultado da execução é mostrado a baixo:
+
+![executor_example_5_node](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/executor_example_5_node.png)
+
 Ao executar o nó **executor_example_5_node**, somente o retorno de chamada do timer 1 é executado. É por isso que apenas uma thread é criada e apenas um Callback pode ser executado. Isso ocorre porque o Executor Multi-Threaded cria uma thread por Nó, a menos que você especifique o contrário. Portanto, você tem apenas uma thread para todos os Callbacks neste Nó, portanto, ele não pode executar Callbacks em paralelo.
 
 O timer1_callback é executado porque foi instanciado primeiro no construtor.
@@ -423,7 +427,7 @@ MutuallyExclusiveCallbackGroup permite que o Executor execute apenas um de seus 
   callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 ```
 
-Aqui, o comportamento é exatamente o mesmo sem Callback Groups (tópico **Dois nós em execução em dois executors diferentes**). Isso ocorre porque, por padrão, todos os retornos de chamada em um nó estão dentro do mesmo grupo de retorno de chamada do tipo mutuamente exclusivo.
+Aqui, o comportamento é exatamente o mesmo sem Callback Groups (como no exemplo tópico **Callback Groups**). Isso ocorre porque, por padrão, todos os retornos de chamada em um nó estão dentro do mesmo grupo de retorno de chamada do tipo mutuamente exclusivo.
 
 ### Multiplos Mutually Exclusive Callback Groups
 MutuallyExclusiveCallbackGroup permite que o Executor execute apenas um de seus Callbacks simultaneamente, essencialmente como se os Callbacks fossem executados por um SingleThreadedExecutor. Portanto, é uma boa opção colocar quaisquer Callbacks que acessam recursos críticos e potencialmente não seguros para threads no mesmo MutuallyExclusiveCallbackGroup.
