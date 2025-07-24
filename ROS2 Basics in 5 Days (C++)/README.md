@@ -1443,4 +1443,37 @@ Além disso, especifique o pacote **rosidl_interface_packages** como **member_of
 
 Para verificar se sua Interface de Ação foi criada corretamente, use o seguinte comando: `ros2 interface show package_name/action/Interface_name`.
 
-[Veja nesse exemplo]()
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_custom_interfaces/action/Move.action) uma interface de action criada.
+
+## Usando uma action Interface custumizada
+Para usar uma interface criada (nesse exemplo do pacote marcos_custom_interfaces) em um novo pacote criado;
+
+1. Inclua sua interface de ação personalizada no arquivo **executável**:
+
+```c++
+#include "marcos_custom_interfaces/action/Interface_name.hpp"
+```
+
+2. No arquivo **CMakeLists.txt**, você precisará adicionar o seguinte código:
+
+```txt
+# Required to find the custom_interfaces package
+find_package(marcos_custom_interfaces)
+
+# Update the executable dependencies with the marcos_custom_interfaces package
+ament_target_dependencies(action_server_node rclcpp rclcpp_action t3_action_msg marcos_custom_interfaces geometry_msgs)
+```
+
+3. No **package.xml** você precisará adicionar a dependência para o pacote marcos_custom_interfaces:
+
+```txt
+<depend>marcos_custom_interfaces</depend>
+```
+
+# Ferramentas de Debugging (Depuração)
+Depuração e visualização são habilidades essenciais para qualquer desenvolvedor de robótica. 
+
+## ROS2 Debugging Messages
+Os logs podem ser exibidos na tela, mas também podem ser salvos no quadro ROS para classificação, filtragem e outros usos. Existem níveis de log nos sistemas, como visto na imagem abaixo. No caso dos logs ROS2, existem cinco níveis. Cada nível possui uma série de subníveis. Por exemplo, se você usar o nível **Erro**, o log exibirá as mensagens Erro e Fatal. Se o seu nível for **Warning**, você verá todas as mensagens dos níveis Warning, Erro e Fatal.
+
+![níveis de log](https://github.com/marcospontoexe/ROS/blob/main/imagens/log.png)
