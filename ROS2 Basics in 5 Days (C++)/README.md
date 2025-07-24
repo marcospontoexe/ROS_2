@@ -847,6 +847,10 @@ O seguinte log é retornado:
 Vamos olhar as partes mais importantes do código movement_client.cpp:
 
 Essa linha cria um serviço ROS 2 no C++ usando o rclcpp, associando o nome do serviço a um callback que será chamado quando o serviço for solicitado.:
+1. Cria um serviço chamado /movement
+2. Usa o tipo MyCustomServiceMessage
+3. Liga o serviço ao método moving_callback da classe ServerNode
+4. Faz com que, ao receber uma chamada de serviço, o ROS 2 execute moving_callback(request, response)
 
 ```c++
 srv_ = create_service<MyCustomServiceMessage>("movement", std::bind(&ServerNode::moving_callback, this, _1, _2));
@@ -860,3 +864,60 @@ srv_ = create_service<MyCustomServiceMessage>("movement", std::bind(&ServerNode:
 * std::bind(&ServerNode::moving_callback, this, _1, _2): Associa o método moving_callback da classe ServerNode como callback do serviço.
   * O this indica que o método pertence a uma instância da classe.
   * _1 e _2 são placeholders que indicam os argumentos que o ROS vai passar automaticamente para o callback (tipicamente o request e response do serviço).
+
+No retorno de chamada do serviço, você decidirá como mover o robô dependendo da solicitação recebida:
+
+```c++
+if (request->move == "Turn Right")
+{   
+    // Send velocities to move the robot to the right
+    message.linear.x = 0.2;
+    message.angular.z = -0.2;
+    publisher_->publish(message);
+
+    // Set the response success variable to true
+    response->success = true;
+}
+else if (request->move == "Turn Left")
+{
+    // Send velocities to stop the robot
+    message.linear.x = 0.2;
+    message.angular.z = 0.2;
+    publisher_->publish(message);
+
+    // Set the response success variable to false
+    response->success = true;
+}
+else if (request->move == "Stop")
+{
+    // Send velocities to stop the robot
+    message.linear.x = 0.0;
+    message.angular.z = 0.0;
+    publisher_->publish(message);
+
+    // Set the response success variable to false
+    response->success = true;
+}
+else {
+    response->success = false;
+}
+```
+
+Portanto, para acessar a parte de resposta do tipo Serviço, use response->success:
+
+```c++
+response->success = true;
+```
+
+# Actions
+Ações do ROS 2, um poderoso mecanismo de comunicação que permite que robôs executem tarefas de longa duração, fornecendo feedback e permitindo a preempção. Ao contrário dos serviços, que são síncronos, as ações permitem a execução assíncrona, tornando-as ideais para tarefas como navegação de robôs, planejamento de movimento e agarrar objetos.
+
+Ações são semelhantes a Serviços. No entanto, ao chamar uma Ação, você está chamando uma funcionalidade que outro nó está fornecendo. Além disso, Ações são baseadas no modelo Cliente-Servidor – o mesmo que acontece com Serviços.
+
+No entanto, existem duas diferenças principais entre Ações e Serviços:
+1. Ações são preemptivas. Isso significa que você pode cancelar uma Ação enquanto ela está sendo executada.
+2. Ações fornecem feedback. Isso significa que, enquanto a Ação está sendo executada, o Servidor pode enviar feedback ao Cliente.
+
+Abaixo, você pode ver um diagrama que descreve o fluxo de trabalho de uma Ação.
+
+![actions]()
