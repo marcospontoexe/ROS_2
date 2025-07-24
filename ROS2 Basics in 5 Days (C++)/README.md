@@ -945,8 +945,14 @@ Ações fornecem feedback. E você pode, de fato, visualizar esse feedback. No e
 
 Observe o argumento -f adicionado ao comando, que é a forma abreviada de --feedback. Você pode usar qualquer um como desejar.
 
-* Você também pode obter mais dados sobre a interface de um action com o seguinte comando: `ros2 interface show package_name/action/interface_name`.
+* Você também pode obter mais dados sobre a interface de um action com o seguinte comando: `ros2 interface show package_name/action/interface_name`. Por exemplo, o comando `ros2 interface show t3_action_msg/action/Move` retorna o seguinte:
 
+![message_action](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/message_action.png)
+
+A mensagem é composta por três partes separadas por três hífens ---:
+* int32 segs: Consiste em uma variável chamada secs do tipo int32. Essa variável é usada como a meta (**goal**) solicitada e indica o número de segundos em que o robô deve avançar.
+* string status: Consiste em uma variável chamada status, que é do tipo string. Ela é usada para comunicar o resultado (**result**), pois a string indica o status final quando a Ação termina.
+* string feedback: Consiste em uma variável chamada feedback do tipo string. Essa string é usada para indicar o **status** atual do robô.
 
 ## Chamando um action server
 Chamar um Servidor de Ação significa enviar um objetivo a ele. Assim como Tópicos e Serviços, tudo funciona por meio da transmissão de mensagens.
@@ -956,3 +962,224 @@ Chamar um Servidor de Ação significa enviar um objetivo a ele. Assim como Tóp
 * A mensagem de um Servidor de Ação é dividida em três partes: o objetivo, o resultado e o feedback.
 
 Todas as mensagens de Ação utilizadas são definidas no diretório Action do respectivo pacote.
+
+## Actions fornecendo feedback
+Como chamar um Servidor de Ação não interrompe sua thread, os Servidores de Ação fornecem uma mensagem chamada feedback. O feedback é uma mensagem que o Servidor de Ação gera ocasionalmente para indicar o andamento da Ação (informando quem a chamou sobre o status da Ação solicitada). Ela é gerada enquanto a Ação está em andamento.
+
+## Action Client
+A maneira de chamar um Action Server é implementando um Action Client.
+
+[Esse exemplo]() mostra como implementar um Action Client que chama o Action Server **/move_robot_as** e comanda o robô para avançar por cinco segundos.
+
+Como você deve ter notado, após importar algumas bibliotecas C++ nas primeiras quatro linhas, você não faz nada além de importar as bibliotecas de cliente C++ do ROS2 para trabalhar com ações (**rclcpp_action**) e (**rclcpp**). Você também pode ver que é aqui que você importará as interfaces com as quais trabalha, neste caso, (**t3_action_msg.action**).7
+
+```c++
+#include "t3_action_msg/action/move.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+```
+
+Agora vamos pular para a função principal que usa executores:
+* Aqui, você cria uma instância de **MyActionClient()**. Em seguida, inicializamos um objeto **MultiThreadedExecutor**.
+* Enquanto a meta não for concluída, **while** (!action_client->is_goal_done()), você executará o executor **executor.spin_some()**;.
+
+```c++
+int main(int argc, char ** argv)
+{
+  rclcpp::init(argc, argv);
+  auto action_client = std::make_shared<MyActionClient>();
+    
+  rclcpp::executors::MultiThreadedExecutor executor;
+  executor.add_node(action_client);
+
+  while (!action_client->is_goal_done()) {
+    executor.spin_some();
+  }
+
+  rclcpp::shutdown();
+  return 0;
+}
+```
+
+Agora, vamos continuar analisando o construtor da classe **MyActionClient()**:
+
+```c++
+Node("my_action_client", node_options), goal_done_(false){
+  this->client_ptr_ = rclcpp_action::create_client<Move>(
+    this->get_node_base_interface(),
+    this->get_node_graph_interface(),
+    this->get_node_logging_interface(),
+    this->get_node_waitables_interface(),
+    "move_robot_as");
+
+  this->timer_ = this->create_wall_timer(
+    std::chrono::milliseconds(500),
+    std::bind(&MyActionClient::send_goal, this));
+}
+```
+
+No construtor da classe, inicializamos um nó ROS2 chamado **my_action_client**. Observe também que inicializamos a variável **goal_done_** como false.
+Em seguida, dentro do corpo do construtor, criamos um objeto **ActionClient** que se conecta ao Servidor de Ações **/move_robot_as**.
+Finalmente, criamos um objeto timer, com um método de retorno de chamada chamado **send_goal**.
+
+Para continuar, vamos analisar o método **send_goal()**:
+
+```c++
+void send_goal()
+  {
+    using namespace std::placeholders;
+    this->timer_->cancel();
+    this->goal_done_ = false;
+
+    if (!this->client_ptr_) {
+      RCLCPP_ERROR(this->get_logger(), "Action client not initialized");
+    }
+
+    if (!this->client_ptr_->wait_for_action_server(std::chrono::seconds(10))) {
+      RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
+      this->goal_done_ = true;
+      return;
+    }
+
+    auto goal_msg = Move::Goal();
+    goal_msg.secs = 5;
+    RCLCPP_INFO(this->get_logger(), "Sending goal");
+    auto send_goal_options = rclcpp_action::Client<Move>::SendGoalOptions();                
+    send_goal_options.goal_response_callback = std::bind(&MyActionClient::goal_response_callback, this, _1);
+    send_goal_options.feedback_callback = std::bind(&MyActionClient::feedback_callback, this, _1, _2);
+    send_goal_options.result_callback = std::bind(&MyActionClient::result_callback, this, _1);      
+    auto goal_handle_future = this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
+  }
+```
+A linha abaixo cancela o temporizador para que ele seja executado apenas uma vez (neste exemplo, não queremos continuar enviando metas para o Action Server):
+
+```c++
+this->timer_->cancel();
+```
+
+Aqui, verificamos se o Servidor de Ações está ativo e funcionando. Caso contrário, imprimimos uma mensagem no log do nó:
+
+```c++
+if (!this->client_ptr_) {
+  RCLCPP_ERROR(this->get_logger(), "Action client not initialized");
+}
+```
+
+Aqui, aguardamos a inicialização do Servidor de Ações por 10 segundos. Se ele não estiver pronto após 10 segundos, aguarde.
+
+```c++
+if (!this->client_ptr_->wait_for_action_server(std::chrono::seconds(10))) {
+  RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
+  this->goal_done_ = true;
+  return;
+}
+```
+
+Em seguida, um objeto **Goal()** do tipo de ação **Move** é criado. Em seguida, acessamos a variável **secs** da meta **Action** e atribuímos a ela um valor numérico arbitrário em segundos. Neste exemplo, são 5 segundos.
+
+```c++
+auto goal_msg = Move::Goal();
+goal_msg.secs = 5;
+```
+
+Aqui, defina os diferentes retornos de chamada para o Action Client:
+
+```c++
+auto send_goal_options = rclcpp_action::Client<Move>::SendGoalOptions();                
+send_goal_options.goal_response_callback = std::bind(&MyActionClient::goal_response_callback, this, _1);            
+send_goal_options.feedback_callback = std::bind(&MyActionClient::feedback_callback, this, _1, _2);            
+send_goal_options.result_callback = std::bind(&MyActionClient::result_callback, this, _1);
+```
+
+A primeira linha acima inicializa o objeto usado para definir métodos de retorno de chamada para aceitação, feedback e conclusão de metas.
+
+Como você pode ver, eles são definidos imediatamente após:
+
+* goal_response_callback
+* feedback_callback
+* result_callback
+
+Finalmente, enviamos a meta (goal) para o Servidor de Ações usando o método **async_send_goal**:
+
+```c++
+auto goal_handle_future = this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
+```
+
+Fornecemos dois argumentos para este método:
+
+* Uma mensagem de meta, neste caso, goal_msg
+* Os métodos de retorno de chamada do cliente
+
+Este método **async_send_goal()** retorna um **future** para um identificador de meta. Este identificador de meta **future** será concluído quando o Servidor tiver processado a meta, seja ela aceita ou rejeitada pelo Servidor. Portanto, você deve atribuir um método de retorno de chamada para ser acionado quando o **future** for concluído (a meta tiver sido aceita ou rejeitada). Neste caso, este método é **goal_response_callback()**.
+
+Agora, observe este método **goal_response_callback()**:
+
+```c++
+void goal_response_callback(const GoalHandleMove::SharedPtr & goal_handle){
+  if (!goal_handle) {
+    RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
+  } else {
+    RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
+  }
+}
+```
+
+Portanto, esse método é acionado quando a meta é aceita ou rejeitada pelo servidor. Podemos saber isso verificando o valor **goal_handle**.
+
+```c++
+if (!goal_handle)
+```
+
+Abaixo, imprimimos uma mensagem caso a meta tenha sido rejeitada. Caso tenha sido aceita, aguardaremos o resultado.
+
+```c++
+if (!goal_handle) {
+  RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
+} else {
+  RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
+}
+```
+
+Semelhante ao envio da meta, este método retornará um **future** que será concluído quando o resultado estiver pronto. Portanto, você também deve atribuir um método de retorno de chamada para ser acionado quando esse **future** for concluído (o resultado estiver pronto). Neste caso, este método é **result_callback()**:
+
+Agora, observe este método **result_callback()**:
+
+```c++
+void result_callback(const GoalHandleMove::WrappedResult & result){
+  this->goal_done_ = true;
+  switch (result.code) {
+    case rclcpp_action::ResultCode::SUCCEEDED:
+      break;
+    case rclcpp_action::ResultCode::ABORTED:
+      RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
+      return;
+    case rclcpp_action::ResultCode::CANCELED:
+      RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
+      return;
+    default:
+      RCLCPP_ERROR(this->get_logger(), "Unknown result code");
+      return;
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Result received: %s", result.result->status.c_str());
+}
+```
+
+Este método é bem simples. Primeiro, verifique a variável **result.code** para ver o que aconteceu com o seu objetivo. Em seguida, imprima a variável status do nosso resultado.
+
+Finalmente, você tem o método **feedback_callback**:
+
+
+```c++
+void feedback_callback(
+  GoalHandleMove::SharedPtr,
+  const std::shared_ptr<const Move::Feedback> feedback)
+{
+  RCLCPP_INFO(
+    this->get_logger(), "Feedback received: %s", feedback->feedback.c_str());
+}
+```
+
+Aqui, imprima a sequência de feedback no log do nó.
+
+## Action Server
