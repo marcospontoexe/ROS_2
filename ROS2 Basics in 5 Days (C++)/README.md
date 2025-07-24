@@ -1185,9 +1185,262 @@ Aqui, imprima a sequência de feedback no log do nó.
 ## Action Server
 No ROS 2, as Ações facilitam a comunicação entre nós por meio de um processo orientado a objetivos (goal). O nó que envia um objetivo para uma Ação é chamado de Cliente, enquanto o nó que processa e responde ao objetivo é o Servidor. No tópico **Action Client**, você interagiu com a Ação /move_robot_as, que é suportada por um Servidor de Ações em execução.
 
-[Nesse exemplo](), foi criado um Servidor de Ações, com base no Servidor de Ações /move_robot_as (da sessão anterior). 
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_action_server), foi criado um Servidor de Ações, com base no Servidor de Ações /move_robot_as (da sessão anterior). 
 
 Vamos analisar o código com mais detalhe.
 
 Comece com a primeira seção, onde você importará as bibliotecas necessárias.
 
+```c++
+#include <functional>
+#include <memory>
+#include <thread>
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+
+#include "t3_action_msg/action/move.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+```
+
+Em seguida, defina sua classe **MyActionServer** que herda de **Node**:
+
+```c++
+class MyActionServer : public rclcpp::Node{
+public:
+  using Move = t3_action_msg::action::Move;
+  using GoalHandleMove = rclcpp_action::ServerGoalHandle<Move>;
+}
+```
+
+Observe que você também está criando um "alias" para simplificar o código.
+
+```c++
+explicit MyActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
+  : Node("my_action_server", options)
+  {
+    using namespace std::placeholders;
+
+    this->action_server_ = rclcpp_action::create_server<Move>(
+      this,
+      "move_robot_as_2",
+      std::bind(&MyActionServer::handle_goal, this, _1, _2),
+      std::bind(&MyActionServer::handle_cancel, this, _1),
+      std::bind(&MyActionServer::handle_accepted, this, _1));
+
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+  }
+```
+
+No construtor da classe, inicialize um nó ROS2 chamado **my_action_server**. Além disso, e importante, crie um objeto **ActionServer** para o qual você especifique várias coisas:
+
+1. O tipo de Ação: **Move**.
+2. O nó ROS2 que contém o Servidor de Ação: neste caso, **this**.
+3. Um método de retorno de chamada a ser executado quando a Ação recebe uma meta: **handle_goal**.
+4. Um método de retorno de chamada a ser executado se o Cliente cancelar a meta atual: **handle_cancel**.
+5. Um método de retorno de chamada a ser executado se a meta for aceita: **handle_accepted**.
+6. Finalmente, defina um Publicador para o Tópico **/cmd_vel**.
+
+Agora continue analisando o método **handle_goal()**:
+
+```c++
+rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const Move::Goal> goal){
+  RCLCPP_INFO(this->get_logger(), "Received goal request with secs %d", goal->secs);
+  (void)uuid;
+  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+}
+```
+
+Este método será chamado quando o Servidor de Ações receber uma meta. Nesse caso, você está aceitando todas as metas recebidas com **rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE**.
+
+Em seguida, encontre o método **handle_cancel()**:
+
+```c++
+rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandleMove> goal_handle){
+  RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
+  (void)goal_handle;
+  return rclcpp_action::CancelResponse::ACCEPT;
+}
+```
+
+Este método será chamado quando o Servidor de Ações receber uma solicitação de cancelamento do Cliente. Nesse caso, você estará aceitando todas as solicitações de cancelamento com **rclcpp_action::CancelResponse::ACCEPT**.
+
+Finalmente, encontre o método **handle_accepted()**:
+
+```c++
+void handle_accepted(const std::shared_ptr<GoalHandleMove> goal_handle)  {
+  using namespace std::placeholders;
+  // this needs to return quickly to avoid blocking the executor, so spin up a new thread
+  std::thread{std::bind(&MyActionServer::execute, this, _1), goal_handle}.detach();
+}
+```
+
+Este método será chamado quando o Servidor de Ação aceitar o objetivo. Aqui, você está chamando a função **execute**, que contém a funcionalidade principal da Ação.
+
+Finalmente, você tem o método **execute**:
+
+```c++
+void execute(const std::shared_ptr<GoalHandleMove> goal_handle)
+```
+
+Este método é o que realmente fará o trabalho. Revise-o passo a passo. Primeiro, defina todas as variáveis que você usará:
+
+```c++
+const auto goal = goal_handle->get_goal();
+auto feedback = std::make_shared<Move::Feedback>();
+auto & message = feedback->feedback;
+message = "Starting movement...";
+auto result = std::make_shared<Move::Result>();
+auto move = geometry_msgs::msg::Twist();
+rclcpp::Rate loop_rate(1);
+```
+
+Você tem:
+
+* A variável "**goal**", contendo a mensagem de meta enviada pelo Cliente.
+* A variável "**feedback**", contendo a mensagem de feedback que você enviará de volta ao Cliente.
+* A variável "**result**", contendo a mensagem de resultado que você enviará ao Cliente quando a Ação terminar.
+* A variável "**mov**", contendo a mensagem "Twist" usada para enviar velocidades ao robô.
+* Uma variável "**loop_rate**" de 1 Hz (1 segundo).
+
+Em seguida, inicie um loop "for" que continuará em execução até que a variável "i" atinja o número de segundos especificado na mensagem de meta.
+
+```c++
+for (int i = 0; (i < goal->secs) && rclcpp::ok(); ++i)
+```
+
+Por exemplo, se você definir cinco segundos na mensagem de meta, este loop será executado uma vez por segundo, durante 5 segundos.
+
+Em seguida, verifique se a Ação foi cancelada. Se for, encerre a Ação.
+
+```c++
+if (goal_handle->is_canceling()) {
+  result->status = message;
+  goal_handle->canceled(result);
+  RCLCPP_INFO(this->get_logger(), "Goal canceled");
+  return;
+}
+```
+
+Se a Ação não for cancelada, você enviará uma mensagem Twist ao robô para movê-lo para frente a uma velocidade de 0,3 m/s, e enviará uma mensagem de feedback ao Cliente com a string "Moving forward...".
+
+
+```c++
+message = "Moving forward...";
+move.linear.x = 0.3;
+publisher_->publish(move);
+goal_handle->publish_feedback(feedback);
+RCLCPP_INFO(this->get_logger(), "Publish feedback");
+loop_rate.sleep();
+```
+
+No final da função **execute**, verifique se o objetivo foi concluído:
+
+```c++
+if (rclcpp::ok()) {
+  result->status = "Finished action server. Robot moved during 5 seconds";
+  move.linear.x = 0.0;
+  publisher_->publish(move);
+  goal_handle->succeed(result);
+  RCLCPP_INFO(this->get_logger(), "Goal succeeded");
+}
+```
+
+Se o objetivo for alcançado, você fará duas coisas:
+
+* Parar o robô enviando uma velocidade de 0.
+* Preencher a mensagem de resultado e enviá-la de volta ao Cliente.
+
+Finalmente, encontrar o principal que se parece com se adicionarmos um **MultiThreadedExecutor** dentro dele:
+
+```c++
+int main(int argc, char ** argv)
+{
+  rclcpp::init(argc, argv);
+
+  auto action_server = std::make_shared<MyActionServer>();
+    
+  rclcpp::executors::MultiThreadedExecutor executor;
+  executor.add_node(action_server);
+  executor.spin();
+
+  rclcpp::shutdown();
+  return 0;
+}
+```
+
+Como você pode ver, é simples. **Spin** o nó do Servidor de Ações para mantê-lo ativo e em execução.
+
+## Action Interface custumizada
+Para criar sua própria Interface de Ação, você deve concluir as três etapas a seguir:
+
+1. Crie um diretório de **actions** no seu no pacote.
+2. Crie seu arquivo de Interface de Ação **Nome_da_interface.action** no diretório actions.
+
+O nome do arquivo de Interface de Ação determinará posteriormente o nome das classes a serem usadas no Servidor de Ação e/ou no Cliente de Ação. A convenção ROS2 indica que o nome deve ser escrito em camelcase.
+
+Lembre-se de que o arquivo de Interface de Ação deve conter três partes, cada uma separada por três hífens.
+
+```txt
+#goal
+message_type goal_var_name
+---
+#result
+message_type result_var_name
+---
+#feedback
+message_type feedback_var_name
+```
+
+Você pode deixar qualquer uma dessas partes em branco se não precisar de uma parte da mensagem (por exemplo, se não precisar fornecer feedback). No entanto, você deve sempre especificar os separadores de hífen.
+
+3. Modifique os arquivos **CMakeLists.txt** e **package.xml** para incluir a compilação da interface de ação. 
+
+### Modificando o CMakeLists.txt
+Chame a função **rosidl_generate_interfaces** no seu arquivo **CMakeLists.txt** para criar uma nova Interface de Ação:
+
+```txt
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/Nome_da_interface.action"
+)
+```
+
+Para gerar Interfaces de Ação, certifique-se de ter acesso aos seguintes pacotes:
+
+* rosidl_default_generators
+* action_msgs
+
+Para isso, adicione a linha abaixo ao seu arquivo CMakeLists.txt:
+
+```txt
+#-----Relacionado às mensagens de action criadas----
+find_package(action_msgs REQUIRED)
+#---------------------------------------------------
+
+#-----Relacionado às mensagens criadas--------------
+find_package(rosidl_default_generators REQUIRED)
+#---------------------------------------------------
+```
+
+### Modificando o Cpackage.xml
+No arquivo package.xml, certifique-se de que você tenha dependências para os seguintes pacotes:
+
+* action_msgs
+* rosidl_default_generators
+
+```txt
+  <!-- Relacionados à mensagem de actions criada-->
+  <depend>action_msgs</depend>
+  <depend>rosidl_default_generators</depend>
+  <!-- ######################################## -->
+```
+
+Além disso, especifique o pacote **rosidl_interface_packages** como **member_of_group**:
+
+```txt
+  <member_of_group>rosidl_interface_packages</member_of_group>
+```
+
+Para verificar se sua Interface de Ação foi criada corretamente, use o seguinte comando: `ros2 interface show package_name/action/Interface_name`.
+
+[Veja nesse exemplo]()

@@ -15,7 +15,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -25,10 +24,15 @@ find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 #---------------------------------------------------
 
-#-----Relacionado às mensagens criadas--------------
+#-----Relacionado às mensagens de action criadas----
+find_package(action_msgs REQUIRED)
+#---------------------------------------------------
+
+#--Relacionado às mensagens criadas----------------
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Age.msg"
   "srv/MyCustomServiceMessage.srv"
+  "action/Move.action"
 )
 #---------------------------------------------------
 
