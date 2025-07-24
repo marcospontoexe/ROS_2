@@ -808,3 +808,36 @@ Adicione as seguintes linhas ao arquivo package.xml:
 ```
 
 ## Usando interfaces de serviço personalizadas
+[Nesse exemplo]() vamos ver como importar uma interface de serviço personalizada (criada no marcos_custom_interfaces), e usar em outro pacote (nesse exemplo é o pacote marcos_movement).
+
+Para usar a interface de serviço customizada, que foi criada, em outros pacotes, é necessário:
+
+1. Usar o pacote onde a interface foi criada como dependência no momento da criação do novo pacote (--dependencies rclcpp **marcos_custom_interfaces** std_msgs geometry_msgs sensor_msgs), ou incluir manualmente no **CMakeLists.txt**:
+
+```txt
+find_package(marcos_custom_interfaces REQUIRED)
+```
+
+2. Modifique o **CMakeLists.txt** para instalar o arquivo de inicialização que você criou e adicione os pontos de entrada aos scripts executáveis:
+
+
+```txt
+#--------------usa o pacote da interface criada como dependencia-------------------------------
+ament_target_dependencies(movement_server_node rclcpp geometry_msgs marcos_custom_interfaces)
+#----------------------------------------------------------------------------------------------
+
+```
+
+3. Importar a interface criada no executável:
+
+```c++
+#include "marcos_custom_interfaces/srv/my_custom_service_message.hpp"
+```
+
+Após ter importado a nova interface criada para o novo pacote (marcos_movement), inicie o nó do servidor de serviço: `ros2 launch marcos_movement movement_server_launch_file.launch.py`.
+
+Em outro terminal envie um request para o servidor do serviço **movement**: `ros2 service call /movement marcos_custom_interfaces/srv/MyCustomServiceMessage move:\ 'Turn Left'` para fazer o robo se mover para a esquerda.
+
+O seguinte log é retornado:
+
+![]()
