@@ -808,7 +808,7 @@ Adicione as seguintes linhas ao arquivo package.xml:
 ```
 
 ## Usando interfaces de serviço personalizadas
-[Nesse exemplo]() vamos ver como importar uma interface de serviço personalizada (criada no marcos_custom_interfaces), e usar em outro pacote (nesse exemplo é o pacote marcos_movement).
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_movement) vamos ver como importar uma interface de serviço personalizada (criada no marcos_custom_interfaces), e usar em outro pacote (nesse exemplo é o pacote marcos_movement).
 
 Para usar a interface de serviço customizada, que foi criada, em outros pacotes, é necessário:
 
@@ -842,7 +842,7 @@ O seguinte log é retornado:
 
 ![serviço](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/servi%C3%A7o.png)
 
-[Nesse exemplo]() é criado um executável (movement_client.cpp) cliente para chamar o serviço **movement**.
+[Nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_movement/src/movement_client.cpp) é criado um executável (movement_client.cpp) cliente para chamar o serviço **movement**.
 
 Vamos olhar as partes mais importantes do código movement_client.cpp:
 
