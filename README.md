@@ -53,4 +53,5 @@ ROS 2 usa o padrão **DDS (Data Distribution Service)** para comunicação entre
 * (E suporte parcial a Rust e outras via bindings)
 
 
- 
+ ## Ros 2 com C++
+[Veja nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)) como usar C++ em Ros2.
