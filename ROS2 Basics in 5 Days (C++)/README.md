@@ -194,7 +194,7 @@ No caso do código de exemplo usado na seção publisehr o tipo de interface era
 
 As interfaces para tópicos são definidas em arquivos .msg, que estão localizados dentro de um diretório **msg** de um pacote.
 
-Para obter informações sobre uma interface, use o seguinte comando: `ros2 interface show package_name/message_name/message_type` ou `ros2 interface proto package_name/message_name/message_type`, por exemplo `ros2 interface show std_msgs/msg/Int32`.
+Para obter informações sobre uma interface, use o seguinte comando: `ros2 interface show package_name/msg/message_type` ou `ros2 interface proto package_name/msg/message_type`, por exemplo `ros2 interface show std_msgs/msg/Int32`.
 
 ## Criando uma interface (mensagem) customizada
 Você pode estar se perguntando se precisa publicar alguns dados que não sejam Int32 e que tipo de mensagem deve usar. É claro que você pode usar todas as mensagens definidas pelo ROS2 (**ros2 interface list**). No entanto, se nenhuma atender às suas necessidades, você pode criar uma nova.
@@ -920,4 +920,39 @@ No entanto, existem duas diferenças principais entre Ações e Serviços:
 
 Abaixo, você pode ver um diagrama que descreve o fluxo de trabalho de uma Ação.
 
-![actions]()
+![actions](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/actions.png)
+
+Como você pode ver no gráfico acima, as Ações usam Serviços para lidar com a meta (goal) e o resultado (result), e usam Tópicos para lidar com o feedback.
+
+Não se preocupe se você não entendeu completamente agora, pois ele contém muitos conceitos. Por fim, tenha em mente os dois pontos a seguir:
+
+* O nó que fornece a funcionalidade de Ação precisa conter um Servidor de Ação. O Servidor de Ação permite que outros nós chamem essa funcionalidade de Ação.
+* O nó que chama a funcionalidade de Ação precisa conter um Cliente de Ação. O Cliente de Ação permite que um nó se conecte ao Servidor de Ação de outro nó.
+
+Resumindo, o fluxo de trabalho é assim:
+
+1. O Cliente envia uma meta para o Servidor. Isso acionará o "início" da Ação.
+2. O Servidor envia feedback para o Cliente enquanto a Ação está em andamento.
+3. Assim que a Ação termina, o Servidor retorna uma resposta (response) para o Cliente.
+
+Veja alguns comandos básicos:
+* Para descobrir quais ações estão disponíveis em um robô: `ros2 action list`.
+* Você também pode obter dados de uma Ação específica com o seguinte comando: `ros2 action info /action_name`.
+* Além disso, se você adicionar o sufixo -t ao comando acima, obterá dados da interface de ação usada: `ros2 action info /action_name -t`.
+* Para chamar um action: `ros2 action send_goal <action_name> <action_type> <values>`, por exemplo `ros2 action send_goal /move_robot_as t3_action_msg/action/Move "{secs: 5}"`.
+
+Ações fornecem feedback. E você pode, de fato, visualizar esse feedback. No entanto, você precisa especificar que deseja visualizar o feedback ao chamar o Servidor de Ações: `ros2 action send_goal -f /move_robot_as t3_action_msg/action/Move "{secs: 5}"`.
+
+Observe o argumento -f adicionado ao comando, que é a forma abreviada de --feedback. Você pode usar qualquer um como desejar.
+
+* Você também pode obter mais dados sobre a interface de um action com o seguinte comando: `ros2 interface show package_name/action/interface_name`.
+
+
+## Chamando um action server
+Chamar um Servidor de Ação significa enviar um objetivo a ele. Assim como Tópicos e Serviços, tudo funciona por meio da transmissão de mensagens.
+
+* A mensagem de um Tópico é composta por uma única parte: as informações fornecidas pelo Tópico.
+* A mensagem de um Serviço tem duas partes: a solicitação e a resposta.
+* A mensagem de um Servidor de Ação é dividida em três partes: o objetivo, o resultado e o feedback.
+
+Todas as mensagens de Ação utilizadas são definidas no diretório Action do respectivo pacote.
