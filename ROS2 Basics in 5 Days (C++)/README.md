@@ -1503,11 +1503,40 @@ O arquivo será gerado no diretório atual do terminal.
 Esta ferramenta é útil porque permite ver a conexão entre cada quadro e determinar se uma transformação não foi bem executada. Por exemplo, pode não haver relação entre um mapa gerado e o robô que deseja navegar, ou um sensor e sua base, etc.
 
 ## ROS2 Doctor
-O que acontece quando a configuração do ROS2 não funciona como esperado? Aqui, você usa a excelente ferramenta do ROS2, o ros2 doctor.
+O ROS 2 Doctor (ou ros2 doctor) é uma ferramenta de diagnóstico incluída no ROS 2 que verifica se o seu ambiente está corretamente configurado para usar o ROS 2.
 
 Esta poderosa ferramenta analisa toda a configuração do ROS2, incluindo plataforma, versões, rede, ambiente, etc., além de fornecer um diagnóstico preciso com precauções, erros e possíveis causas dos problemas.
 
 Não se esqueça de que o ros2doctor pertence ao pacote **ros2cli**, portanto, você precisará instalá-lo para usá-lo.
+
+### O que o `ros2 doctor` faz?
+
+Ele **realiza uma série de testes automáticos** para detectar problemas comuns no ambiente de desenvolvimento ROS 2, como:
+
+* Variáveis de ambiente (`ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, etc.)
+* Conectividade entre nodes
+* Comunicação via DDS
+* Instalações faltando
+* Conflitos entre workspaces
+* Status da rede
+* Detecção de múltiplas fontes de ROS (mistura de versões)
+
+* Se `ROS_DISTRO` está definido corretamente
+* Se o `rmw` (middleware DDS) está compatível
+* Se o `ros2` está instalado corretamente
+* Se há conflitos entre múltiplos workspaces
+* Se há problemas de DNS que podem afetar a descoberta de nodes
+* Se há pacotes ausentes
+
+### Quando usar o `ros2 doctor`?
+
+Use sempre que:
+
+* O ROS 2 não estiver se comportando como esperado
+* Nodes não estiverem se comunicando
+* Você configurar um novo ambiente
+* Houver dúvidas sobre configuração de rede, DDS ou variáveis de ambiente
+
 
 ### Verifique toda a sua configuração
 Este é o primeiro e mais significativo nível de verificação da ferramenta ros2doctor. Você só precisa executar o ros2 doctor: `ros2 doctor`.
@@ -1521,3 +1550,331 @@ Se algo estiver errado, como será a saída? Bem, depende do que está errado. V
 
 Failed modules:  network
 ```
+
+### Obtenha um relatório completo com o ROS2 Doctor
+Se você quiser saber mais detalhes para analisar problemas, --report é a melhor opção: `ros2 doctor --report`.
+
+Você verá que o relatório está categorizado em 7 seções:
+
+* NETWORK CONFIGURATION: Você pode ver todas as informações relacionadas à configuração de rede do sistema.
+* PACKAGE VERSION: Esses são pacotes que podem ser atualizados para a última versão.
+* PLATFORM CONFIGURATION: Estas são informações sobre a plataforma que você está usando.
+* QOS COMPATIBILITY LIST: Estas são informações sobre a configuração de QoS do seu sistema.
+* RMW MIDDLEWARE: Estas são informações sobre o MIDDLEWARE RMW, que define uma interface de primitivas de middleware usadas pelas APIs ROS de nível superior.
+* ROS 2 INFORMATION: Estas são informações sobre o ROS2 que você está usando.
+* TOPIC LIST: Estas são informações sobre os tópicos que estão sendo trabalhados com assinantes e editores.
+
+Você também pode usar `ros2 doctor --help` para ver todas as opções disponíveis e realizar diagnósticos específicos, como:
+
+```bash
+ros2 doctor --report --report-network
+ros2 doctor --report --report-rmw
+```
+
+# Node Composition
+Ao desenvolver programas (nós) em ROS 2, você normalmente os compila em executáveis que podem ser executados diretamente (ros2 run) ou usando um arquivo de inicialização (ros2 launch). No entanto, há uma limitação nessa abordagem: cada executável é executado em um processo separado, o que significa que não é possível executar vários nós ROS em um único processo.
+
+Para abordar isso, o ROS 2 apresenta **componentes**. Mas o que exatamente são componentes e como eles ajudam a melhorar a eficiência e o gerenciamento de recursos? Nesta unidade, você explorará o conceito de componentes do ROS 2, aprenderá como criá-los e entenderá como eles permitem que vários nós sejam gerenciados com eficiência dentro do mesmo processo.
+
+## componentes
+Componentes são o equivalente no ROS2 aos conhecidos **nodelets** do ROS1. Ao escrever seu programa como um componente, você pode compilá-lo em uma biblioteca compartilhada em vez de um executável. Isso permite carregar vários componentes em um único processo.
+
+Existem duas abordagens principais sobre como usar componentes:
+
+* Composição em tempo de execução: A composição em tempo de execução permite que a configuração e o comportamento do sistema robótico sejam modificados ou estendidos enquanto o sistema está em execução. Os componentes podem ser adicionados, removidos ou reconfigurados dinamicamente sem interromper todo o sistema.
+* Composição em tempo de compilação: A composição em tempo de compilação envolve a especificação da configuração do sistema no momento da compilação do código. Isso significa que a estrutura e o comportamento do sistema robótico são determinados antes que o código seja compilado em um executável.
+
+Ao escolher entre composição em tempo de compilação e composição em tempo de execução, é essencial ponderar os prós e os contras:
+* A composição em tempo de compilação geralmente oferece desempenho superior e depuração simplificada devido ao seu objeto composto totalmente definido e otimizado. 
+* A composição em tempo de execução oferece maior flexibilidade e adaptabilidade porque o objeto composto pode ser criado e modificado dinamicamente durante a execução do programa.
+
+## Composição em tempo de execução
+Para usar componentes é preciso adicionar **rclcpp_components** e **composition** como dependências ao pacote. Isso pode ser feito no momento da criação do pacote (`ros2 pkg create ...  --dependencies rclcpp rclcpp_components composition ...`), ou adicionando no arquivo **CMakeLists.txt**:
+
+```txt
+find_package(rclcpp_components REQUIRED)
+find_package(composition REQUIRED)
+```
+
+Primeiro, crie um arquivo **hpp** para definir sua classe. Dentro da pasta **include/my_components** do pacote, crie um novo arquivo chamado **moverobot_component.hpp** e cole o código abaixo nele:
+
+```c++
+#ifndef COMPOSITION__MOVEROBOT_COMPONENT_HPP_
+#define COMPOSITION__MOVEROBOT_COMPONENT_HPP_
+
+#include "my_components/visibility_control.h"
+#include "rclcpp/rclcpp.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+
+namespace my_components{
+  class MoveRobot : public rclcpp::Node  {
+    public:
+      COMPOSITION_PUBLIC
+      explicit MoveRobot(const rclcpp::NodeOptions & options);
+
+    protected:
+      void on_timer();
+
+    private:
+      rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
+      rclcpp::TimerBase::SharedPtr timer_;
+  };
+}  // namespace composition
+#endif  // COMPOSITION__MOVEROBOT_COMPONENT_HPP_
+```
+
+Neste arquivo, você define as diferentes variáveis e funções que usará na sua classe **MoveRobot**. Observe também que você está encapsulando tudo dentro de um namespace **my_components**.
+
+Em seguida, você criará seu programa. Dentro da pasta **src** do pacote, crie um novo script chamado **moverobot_component.cpp** e cole o código abaixo nele:
+
+```c++
+#include "my_components/moverobot_component.hpp"
+
+#include <chrono>
+#include <iostream>
+#include <memory>
+#include <utility>
+
+#include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+
+using namespace std::chrono_literals;
+
+namespace my_components{
+  MoveRobot::MoveRobot(const rclcpp::NodeOptions & options)
+  : Node("moverobot", options){
+    pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+    timer_ = create_wall_timer(1s, std::bind(&MoveRobot::on_timer, this));
+  }
+
+  void MoveRobot::on_timer(){
+    auto msg = std::make_unique<geometry_msgs::msg::Twist>();
+    msg->linear.x = 0.3;
+    msg->angular.z = 0.3;
+    std::flush(std::cout);
+    pub_->publish(std::move(msg));
+  }
+}
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(my_components::MoveRobot)
+```
+
+Vamos ver as partes mais importantes do código.
+
+Primeiro, importe o arquivo .hpp que você criou:
+
+```c++
+#include "my_components/moverobot_component.hpp"
+```
+
+Observe que você também está encapsulando tudo dentro do namespace **my_components**:
+
+```c++
+namespace my_components{ }
+```
+
+Por fim, registre seu programa como um componente:
+
+```c++
+#include "rclcpp_components/register_node_macro.hpp"
+
+RCLCPP_COMPONENTS_REGISTER_NODE(my_components::MoveRobot)
+```
+
+Observe que, como um componente é criado apenas em uma biblioteca compartilhada, ele não tem uma função principal.
+
+Agora, crie outro arquivo, também dentro da pasta include/my_components, chamado **visibility_control.h**. Copie o código mostrado abaixo.
+
+```c++
+#ifndef COMPOSITION__VISIBILITY_CONTROL_H_
+#define COMPOSITION__VISIBILITY_CONTROL_H_
+
+#ifdef __cplusplus
+extern "C"
+{
+  #endif
+
+  // This logic was borrowed (then namespaced) from the examples on the gcc wiki:
+  //     https://gcc.gnu.org/wiki/Visibility
+
+  #if defined _WIN32 || defined __CYGWIN__
+    #ifdef __GNUC__
+      #define COMPOSITION_EXPORT __attribute__ ((dllexport))
+      #define COMPOSITION_IMPORT __attribute__ ((dllimport))
+    #else
+      #define COMPOSITION_EXPORT __declspec(dllexport)
+      #define COMPOSITION_IMPORT __declspec(dllimport)
+    #endif
+    #ifdef COMPOSITION_BUILDING_DLL
+      #define COMPOSITION_PUBLIC COMPOSITION_EXPORT
+    #else
+      #define COMPOSITION_PUBLIC COMPOSITION_IMPORT
+    #endif
+    #define COMPOSITION_PUBLIC_TYPE COMPOSITION_PUBLIC
+    #define COMPOSITION_LOCAL
+  #else
+    #define COMPOSITION_EXPORT __attribute__ ((visibility("default")))
+    #define COMPOSITION_IMPORT
+    #if __GNUC__ >= 4
+      #define COMPOSITION_PUBLIC __attribute__ ((visibility("default")))
+      #define COMPOSITION_LOCAL  __attribute__ ((visibility("hidden")))
+    #else
+      #define COMPOSITION_PUBLIC
+      #define COMPOSITION_LOCAL
+    #endif
+    #define COMPOSITION_PUBLIC_TYPE
+  #endif
+
+  #ifdef __cplusplus
+}
+#endif
+
+#endif  // COMPOSITION__VISIBILITY_CONTROL_H_
+```
+
+Basicamente, este arquivo otimizará o processo de carregamento de bibliotecas compartilhadas. Se você quiser mais detalhes sobre este arquivo, [consulte: https://gcc.gnu.org/wiki/Visibility](https://gcc.gnu.org/wiki/Visibility) 
+
+Modifique o arquivo **CMakeLists.txt** para gerar a biblioteca compartilhada apropriada a partir do componente que você criou:
+
+```txt
+include_directories(include)
+
+add_library(moverobot_component SHARED src/moverobot_component.cpp)
+target_compile_definitions(moverobot_component PRIVATE "COMPOSITION_BUILDING_DLL")
+ament_target_dependencies(moverobot_component
+  "rclcpp"
+  "rclcpp_components"
+  "geometry_msgs")
+rclcpp_components_register_nodes(moverobot_component "my_components::MoveRobot")
+set(node_plugins "${node_plugins}my_components::MoveRobot;$<TARGET_FILE:moverobot_component>\n")
+
+install(TARGETS
+  moverobot_component
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+```
+
+Vamos revisar as partes mais importantes do código.
+
+Primeiro, gere a biblioteca compartilhada a partir do nosso script C++:
+
+```c++
+add_library(moverobot_component SHARED src/moverobot_component.cpp)
+```
+
+Registre seu componente:
+
+```c++
+rclcpp_components_register_nodes(moverobot_component "my_components::MoveRobot")
+set(node_plugins "${node_plugins}my_components::MoveRobot;$<TARGET_FILE:moverobot_component>\n")
+```
+
+Por fim, instale-o em seu espaço de trabalho:
+
+```c++
+install(TARGETS
+  moverobot_component
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+```
+
+Apoś compilar, verificar se o componente foi criado com sucesso, você pode usar o comando `**ros2 component types**`. Este comando retornará uma lista com os componentes disponíveis:
+
+Verifique se o componente **my_components::MoveRobot** foi criado.
+
+
+robot_state_publisher
+  robot_state_publisher::RobotStatePublisher
+tf2_ros
+  tf2_ros::StaticTransformBroadcasterNode
+moveit_servo
+  moveit_servo::ServoNode
+  moveit_servo::JoyToServoPub
+moveit_hybrid_planning
+  moveit::hybrid_planning::HybridPlanningManager
+  moveit::hybrid_planning::GlobalPlannerComponent
+  moveit::hybrid_planning::LocalPlannerComponent
+image_proc
+  image_proc::RectifyNode
+  image_proc::DebayerNode
+  image_proc::ResizeNode
+  image_proc::CropDecimateNode
+  image_proc::CropNonZeroNode
+stereo_image_proc
+  stereo_image_proc::DisparityNode
+  stereo_image_proc::PointCloudNode
+image_view
+  image_view::DisparityViewNode
+  image_view::ExtractImagesNode
+  image_view::ImageViewNode
+  image_view::ImageSaverNode
+  image_view::StereoViewNode
+  image_view::VideoRecorderNode
+image_rotate
+  image_rotate::ImageRotateNode
+depth_image_proc
+  depth_image_proc::ConvertMetricNode
+  depth_image_proc::CropForemostNode
+  depth_image_proc::DisparityNode
+  depth_image_proc::PointCloudXyzNode
+  depth_image_proc::PointCloudXyzRadialNode
+  depth_image_proc::PointCloudXyziNode
+  depth_image_proc::PointCloudXyziRadialNode
+  depth_image_proc::PointCloudXyzrgbNode
+  depth_image_proc::PointCloudXyzrgbRadialNode
+  depth_image_proc::RegisterNode
+image_publisher
+  image_publisher::ImagePublisher
+composition
+  composition::Talker
+  composition::Listener
+  composition::NodeLikeListener
+  composition::Server
+  composition::Client
+depthimage_to_laserscan
+  depthimage_to_laserscan::DepthImageToLaserScanROS
+teleop_twist_joy
+  teleop_twist_joy::TeleopTwistJoy
+image_tools
+  image_tools::Cam2Image
+  image_tools::ShowImage
+logging_demo
+  logging_demo::LoggerConfig
+  logging_demo::LoggerUsage
+examples_rclcpp_minimal_subscriber
+  WaitSetSubscriber
+  StaticWaitSetSubscriber
+  TimeTriggeredWaitSetSubscriber
+action_tutorials_cpp
+  action_tutorials_cpp::FibonacciActionClient
+  action_tutorials_cpp::FibonacciActionServer
+quality_of_service_demo_cpp
+  quality_of_service_demo::MessageLostListener
+  quality_of_service_demo::MessageLostTalker
+  quality_of_service_demo::QosOverridesListener
+  quality_of_service_demo::QosOverridesTalker
+demo_nodes_cpp_native
+  demo_nodes_cpp_native::Talker
+demo_nodes_cpp
+  demo_nodes_cpp::OneOffTimerNode
+  demo_nodes_cpp::ReuseTimerNode
+  demo_nodes_cpp::ServerNode
+  demo_nodes_cpp::ClientNode
+  demo_nodes_cpp::ListParameters
+  demo_nodes_cpp::ParameterBlackboard
+  demo_nodes_cpp::SetAndGetParameters
+  demo_nodes_cpp::ParameterEventsAsyncNode
+  demo_nodes_cpp::EvenParameterNode
+  demo_nodes_cpp::ContentFilteringPublisher
+  demo_nodes_cpp::ContentFilteringSubscriber
+  demo_nodes_cpp::Talker
+  demo_nodes_cpp::LoanedMessageTalker
+  demo_nodes_cpp::SerializedMessageTalker
+  demo_nodes_cpp::Listener
+  demo_nodes_cpp::SerializedMessageListener
+  demo_nodes_cpp::ListenerBestEffort
+joy
+  joy::Joy
