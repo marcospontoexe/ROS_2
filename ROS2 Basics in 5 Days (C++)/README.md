@@ -969,7 +969,7 @@ Como chamar um Servidor de Ação não interrompe sua thread, os Servidores de A
 ## Action Client
 A maneira de chamar um Action Server é implementando um Action Client.
 
-[Esse exemplo]() mostra como implementar um Action Client que chama o Action Server **/move_robot_as** e comanda o robô para avançar por cinco segundos.
+[Esse exemplo](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_action_client) mostra como implementar um Action Client que chama o Action Server **/move_robot_as** e comanda o robô para avançar por cinco segundos.
 
 Como você deve ter notado, após importar algumas bibliotecas C++ nas primeiras quatro linhas, você não faz nada além de importar as bibliotecas de cliente C++ do ROS2 para trabalhar com ações (**rclcpp_action**) e (**rclcpp**). Você também pode ver que é aqui que você importará as interfaces com as quais trabalha, neste caso, (**t3_action_msg.action**).7
 
@@ -1183,3 +1183,11 @@ void feedback_callback(
 Aqui, imprima a sequência de feedback no log do nó.
 
 ## Action Server
+No ROS 2, as Ações facilitam a comunicação entre nós por meio de um processo orientado a objetivos (goal). O nó que envia um objetivo para uma Ação é chamado de Cliente, enquanto o nó que processa e responde ao objetivo é o Servidor. No tópico **Action Client**, você interagiu com a Ação /move_robot_as, que é suportada por um Servidor de Ações em execução.
+
+[Nesse exemplo](), foi criado um Servidor de Ações, com base no Servidor de Ações /move_robot_as (da sessão anterior). 
+
+Vamos analisar o código com mais detalhe.
+
+Comece com a primeira seção, onde você importará as bibliotecas necessárias.
+
