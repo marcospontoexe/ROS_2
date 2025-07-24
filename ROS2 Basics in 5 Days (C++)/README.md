@@ -1476,4 +1476,48 @@ Depuração e visualização são habilidades essenciais para qualquer desenvolv
 ## ROS2 Debugging Messages
 Os logs podem ser exibidos na tela, mas também podem ser salvos no quadro ROS para classificação, filtragem e outros usos. Existem níveis de log nos sistemas, como visto na imagem abaixo. No caso dos logs ROS2, existem cinco níveis. Cada nível possui uma série de subníveis. Por exemplo, se você usar o nível **Erro**, o log exibirá as mensagens Erro e Fatal. Se o seu nível for **Warning**, você verá todas as mensagens dos níveis Warning, Erro e Fatal.
 
-![níveis de log](https://github.com/marcospontoexe/ROS/blob/main/imagens/log.png)
+![níveis de log](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/log.png)
+
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_logs_test/src/logger_example.cpp) um nó criado para ficar imprimendo diferentes menssagens de logs.
+
+## RVIZ2
+RVIZ é uma ferramenta de visualização que permite visualizar imagens, nuvens de pontos, lasers, transformações cinemáticas, modelos de robôs e muito mais. A lista é infinita. É até possível criar seus próprios marcadores. É um dos motivos pelos quais o ROS foi tão bem recebido. Não era fácil descobrir o que o robô estava vendo antes do RVIZ. Esta é a ideia principal:
+
+* RVIZ NÃO é uma simulação. Repito: NÃO é uma simulação.
+* RVIZ representa o que está sendo publicado nos tópicos pela simulação ou pelo robô real.
+* RVIZ é uma ferramenta complexa e levaria um curso inteiro para dominá-la. Aqui, você terá uma ideia do que ela pode lhe oferecer.
+
+**Painel Central**: Aqui é onde toda a mágica acontece. É aqui que os dados serão exibidos. É um espaço 3D que você pode rotacionar (MANTENDO O BOTÃO ESQUERDO DO MOUSE PRESSIONADO), transladar (MANTENDO O BOTÃO CENTRAL DO MOUSE PRESSIONADO) e dar zoom in/out (MANTENDO O BOTÃO DIREITO DO MOUSE PRESSIONADO).
+
+**Painel de Exibição à Esquerda**: Aqui você gerencia/configura todos os elementos que deseja visualizar no painel central. Você só precisa usar dois elementos:
+* Em Opções Globais, você deve selecionar o Quadro Fixo (Fixed Frame) que se adequa à visualização dos dados. É o quadro de referência a partir do qual todos os dados serão referenciados.
+* O botão Adicionar (Add). Clicando aqui, você obtém todos os tipos de elementos que podem ser representados no RVIZ.
+
+## Vizualizar os frames do robo
+Outra ferramenta útil é o programa **view_frames**. Este programa permite visualizar um diagrama de árvore mostrando a relação entre os diferentes quadros do seu robô.
+
+Para gerar um pdf com o diagrama: `ros2 run tf2_tools view_frames`.
+
+O arquivo será gerado no diretório atual do terminal.
+
+Esta ferramenta é útil porque permite ver a conexão entre cada quadro e determinar se uma transformação não foi bem executada. Por exemplo, pode não haver relação entre um mapa gerado e o robô que deseja navegar, ou um sensor e sua base, etc.
+
+## ROS2 Doctor
+O que acontece quando a configuração do ROS2 não funciona como esperado? Aqui, você usa a excelente ferramenta do ROS2, o ros2 doctor.
+
+Esta poderosa ferramenta analisa toda a configuração do ROS2, incluindo plataforma, versões, rede, ambiente, etc., além de fornecer um diagnóstico preciso com precauções, erros e possíveis causas dos problemas.
+
+Não se esqueça de que o ros2doctor pertence ao pacote **ros2cli**, portanto, você precisará instalá-lo para usá-lo.
+
+### Verifique toda a sua configuração
+Este é o primeiro e mais significativo nível de verificação da ferramenta ros2doctor. Você só precisa executar o ros2 doctor: `ros2 doctor`.
+
+Se a configuração do ROS2 estiver em perfeitas condições, ela passará em todas as verificações, apresentando **All 5 checks passed** no terminal.
+
+Se algo estiver errado, como será a saída? Bem, depende do que está errado. Você pode receber uma saída semelhante a essa: 
+
+```bash
+1/4 checks failed
+
+Failed modules:  network
+```
