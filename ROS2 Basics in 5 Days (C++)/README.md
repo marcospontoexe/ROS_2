@@ -840,4 +840,19 @@ Em outro terminal envie um request para o servidor do serviço **movement**: `ro
 
 O seguinte log é retornado:
 
-![]()
+![serviço](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/servi%C3%A7o.png)
+
+[Nesse exemplo]() é criado um executável (movement_client.cpp) cliente para chamar o serviço **movement**.
+
+Vamos olhar as partes mais importantes do código movement_client.cpp:
+
+Essa linha cria um serviço ROS 2 no C++ usando o rclcpp, associando o nome do serviço a um callback que será chamado quando o serviço for solicitado.:
+
+```c++
+srv_ = create_service<MyCustomServiceMessage>("movement", std::bind(&ServerNode::moving_callback, this, _1, _2));
+```
+
+* create_service<MyCustomServiceMessage>(...): Função do rclcpp::Node (ou herdada dele) que cria um servidor de serviço do tipo MyCustomServiceMessage.
+    Espera dois argumentos:
+    * O nome do serviço, que será o nome do tópico do serviço ("movement")
+    * A função de callback que será chamada quando alguém requisitar esse serviço.
