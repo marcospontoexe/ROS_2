@@ -856,3 +856,7 @@ srv_ = create_service<MyCustomServiceMessage>("movement", std::bind(&ServerNode:
     Espera dois argumentos:
     * O nome do serviço, que será o nome do tópico do serviço ("movement")
     * A função de callback que será chamada quando alguém requisitar esse serviço.
+
+* std::bind(&ServerNode::moving_callback, this, _1, _2): Associa o método moving_callback da classe ServerNode como callback do serviço.
+  * O this indica que o método pertence a uma instância da classe.
+  * _1 e _2 são placeholders que indicam os argumentos que o ROS vai passar automaticamente para o callback (tipicamente o request e response do serviço).
