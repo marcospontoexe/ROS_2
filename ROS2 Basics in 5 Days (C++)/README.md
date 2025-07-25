@@ -1596,17 +1596,17 @@ find_package(rclcpp_components REQUIRED)
 find_package(composition REQUIRED)
 ```
 
-Primeiro, crie um arquivo **hpp** para definir sua classe. Dentro da pasta **include/my_components** do pacote, crie um novo arquivo chamado **moverobot_component.hpp** e cole o código abaixo nele:
+Primeiro, crie um arquivo **hpp** para definir sua classe, vanos usar como exeplo um pacote chamado **marcos_components**. Dentro da pasta **include/marcos_components** do pacote, crie um novo arquivo chamado **moverobot_component.hpp** e cole o código abaixo nele:
 
 ```c++
 #ifndef COMPOSITION__MOVEROBOT_COMPONENT_HPP_
 #define COMPOSITION__MOVEROBOT_COMPONENT_HPP_
 
-#include "my_components/visibility_control.h"
+#include "marcos_components/visibility_control.h"
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 
-namespace my_components{
+namespace marcos_components{
   class MoveRobot : public rclcpp::Node  {
     public:
       COMPOSITION_PUBLIC
@@ -1623,12 +1623,12 @@ namespace my_components{
 #endif  // COMPOSITION__MOVEROBOT_COMPONENT_HPP_
 ```
 
-Neste arquivo, você define as diferentes variáveis e funções que usará na sua classe **MoveRobot**. Observe também que você está encapsulando tudo dentro de um namespace **my_components**.
+Neste arquivo, você define as diferentes variáveis e funções que usará na sua classe **MoveRobot**. Observe também que você está encapsulando tudo dentro de um namespace **marcos_components**.
 
 Em seguida, você criará seu programa. Dentro da pasta **src** do pacote, crie um novo script chamado **moverobot_component.cpp** e cole o código abaixo nele:
 
 ```c++
-#include "my_components/moverobot_component.hpp"
+#include "marcos_components/moverobot_component.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -1641,7 +1641,7 @@ Em seguida, você criará seu programa. Dentro da pasta **src** do pacote, crie 
 
 using namespace std::chrono_literals;
 
-namespace my_components{
+namespace marcos_components{
   MoveRobot::MoveRobot(const rclcpp::NodeOptions & options)
   : Node("moverobot", options){
     pub_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
@@ -1657,7 +1657,7 @@ namespace my_components{
   }
 }
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(my_components::MoveRobot)
+RCLCPP_COMPONENTS_REGISTER_NODE(marcos_components::MoveRobot)
 ```
 
 Vamos ver as partes mais importantes do código.
@@ -1665,13 +1665,13 @@ Vamos ver as partes mais importantes do código.
 Primeiro, importe o arquivo .hpp que você criou:
 
 ```c++
-#include "my_components/moverobot_component.hpp"
+#include "marcos_components/moverobot_component.hpp"
 ```
 
-Observe que você também está encapsulando tudo dentro do namespace **my_components**:
+Observe que você também está encapsulando tudo dentro do namespace **marcos_components**:
 
 ```c++
-namespace my_components{ }
+namespace marcos_components{ }
 ```
 
 Por fim, registre seu programa como um componente:
@@ -1679,12 +1679,12 @@ Por fim, registre seu programa como um componente:
 ```c++
 #include "rclcpp_components/register_node_macro.hpp"
 
-RCLCPP_COMPONENTS_REGISTER_NODE(my_components::MoveRobot)
+RCLCPP_COMPONENTS_REGISTER_NODE(marcos_components::MoveRobot)
 ```
 
 Observe que, como um componente é criado apenas em uma biblioteca compartilhada, ele não tem uma função principal.
 
-Agora, crie outro arquivo, também dentro da pasta include/my_components, chamado **visibility_control.h**. Copie o código mostrado abaixo.
+Agora, crie outro arquivo, também dentro da pasta include/marcos_components, chamado **visibility_control.h**. Copie o código mostrado abaixo.
 
 ```c++
 #ifndef COMPOSITION__VISIBILITY_CONTROL_H_
@@ -1746,8 +1746,8 @@ ament_target_dependencies(moverobot_component
   "rclcpp"
   "rclcpp_components"
   "geometry_msgs")
-rclcpp_components_register_nodes(moverobot_component "my_components::MoveRobot")
-set(node_plugins "${node_plugins}my_components::MoveRobot;$<TARGET_FILE:moverobot_component>\n")
+rclcpp_components_register_nodes(moverobot_component "marcos_components::MoveRobot")
+set(node_plugins "${node_plugins}marcos_components::MoveRobot;$<TARGET_FILE:moverobot_component>\n")
 
 install(TARGETS
   moverobot_component
@@ -1767,8 +1767,8 @@ add_library(moverobot_component SHARED src/moverobot_component.cpp)
 Registre seu componente:
 
 ```c++
-rclcpp_components_register_nodes(moverobot_component "my_components::MoveRobot")
-set(node_plugins "${node_plugins}my_components::MoveRobot;$<TARGET_FILE:moverobot_component>\n")
+rclcpp_components_register_nodes(moverobot_component "marcos_components::MoveRobot")
+set(node_plugins "${node_plugins}marcos_components::MoveRobot;$<TARGET_FILE:moverobot_component>\n")
 ```
 
 Por fim, instale-o em seu espaço de trabalho:
@@ -1783,98 +1783,24 @@ install(TARGETS
 
 Apoś compilar, verificar se o componente foi criado com sucesso, você pode usar o comando `**ros2 component types**`. Este comando retornará uma lista com os componentes disponíveis:
 
-Verifique se o componente **my_components::MoveRobot** foi criado.
+Verifique se o componente **marcos_components::MoveRobot** foi criado.
 
+Para **carregar** um componente, inicie o contêiner de componentes. Execute o seguinte comando: `ros2 run rclcpp_components component_container`
 
-robot_state_publisher
-  robot_state_publisher::RobotStatePublisher
-tf2_ros
-  tf2_ros::StaticTransformBroadcasterNode
-moveit_servo
-  moveit_servo::ServoNode
-  moveit_servo::JoyToServoPub
-moveit_hybrid_planning
-  moveit::hybrid_planning::HybridPlanningManager
-  moveit::hybrid_planning::GlobalPlannerComponent
-  moveit::hybrid_planning::LocalPlannerComponent
-image_proc
-  image_proc::RectifyNode
-  image_proc::DebayerNode
-  image_proc::ResizeNode
-  image_proc::CropDecimateNode
-  image_proc::CropNonZeroNode
-stereo_image_proc
-  stereo_image_proc::DisparityNode
-  stereo_image_proc::PointCloudNode
-image_view
-  image_view::DisparityViewNode
-  image_view::ExtractImagesNode
-  image_view::ImageViewNode
-  image_view::ImageSaverNode
-  image_view::StereoViewNode
-  image_view::VideoRecorderNode
-image_rotate
-  image_rotate::ImageRotateNode
-depth_image_proc
-  depth_image_proc::ConvertMetricNode
-  depth_image_proc::CropForemostNode
-  depth_image_proc::DisparityNode
-  depth_image_proc::PointCloudXyzNode
-  depth_image_proc::PointCloudXyzRadialNode
-  depth_image_proc::PointCloudXyziNode
-  depth_image_proc::PointCloudXyziRadialNode
-  depth_image_proc::PointCloudXyzrgbNode
-  depth_image_proc::PointCloudXyzrgbRadialNode
-  depth_image_proc::RegisterNode
-image_publisher
-  image_publisher::ImagePublisher
-composition
-  composition::Talker
-  composition::Listener
-  composition::NodeLikeListener
-  composition::Server
-  composition::Client
-depthimage_to_laserscan
-  depthimage_to_laserscan::DepthImageToLaserScanROS
-teleop_twist_joy
-  teleop_twist_joy::TeleopTwistJoy
-image_tools
-  image_tools::Cam2Image
-  image_tools::ShowImage
-logging_demo
-  logging_demo::LoggerConfig
-  logging_demo::LoggerUsage
-examples_rclcpp_minimal_subscriber
-  WaitSetSubscriber
-  StaticWaitSetSubscriber
-  TimeTriggeredWaitSetSubscriber
-action_tutorials_cpp
-  action_tutorials_cpp::FibonacciActionClient
-  action_tutorials_cpp::FibonacciActionServer
-quality_of_service_demo_cpp
-  quality_of_service_demo::MessageLostListener
-  quality_of_service_demo::MessageLostTalker
-  quality_of_service_demo::QosOverridesListener
-  quality_of_service_demo::QosOverridesTalker
-demo_nodes_cpp_native
-  demo_nodes_cpp_native::Talker
-demo_nodes_cpp
-  demo_nodes_cpp::OneOffTimerNode
-  demo_nodes_cpp::ReuseTimerNode
-  demo_nodes_cpp::ServerNode
-  demo_nodes_cpp::ClientNode
-  demo_nodes_cpp::ListParameters
-  demo_nodes_cpp::ParameterBlackboard
-  demo_nodes_cpp::SetAndGetParameters
-  demo_nodes_cpp::ParameterEventsAsyncNode
-  demo_nodes_cpp::EvenParameterNode
-  demo_nodes_cpp::ContentFilteringPublisher
-  demo_nodes_cpp::ContentFilteringSubscriber
-  demo_nodes_cpp::Talker
-  demo_nodes_cpp::LoanedMessageTalker
-  demo_nodes_cpp::SerializedMessageTalker
-  demo_nodes_cpp::Listener
-  demo_nodes_cpp::SerializedMessageListener
-  demo_nodes_cpp::ListenerBestEffort
-joy
-  joy::Joy
+Agora, verifique se o contêiner está em **execução** com o seguinte comando: `ros2 component list`
+
+**Carregue** seu componente. Execute o seguinte comando: `ros2 component load /ComponentManager marcos_components marcos_components::MoveRobot`
+
+A estrutura do comando é a seguinte: `ros2 component load /ComponentManager <pkg_name> <component_name>`
+
+O processo é o seguinte:
+
+1. O gerenciador de componentes carrega o programa como uma biblioteca compartilhada.
+2. Encontra a classe MoveRobot definida dentro do componente.
+3. Instancia essa classe MoveRobot como um nó ROS.
+
+Você também pode garantir que seu componente foi carregado corretamente usando o comando ros2 component list: `ros2 component list`
+
+Como você pode ver, o componente /moverobot é identificado com o número 1. Todos os componentes carregados serão identificados com seu próprio número.
+
+Também é possível **descarregar** componentes. Como você pode imaginar, isso é feito com o comando ros2 component unload: `ros2 component unload /ComponentManager <component_id>` por exemplo: `ros2 component unload /ComponentManager 1`
