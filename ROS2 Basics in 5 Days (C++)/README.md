@@ -1804,3 +1804,5 @@ Você também pode garantir que seu componente foi carregado corretamente usando
 Como você pode ver, o componente /moverobot é identificado com o número 1. Todos os componentes carregados serão identificados com seu próprio número.
 
 Também é possível **descarregar** componentes. Como você pode imaginar, isso é feito com o comando ros2 component unload: `ros2 component unload /ComponentManager <component_id>` por exemplo: `ros2 component unload /ComponentManager 1`
+
+[Veja nesse pacote](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_components) a componente criada.
