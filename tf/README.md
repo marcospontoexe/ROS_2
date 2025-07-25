@@ -35,4 +35,31 @@ Nos exemplos mencionados, a seta rosa representa essa transformação.
 
 Agora, como cada dois quadros de coordenadas estão relacionados por uma transformação única, você pode representar os quadros de coordenadas em seu sistema como uma hierarquia ou árvore.
 
-Você revisará esse conceito importante em breve. Agora, aprenda sobre convenções antes de continuar.
+# Convenções
+
+## Quadro de coordenadas Left-handed vs right-handed
+Uma das convenções mais importantes em ROS é que os quadros de coordenadas seguem a **regra da mão direita**. Isso significa que o eixo X aponta para a **frente**, o eixo Y para a **esquerda** e o eixo Z está sempre para **cima**. Observe que a regra da mão direita é padrão em física e engenharia, mas existem algumas exceções notáveis, como o sistema de coordenadas usado para definir a localização de um pixel em uma imagem ou tela.
+
+Outro padrão amplamente adotado em ROS usa **vermelho**, **verde** e **azul** para colorir os eixos **X, Y e Z**, respectivamente.
+
+Dos fatos mencionados acima, conclui-se que um robô ROS terá, por convenção, seu quadro de coordenadas do corpo principal escolhido de forma que o eixo X (em vermelho) aponte para a frente, o eixo Y (em verde) aponte para a esquerda e o eixo Z (em azul) aponte para cima.
+
+![robot](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/tf_convention_mobile_base.png)
+
+Todas as ferramentas ROS2 aderem automaticamente a essa convenção de sistema de coordenadas, portanto, normalmente, não há muito o que fazer além de estar ciente dela. No entanto, se você escrever um nó de direção, como um nó de acionamento diferencial, deverá garantir que uma taxa de **giro positiva** faça com que seu robô vire **à esquerda**. Caso contrário, você não estará em conformidade com o padrão. Seguir essa convenção é importante se você deseja integrar com outros componentes ROS e reutilizar softwares como o Navigation2.
+
+A mesma convenção se aplica a outros tipos de robôs, como robôs semelhantes a carros e drones.
+
+Abaixo, você encontra links para recursos para saber mais sobre as convenções do ROS que podem lhe interessar:
+
+*[Standard Units of Measure and Coordinate Conventions (ROS.org)](https://www.ros.org/reps/rep-0103.html)
+*[REP 105 -- Coordinate Frames for Mobile Platforms (ROS.org)](https://www.ros.org/reps/rep-0105.html)
+*[REP 120 -- Coordinate Frames for Humanoid Robots (ROS.org)](https://www.ros.org/reps/rep-0120.html)
+*[Coordinate Frames for Serial Industrial Manipulators (ROS.org)](https://gavanderhoorn.github.io/rep/rep-0199.html)
+*[REP 147 -- A Standard interface for Aerial Vehicles (ROS.org)](https://ros.org/reps/rep-0147.html)
+
+
+
+
+
+
