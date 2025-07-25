@@ -62,8 +62,53 @@ Abaixo, você encontra links para recursos para saber mais sobre as convenções
 
 *[REP 147 -- A Standard interface for Aerial Vehicles (ROS.org)](https://ros.org/reps/rep-0147.html)
 
+# Criando um Quadro de Coordenadas
+Primeiro, **coordene os quadros** no ROS2 para criar um quadro de coordenadas. No ROS, existem várias maneiras de criar um quadro de coordenadas. Primeiro, consulte a linha de comando **static_transform_publisher** incluída no pacote tf2_ros.
 
+A estrutura típica de comando para criar um novo quadro de coordenadas é semelhante a esta: `ros2 run tf2_ros static_transform_publisher x y z yaw pitch roll frame_id child_frame_id`.
 
+* **ros2 run tf2_ros static_transform_publisher**: Esta é a sintaxe típica usada para executar um nó ROS2. Como de costume, especifique o nome do pacote, neste caso, tf2_ros, e o nome do nó, neste caso, static_transform_publisher.
 
+* **X Y Z yaw pitch roll**: Como cada quadro de coordenadas tem 6DOF (six degrees of freedom - seis graus de liberdade), forneça informações para os três graus de liberdade rotacionais (em graus).
 
+* **frame_id child_frame_id**: Defina o frame_id (**pai**) e o child_frame_id da transformação.
 
+Da seção anterior, lembre-se de algumas coisas:
+
+* Ao criar um novo sistema de coordenadas, especifique sua localização em relação a outro sistema de coordenadas. **Sempre existe uma relação entre dois sistemas de coordenadas**.
+
+* Você precisa dos **sistemas de coordenadas** e das **transformações entre eles**. Transformações são relações entre conjuntos de sistemas de coordenadas. Usando essas transformações, você pode expressar a posição de um objeto em um sistema de **referência/coordenadas** diferente.
+
+* Você deve especificar um **nome exclusivo** para identificar cada sistema de coordenadas.
+
+# Visualize transformações e quadros de coordenadas no RVIZ
+RVIZ é uma interface gráfica que permite visualizar diversas informações presentes no sistema ROS2. Ela também fornece elementos para visualizar os quadros de coordenadas de posição e orientação. 
+
+Para exibir dados de TF no RVIZ2, adicione um novo elemento de visualização chamado "TF". Para isso, clique no botão Adicionar no canto inferior esquerdo, role a lista um pouco para baixo e selecione **TF**. Em seguida, pressione "Ok".
+
+Ao expandir a exibição do TF, você pode ver diversas opções configuráveis. Observe-as individualmente:
+
+* Show Names:: Habilita/desabilita a visualização 3D do nome dos quadros de coordenadas.
+* Show Axes: Habilita/desabilita a visualização 3D dos eixos dos quadros.
+* Show Arrows: Habilita/desabilita a visualização 3D das setas que representam a transformação do filho para o pai.
+* Marker Scale: Insira um valor diferente para redimensionar o tamanho dos eixos, setas e nomes do TF.
+* Update Interval: O intervalo, em segundos, para atualizar as transformações dos quadros. Deixe em 0 para ver cada atualização.
+* Frame Timeout: O tempo, em segundos, antes que um quadro que não foi atualizado seja considerado morto. Durante um terço desse tempo, o quadro parece correto. Durante o segundo terço, ele fica cinza e, em seguida, desaparece completamente. Isso não acontece se o Quadro estiver ESTÁTICO; ele permanecerá assim para sempre.
+* Frames: Você pode ativar/desativar a visualização de quadros individuais marcando a caixa ao lado do nome do quadro. Clique em qualquer nome de quadro para obter informações mais detalhadas.
+* Tree: Exibe toda a árvore TF, com todos os quadros de coordenadas disponíveis e sua relação pai-filho.
+
+1. Crie seu primeiro quadro de coordenadas.
+2. Crie um novo quadro de coordenadas publicando uma transformação de um quadro de coordenadas existente para este novo quadro de coordenadas.
+3. Este novo quadro representa a localização da rocha; portanto, você o chama de rocha.
+4. Minimize a janela da Ferramenta Gráfica e execute o seguinte comando: `ros2 run tf2_ros static_transform_publisher --x 0 --y 4.0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id deepmind_robot1_odom --child-frame-id rock`.
+5. Publique uma transformação estática do quadro deepmind_robot1_odom existente para este novo quadro rock_frame.
+6. Transformações estáticas são usadas para objetos que não se movem. Neste caso, a rocha é o objeto mais estático que existe.
+7. As transformações são sempre publicadas dentro dos tópicos /tf e /tf_static do ROS2.
+8. Retorne ao RVIZ2 clicando no ícone Ferramentas Gráficas na barra de ferramentas inferior.
+9. Agora você deverá ver que um novo quadro apareceu.
+10. Se você ativar os nomes, verá que esse novo quadro se chama rocha.
+11. Há uma seta conectando o quadro rocha a deepmind_robot1_odom.
+12. Essa é a transformação estática que você executou no terminal.
+13. Agora, mova o robô para ver como todas essas transformações são atualizadas e verifique se a estrutura da rocha não se move.
+
+# Os vários quadros de coordenadas de um robô
