@@ -1806,3 +1806,14 @@ Como você pode ver, o componente /moverobot é identificado com o número 1. To
 Também é possível **descarregar** componentes. Como você pode imaginar, isso é feito com o comando ros2 component unload: `ros2 component unload /ComponentManager <component_id>` por exemplo: `ros2 component unload /ComponentManager 1`
 
 [Veja nesse pacote](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_components) a componente criada.
+
+## Iniciando uma componente com um arquivo launch
+Até agora, você carregou componentes usando ferramentas de linha de comando. No entanto, também é possível carregá-los a partir de um arquivo de inicialização (launch).
+
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_components/launch/moverobot_component.launch.py) como isso é feito.
+
+Não esqueça de incluir a launch no arquivo **CMakeLists.txt**.
+
+Ao usar um arquivo de inicialização (launch) para carregar componentes, não é necessário descarregá-los usando o comando ros2 component unload. Ao interromper a execução do arquivo de inicialização (pressionando Ctr+C), todos os componentes são descarregados automaticamente, juntamente com o contêiner de componentes.
+
+## Composição em tempo de compilação
