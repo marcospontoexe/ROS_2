@@ -53,9 +53,13 @@ A mesma convenção se aplica a outros tipos de robôs, como robôs semelhantes 
 Abaixo, você encontra links para recursos para saber mais sobre as convenções do ROS que podem lhe interessar:
 
 *[Standard Units of Measure and Coordinate Conventions (ROS.org)](https://www.ros.org/reps/rep-0103.html)
+
 *[REP 105 -- Coordinate Frames for Mobile Platforms (ROS.org)](https://www.ros.org/reps/rep-0105.html)
+
 *[REP 120 -- Coordinate Frames for Humanoid Robots (ROS.org)](https://www.ros.org/reps/rep-0120.html)
+
 *[Coordinate Frames for Serial Industrial Manipulators (ROS.org)](https://gavanderhoorn.github.io/rep/rep-0199.html)
+
 *[REP 147 -- A Standard interface for Aerial Vehicles (ROS.org)](https://ros.org/reps/rep-0147.html)
 
 
