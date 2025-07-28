@@ -218,7 +218,7 @@ Aguarde aproximadamente 10 segundos. As transformações começarão a ser exibi
 
 Aqui, com seu registro de data e hora, você pode ver a translação e a rotação de rgb_camera_link_frame para turtle_chassis:
 
-![](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/tf2_echo.png)
+![tf2_echo](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/tf2_echo.png)
 
 ## Visualizar quadros TF usando RVIZ2
 Uma das melhores maneiras de confirmar se os TFs estão sendo publicados e visualizar as alterações é visualizar cada quadro no espaço 3D. O RVIZ2 pode ajudar com isso.
@@ -235,17 +235,25 @@ Neste exemplo, você representa os dados do tópico /tf no espaço 3D e observa 
 2. Adicione dois modelos de robôs com configurações de tópicos diferentes:
     * Encontre os botões "Adicionar" na parte inferior do grupo "Exibições" e clique neles para adicionar cada modelo de robô.
     * Use a função "Renomear" para definir o nome exibido para cada modelo. Nesse exemplo é usado os nomes "TurtleRobotModel" e "CamBotRobotModel", mas você pode escolher qualquer nome de sua preferência. Este nome identifica apenas o modelo de robô no painel esquerdo do RVIZ.
-    * Configure o primeiro modelo de robô para ler o tópico turtle_robot_description.
-    * Configure o segundo modelo de robô para ler o tópico cam_bot_robot_description.
-    * Verifique se as configurações de QoS estão corretas.
+3. Configure o primeiro modelo de robô para ler o tópico turtle_robot_description.
+4. Configure o segundo modelo de robô para ler o tópico cam_bot_robot_description.
+5. Verifique se as configurações de QoS estão corretas.
 
-    ![rviz2_config_4](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_4.png)
+![rviz2_config_4](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_4.png)
 
-    ![rviz2_config_3](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_3.png)
+![rviz2_config_3](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_3.png)
 
-    * Adicione uma leitura de imagem do tópico /camera/image_raw e configure o QoS correto.
+6. Adicione uma leitura de imagem do tópico /camera/image_raw e configure o QoS correto.
 
-!
+![rviz2_config_5](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_5.png)
+
+7. Claro, adicione o tf para visualizar os TFs em ação:
+    * Altere a escala do marcador para 1,0 para ver melhor os quadros.
+
+![rviz2_config_2](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_2.png)
+
+
+
 
 
 # Broadcast & Listen nos dados de TF
