@@ -115,9 +115,55 @@ Ao expandir a exibição do TF, você pode ver diversas opções configuráveis.
 Ao trabalhar com robôs, é criado um **modelo de robô** para representar a estrutura do robô. Use arquivos **URDF** e **XACRO** no ROS para criar esses modelos de robô. Para trabalhar com transformações (tf), saiba que cada junta do robô possui um sistema de coordenadas associado. Dessa forma, você pode acompanhar facilmente a posição dos links do robô no espaço.
 
 # Ferramentas e Visualização TF
+Com base nos conceitos básicos de TF da unidade anterior, esta unidade apresentará as ferramentas e técnicas disponíveis no ROS 2 para introspecção e interação com a biblioteca TF2. Entender como visualizar e depurar quadros TF é crucial para trabalhar com sistemas robóticos complexos.
+
+Para lhe ensinar as ferramentas mais importantes para introspecção e interação com a biblioteca TF2 no ROS2, você trabalhará com esta simulação:
+
+1[unit2_humblesim](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/unit2_humblesim.png)
+
+Esta simulação possui dois robôs diferentes:
+
+* Cam_bot
+* Tartaruga
+
+## CAM_BOT
+Este robô tem 6 graus de liberdade, o que significa que pode se mover nos eixos X, Y e Z e girar nos três eixos.
+
+Ele tem uma câmera que você usa para gravar o que quiser, e é controlado de uma maneira especial: ele segue qualquer estrutura do robô que você determinar (que nesse exemplo será a tartaruga).
+
+## TARTARUGA
+Este robô se comporta como o clássico **turtle_sim** do ROS, usado em muitos tutoriais de ROS. A única diferença é que se trata de um robô 3D. Portanto, ele se move como qualquer robô com acionamento diferencial se moveria (para frente/trás e gira, mas não para os lados).
+
+### Onde está a tartaruga?
+Prepare o cenário: O Cam_bot tem uma câmera montada na parte frontal do robô. O robô pode se mover para qualquer lugar no espaço e em qualquer orientação. Perfeito! Agora, você quer dizer ao Cam_bot para seguir a tartaruga. No entanto, logo, observe que existem algumas dificuldades com as quais você terá que lidar, por exemplo:
+
+* Onde está a tartaruga?
+* Como você pode colocar o Cam_bot em uma posição fixa em relação à tartaruga?
+* Como você pode calcular os movimentos de translação e rotação que o Cam_bot deve fazer quando a tartaruga se move?
+
+Como você pode ver, muitos problemas surgem dessa cena simples.
+
+Informar ao Cam_bot ONDE (posição e orientação) sua câmera está montada e a tartaruga está localizada em relação ao Cam_bot ou a um ponto global comum.
+
+Todos esses itens exigem a aplicação do mesmo conceito: **transformações entre quadros de coordenadas**.
+
+Uma transformação especifica como **os dados expressos em um quadro de coordenadas podem ser transformados em um quadro de coordenadas diferente**. Por exemplo, se você detectar uma tartaruga com a câmera, ainda não saberá onde ela está (em relação ao mundo, que tem tf fixa e é usado como referencia para as outras TFs (estáticas)).
+
+A câmera apenas informa que vê uma tartaruga, não onde ela está no espaço. Para informar isso, você precisa:
+
+* A posição do Cam_bot no espaço
+* A distância do centro do corpo do Cam_bot (comumente chamado de base_link) até o sensor da câmera
+* E, finalmente, a distância do sensor da câmera até a tartaruga.
+
+Você precisa dos **quadros de coordenadas** e das **transformações entre eles**.
+
+Qual é a posição do Cam_bot no espaço? Para obter um valor útil para programação robótica, acompanhe suas posições no espaço. Para uma medição útil, você precisa de um ponto de referência fixo (mundo) para avaliar sua posição e orientação. É por isso que você precisa de um quadro de coordenadas antes de descrever qualquer objeto na cena.
+
+Mas como trabalhar com **quadros de coordenadas** no ROS? Quais são as ferramentas que o ROS oferece para isso? O restante desta unidade tem como objetivo delinear ferramentas e bibliotecas úteis que podem ser usadas para visualizar e depurar problemas de TF.
 
 
-# Ver quadros TF em formato PDF
+
+## Ver quadros TF em formato PDF
 O ROS 2 permite visualizar os quadros TF de um robô em formato PDF usando a ferramenta **view_frames**. Este nó do ROS 2 gera um diagrama da árvore TF atual e o salva como um arquivo PDF, que você pode visualizar facilmente.
 
 O comando a seguir produz um arquivo PDF no diretório onde é executado, contendo a árvore TF atual que está sendo transmitida no sistema: `ros2 run tf2_tools view_frames`.
