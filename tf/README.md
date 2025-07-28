@@ -220,6 +220,34 @@ Aqui, com seu registro de data e hora, você pode ver a translação e a rotaç�
 
 ![](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/tf2_echo.png)
 
+## Visualizar quadros TF usando RVIZ2
+Uma das melhores maneiras de confirmar se os TFs estão sendo publicados e visualizar as alterações é visualizar cada quadro no espaço 3D. O RVIZ2 pode ajudar com isso.
+
+* É a melhor maneira de ver o que o tópico /tf está publicando, porque você o vê representado no espaço.
+* Se um TF não for mais publicado, ele ficará cinza e desaparecerá, então o RVIZ2 fornece informações importantes sobre problemas.
+* Ele também não renderizará dados de sensores ou qualquer coisa que precise de TF se o quadro fixo não estiver definido corretamente no RVIZ e, mesmo assim, não renderizará se, por exemplo, você tiver uma árvore quebrada com vários quadros raiz. Esse é um problema comum em sistemas multirrobôs.
+
+### Exemplo
+Neste exemplo, você representa os dados do tópico /tf no espaço 3D e observa como eles mudam ao mover a tartaruga. Você também instrui a câmera a seguir um quadro específico.
+
+1. Abra o **RVIZ2** e adicione os seguintes elementos ao RVIZ e às configurações:
+    * Defina o 'Fixed Frame' como /world.
+2. Adicione dois modelos de robôs com configurações de tópicos diferentes:
+    * Encontre os botões "Adicionar" na parte inferior do grupo "Exibições" e clique neles para adicionar cada modelo de robô.
+    * Use a função "Renomear" para definir o nome exibido para cada modelo. Nesse exemplo é usado os nomes "TurtleRobotModel" e "CamBotRobotModel", mas você pode escolher qualquer nome de sua preferência. Este nome identifica apenas o modelo de robô no painel esquerdo do RVIZ.
+    * Configure o primeiro modelo de robô para ler o tópico turtle_robot_description.
+    * Configure o segundo modelo de robô para ler o tópico cam_bot_robot_description.
+    * Verifique se as configurações de QoS estão corretas.
+
+    ![rviz2_config_4](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_4.png)
+
+    ![rviz2_config_3](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_3.png)
+
+    * Adicione uma leitura de imagem do tópico /camera/image_raw e configure o QoS correto.
+
+!
+
+
 # Broadcast & Listen nos dados de TF
 Entender como os TFs são publicados e recebidos é crucial para tarefas como localização, navegação e manipulação de robôs.
 
@@ -239,7 +267,7 @@ Os comandos `ros2 topic list` e `ros2 topic info -v` são úteis para ajudar voc
 
 Como você pode ver no rviz, ambos os modelos de robô são brancos e se sobrepõem. Isso significa que não há transformação do quadro do mundo para o link raiz de nenhum modelo de robô:
 
-1[errornotf_humble1](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/errornotf_humble1.png)   
+![errornotf_humble1](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/errornotf_humble1.png)   
 
 Além disso, você deve ver que, no RVIZ, o modelo do robô não se move, mas a imagem da câmera à esquerda mostra que ele está se movendo.
 
