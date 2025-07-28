@@ -296,9 +296,26 @@ Objetivo: Resolver o problema em que o Cam_bot não tem uma transformação de *
 
 Os comandos `ros2 topic list` e `ros2 topic info -v` são úteis para ajudar você a configurar algumas definições do Rviz, como determinar uma configuração de **QoS** confiável para esse tópico.
 
+Tarefas:
+
+1. Inicie o RVIZ.
+2. Adicione dois itens **RobotModel** à lista de exibição, um para o **Cam_bot**:
+    * No campo "Tópico de Descrição", digite o tópico que publica os dados do modelo de robô. Neste caso, o tópico é **/cam_bot_robot_description**.
+
+e outro para a **tartaruga**. Os tópicos precisam ser configurados corretamente.
+3. Adicione um novo **display TF** para visualizar os quadros TF na visualização 3D com a grade.
+4. Selecione "mundo" como **Quadro Fixo** nas Opções Globais.
+5. Adicione também um **display de Imagem** para mostrar a visualização da perspectiva da câmera do robô. Lembre-se de que você precisa preencher o "Tópico de Imagem".
+6. Agora você deve ter uma janela de imagem que será usada posteriormente.
+
+Repita os passos 2 a 6 para adicionar um segundo modelo de robô. No campo "Nome de Exibição", digite um nome diferente, como "tartaruga". No campo "Tópico de Descrição", digite o tópico que publica os dados do modelo de robô para o robô tartaruga. Ambos os modelos de robô devem agora ser exibidos no RVIZ.
+
 Como você pode ver no rviz, ambos os modelos de robô são brancos e se sobrepõem. Isso significa que não há transformação do quadro do mundo para o link raiz de nenhum modelo de robô:
 
+Tente trocar a estrutura fixa (/world) por chassi. Se fizer isso, pelo menos verá que o Cam_bot não é mais branco.
+
 ![errornotf_humble1](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/errornotf_humble1.png)   
+
 
 Além disso, você deve ver que, no RVIZ, o modelo do robô não se move, mas a imagem da câmera à esquerda mostra que ele está se movendo.
 
@@ -413,17 +430,14 @@ if __name__ == '__main__':
     main()
 ```
 
-Isso cria o objeto TF Broadcasting que você usa para transmitir os TFs:
+Vemos analisar alguns trechos:
 
 ```python
 self.br = tf2_ros.TransformBroadcaster(self)
 ```
 
-* Esta parte cria a mensagem usada para o TF.
-* Defina os valores que não serão alterados.
-* frame_id = O quadro respeita a transformação, o Quadro Pai.
-* child_frame_id é o quadro no qual você está publicando a transformação do TF.
-* Observe que, ao transmitir, não importa se esses quadros existem ou não.
+Isso cria o objeto TF Broadcasting que você usa para transmitir os TFs:
+
 
 ```python
 self.transform_stamped = TransformStamped()
@@ -431,9 +445,14 @@ self.transform_stamped.header.frame_id = "world"
 self.transform_stamped.child_frame_id = self._robot_base_frame
 ```
 
-Observe que, ao transmitir, não importa se esses quadros existem:
+* Esta parte cria a mensagem usada para o TF.
+* Defina os valores que não serão alterados.
+* frame_id = O quadro respeita a transformação, o Quadro Pai.
+* child_frame_id é o quadro no qual você está publicando a transformação do TF.
 
-* Se ambos existirem, você publicará um novo TF que provavelmente interferirá no que outra pessoa está publicando.
+Observe que, ao transmitir, não importa se esses quadros existem ou não.
+
+* Se ambos existirem, você publicará um novo TF que provavelmente interferirá no que ja está sendo publicando.
 * Se um dos quadros existir e o outro não, o que não existe será criado e publicado para transformar o que existe.
 * Se nenhum existir, ambos os quadros serão criados.
 
@@ -524,7 +543,7 @@ All Broadcasters:
 Node:  155.869 Hz, Average Delay: 1.28033e+09 Max Delay: 1.70257e+09
 ```
 
-Agora veja os tempos do frame world para o camera_bot_base_link: `ros2 run tf2_ros tf2_monitor world camera_bot_base_link`.
+Agora veja os tempos do frame **world** para o **camera_bot_base_link**: `ros2 run tf2_ros tf2_monitor world camera_bot_base_link`.
 
 ```shell
 RESULTS: for world to camera_bot_base_link
@@ -647,7 +666,7 @@ if __name__ == '__main__':
     main()
 ```
 
-Observe que a única coisa que mudou é que agora você usa o horário das mensagens de dados de odometria, em vez do horário atual do relógio:
+Observe que a única coisa que mudou é que agora você usa o **horário das mensagens de dados de odometria, em vez do horário atual do relógio**:
 
 ```python
 ...
@@ -687,3 +706,50 @@ Agora você tem o seguinte:
 * Isso ocorre porque nenhum dos quadros do robô está CONECTADO.
 
 Corrija isso usando uma **transformação estática**.
+
+## Static Broadcaster
+Você pode publicar transformações estáticas de três maneiras diferentes:
+
+* Por meio da linha de comando
+* Por meio de um programa Python/C++
+* Por meio de arquivos de inicialização
+
+Transformações estáticas são usadas para TFs que **NÃO mudam ao longo do tempo**. O motivo é que as transformações estáticas são publicadas no tópico tf_static e somente quando mudam, reduzindo significativamente o impacto no desempenho do sistema e no uso de recursos.
+
+### Static Broadcaster usando a linha de comando
+Vamos explorar como usar a linha de comando para transmitir transformações estáticas no ROS 2
+
+1. Opção 1: XYZ Roll-Pitch-Yaw (radianos): Se você quiser definir a orientação usando ângulos de Euler, o comando ros2 run deve obedecer à seguinte estrutura: `ros2 run tf2_ros static_transform_publisher --x x --y y --z z --yaw yaw --pitch pitch --roll roll --frame-id frame_id --child-frame-id child_frame_id`. 
+
+2. Opção 2: Quaternion XYZW: O esquema geral para definir a orientação em Quaternions é o seguinte: `ros2 run tf2_ros static_transform_publisher --x x --y y --z z --qx qx --qy qy --qz qz --qw qw --frame-id frame_id --child-frame-id child_frame_id`
+
+3. No entanto, você também pode usar esses comandos dentro de um **arquivo de inicialização**. É isso que você usará para publicar uma Transformação Estática do mundo (frame raiz do Cam_bot) -> odom (frame raiz do TurtleBot).
+
+### Static Broadcaster por meio de um arquivo de inicialização (launch)
+Vamos agora explorar como usar arquivos de inicialização para transmitir transformações estáticas no ROS 2:
+
+**publish_static_transform_odom_to_world.launch.py:**
+
+```python
+#! /usr/bin/env python3
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    static_tf_pub = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_transform_publisher_turtle_odom',
+        output='screen',
+        emulate_tty=True,
+        arguments=['0', '0', '0', '0', '0', '0', 'world', 'odom']
+    )
+
+    return LaunchDescription(
+        [
+            static_tf_pub
+        ]
+    )
+```
+
+O arquivo de inicialização acima define um nó chamado **static_tf_pub**. Este nó inicia o executável **static_transform_publisher** do pacote **tf2_ros**. Este nó é configurado para publicar uma transformação estática entre os quadros **world** e **odom** usando os argumentos. Os argumentos para o nó são a ***translação (x, y e z)*** e a ***rotação (roll, pitch, yaw)***  da transformação.
