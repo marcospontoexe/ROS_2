@@ -134,3 +134,55 @@ Isso é especialmente útil ao testar novas transmissões de TF, pois permite ve
 Para rodar o rqt_tf_tree use o comando: `ros2 run rqt_tf_tree rqt_tf_tree`.
 
 Este TF não é estático, mas pode ser atualizado para mostrar o status atual da árvore de TFs. Pressione o botão de atualização sempre que desejar a atualização mais recente.
+
+# Visualizar quadros TF no terminal usando tf_echo
+O ROS usa tópicos para comunicar transformações. Como resultado, você pode ver todos esses dados brutos por meio de **tópicos**.
+
+Há um tópico chamado **/tf** e outro chamado **/tf_static**, onde todos os TFs são publicados. O único problema é que TODOS os quadros são publicados lá.
+
+Existe uma ferramenta de linha de comando útil que filtra a transformação de seu interesse e a exibe. Ou, mais importante, **ela calcula uma transformação indireta entre dois quadros conectados**, mas não diretamente. Isso é útil e usado em muitas aplicações.
+
+O tópico **/tf** publica apenas os TFs diretos, não todas as transformações entre todos os quadros. **tf_echo** retorna as transformações entre quaisquer quadros conectados para você.
+
+## exemplo
+Neste exemplo, veja como ecoar (echo) o tópico /tf e, em seguida, usar a ferramenta tf_echo para filtrar os dados do tópico /tf.
+
+1. Execute o seguinte comando para ver uma publicação do tópico /tf diretamente: `ros2 topic echo /tf`.
+
+Como você pode ver, muitos dados são publicados a cada segundo. Portanto, é difícil ou impossível obter os dados necessários, pois, aqui, você está publicando apenas as transformações TF de um quadro para o próximo quadro conectado.
+
+No entanto, se você estiver interessado em dois quadros que **não estão diretamente conectados**, precisará de outra ferramenta: **tf2_echo**.
+
+2. Agora, filtre os dados do TF com a ferramenta tf2_echo para ver apenas a transformação entre o quadro /rgb_camera_link_frame e o quadro /turtle_chassis. Aqui estão o caminho e as transformações acumuladas que este sistema realiza e, no final, fornece um resultado:
+
+![tfecho](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/tftransformecho_ros2_1.png)
+
+O comando tf2_echo deve ser executado com a seguinte estrutura geral: `ros2 run tf2_ros tf2_echo [reference_frame] [target_frame]`.
+
+* [reference_frame] é onde você inicia a transformação, por exemplo, rgb_camera_link_frame.
+* [target_frame] é onde você deseja finalizar a transformação, por exemplo, turtle_chassis.
+
+Isso significa que você quer saber a translação e a rotação do reference_frame para o target_frame. (`ros2 run tf2_ros tf2_echo rgb_camera_link_frame turtle_chassis`).
+
+Aguarde aproximadamente 10 segundos. As transformações começarão a ser exibidas. Normalmente, a primeira mensagem diz que não existe, mas o sistema TF precisa de um pouco de sincronização com os horários publicados pelo TF.
+
+Aqui, com seu registro de data e hora, você pode ver a translação e a rotação de rgb_camera_link_frame para turtle_chassis:
+
+![](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/tf2_echo.png)
+
+# Broadcast & Listen nos dados de TF
+Entender como os TFs são publicados e recebidos é crucial para tarefas como localização, navegação e manipulação de robôs.
+
+Nesta sessão, aprenda os conceitos básicos de transmissão e escuta de TF por meio da seguinte cena:
+
+A principal diferença, além do mundo, é o fato de que:
+* O Cam_bot não publica seu TF de cam_bot_base_link para o mundo. Isso significa que você não pode posicionar o Cam_bot no mundo.
+* O quadro do Odom da tartaruga NÃO está conectado ao quadro do mundo, o que cria uma cena TF de duas árvores, uma para cada robô.
+* O Cam_bot não possui esse sistema para seguir quadros; portanto, não é fácil seguir a tartaruga usando apenas os controles básicos.
+
+Então você corrigirá esses problemas e, no processo, aprenderá sobre TF2 no ROS2.
+
+# TF Broadcaster 
+Objetivo: Resolver o problema em que o Cam_bot não tem uma transformação de **cam_bot_base_link para world**.
+
+Os comandos `ros2 topic list` e `ros2 topic info -v` são úteis para ajudar você a configurar algumas definições do Rviz, como determinar uma configuração de **QoS** confiável para esse tópico.
