@@ -114,6 +114,9 @@ Ao expandir a exibição do TF, você pode ver diversas opções configuráveis.
 # Os vários quadros de coordenadas de um robô
 Ao trabalhar com robôs, é criado um **modelo de robô** para representar a estrutura do robô. Use arquivos **URDF** e **XACRO** no ROS para criar esses modelos de robô. Para trabalhar com transformações (tf), saiba que cada junta do robô possui um sistema de coordenadas associado. Dessa forma, você pode acompanhar facilmente a posição dos links do robô no espaço.
 
+# Ferramentas e Visualização TF
+
+
 # Ver quadros TF em formato PDF
 O ROS 2 permite visualizar os quadros TF de um robô em formato PDF usando a ferramenta **view_frames**. Este nó do ROS 2 gera um diagrama da árvore TF atual e o salva como um arquivo PDF, que você pode visualizar facilmente.
 
@@ -414,3 +417,167 @@ Frame: rgb_camera_link_frame, published by , Average Delay: 1.70257e+09, Max Del
 All Broadcasters:
 Node:  155.869 Hz, Average Delay: 1.28033e+09 Max Delay: 1.70257e+09
 ```
+
+Agora veja os tempos do frame world para o camera_bot_base_link: `ros2 run tf2_ros tf2_monitor world camera_bot_base_link`.
+
+```shell
+RESULTS: for world to camera_bot_base_link
+Chain is: world -> camera_bot_base_link
+Net delay     avg = 0.00443906: max = 0.0457809
+
+Frames:
+Frame: camera_bot_base_link, published by , Average Delay: 0.000344517, Max Delay: 0.00268316
+
+All Broadcasters:
+Node:  157.413 Hz, Average Delay: 1.28033e+09 Max Delay: 1.70257e+09
+```
+
+Você pode ver que:
+
+* Atraso médio para rgb_camera_link_frame -> chassis -> camera_bot_base_link == 3,23952e+08 segundos
+* Atraso médio para world -> camera_bot_base_link == 0,00443906 segundos
+
+Por que o atraso na transformação de rgb_camera_link_frame para chassis para camera_bot_base_link é tão alto?
+
+* Isso ocorre porque essas transformações são estáticas ou se comportam como transformações estáticas. Isso significa que o atraso do TF é, na realidade, zero. O fato de o atraso ser tão alto reflete isso, mesmo quando é contraintuitivo.
+* Então, qual é o problema?
+
+O problema é que o atraso médio da transformação world -> camera_bot_base_link é de 0,00443906 segundos (4,4 ms). E 4 ms é muito para o módulo de imagem no RVIZ considerar essas transformações aceitáveis.
+
+Então, o que você pode fazer? Bem, houve um pequeno erro no código original que gerou toda essa confusão:
+
+* Extraia o tempo dos dados do sensor e utilize-o no TF. Neste caso, o tempo de odometria.
+* Os dados do TF serão consistentes e não haverá atraso entre os dois quadros. Agora, faça estas correções para criar um novo script:
+
+**cam_bot_odom_to_tf_pub_late_tf_fixed.py:**
+
+```python
+#! /usr/bin/env python3
+
+import sys
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import ReliabilityPolicy, DurabilityPolicy, QoSProfile
+import tf2_ros
+from geometry_msgs.msg import TransformStamped
+from nav_msgs.msg import Odometry
+
+
+class CamBotOdomToTF(Node):
+
+    def __init__(self, robot_base_frame="camera_bot_base_link"):
+        super().__init__('odom_to_tf_broadcaster_node')
+
+        self._robot_base_frame = robot_base_frame
+        
+        # Create a new `TransformStamped` object.
+        # A `TransformStamped` object is a ROS message that represents a transformation between two frames.
+        self.transform_stamped = TransformStamped()
+        # This line sets the `header.frame_id` attribute of the `TransformStamped` object.
+        # The `header.frame_id` attribute specifies the frame in which the transformation is defined.
+        # In this case, the transformation is defined in the `world` frame.
+        self.transform_stamped.header.frame_id = "world"
+        # This line sets the `child_frame_id` attribute of the `TransformStamped` object.
+        # The `child_frame_id` attribute specifies the frame that is being transformed to.
+        # In this case, the robot's base frame is being transformed to the `world` frame.
+        self.transform_stamped.child_frame_id = self._robot_base_frame
+
+        self.subscriber = self.create_subscription(
+            Odometry,
+            '/cam_bot_odom',
+            self.odom_callback,
+            QoSProfile(depth=1, durability=DurabilityPolicy.VOLATILE, reliability=ReliabilityPolicy.BEST_EFFORT))
+
+        # This line creates a new `TransformBroadcaster` object.
+        # A `TransformBroadcaster` object is a ROS node that publishes TF messages.
+        self.br = tf2_ros.TransformBroadcaster(self)
+
+        self.get_logger().info("odom_to_tf_broadcaster_node ready!")
+
+    def odom_callback(self, msg):
+        self.cam_bot_odom = msg
+        # print the log info in the terminal
+        self.get_logger().debug('Odom VALUE: "%s"' % str(self.cam_bot_odom))
+        self.broadcast_new_tf()
+
+    def broadcast_new_tf(self):
+        """
+        This function broadcasts a new TF message to the TF network.
+        """
+
+        # Get the current odometry data.
+        time_header = self.cam_bot_odom.header
+        position = self.cam_bot_odom.pose.pose.position
+        orientation = self.cam_bot_odom.pose.pose.orientation
+
+        # Set the timestamp of the TF message.
+        # The timestamp of the TF message is set to the odom message time.
+        self.transform_stamped.header.stamp = time_header.stamp
+
+        # Set the translation of the TF message.
+        # The translation of the TF message should be set to the current position of the robot.
+        self.transform_stamped.transform.translation.x = position.x
+        self.transform_stamped.transform.translation.y = position.y
+        self.transform_stamped.transform.translation.z = position.z
+
+        # Set the rotation of the TF message.
+        # The rotation of the TF message should be set to the current orientation of the robot.
+        self.transform_stamped.transform.rotation.x = orientation.x
+        self.transform_stamped.transform.rotation.y = orientation.y
+        self.transform_stamped.transform.rotation.z = orientation.z
+        self.transform_stamped.transform.rotation.w = orientation.w
+
+        # Send (broadcast) the TF message.
+        self.br.sendTransform(self.transform_stamped)
+
+
+def main(args=None):
+
+    rclpy.init()
+    odom_to_tf_obj = CamBotOdomToTF()
+    rclpy.spin(odom_to_tf_obj)
+
+if __name__ == '__main__':
+    main()
+```
+
+Observe que a única coisa que mudou é que agora você usa o horário das mensagens de dados de odometria, em vez do horário atual do relógio:
+
+```python
+...
+        # Get the current odometry data.
+        time_header = self.cam_bot_odom.header
+        position = self.cam_bot_odom.pose.pose.position
+        orientation = self.cam_bot_odom.pose.pose.orientation
+
+        # Set the timestamp of the TF message.
+        # The timestamp of the TF message is set to the odom message time.
+        self.transform_stamped.header.stamp = time_header.stamp
+...
+```
+
+Compile e verifique o tempo médio da transformação: `ros2 run tf2_ros tf2_monitor world camera_bot_base_link`.
+
+```shell
+RESULTS: for world to camera_bot_base_link
+Chain is: world -> camera_bot_base_link
+Net delay     avg = 1.6717e+09: max = 1.70257e+09
+
+Frames:
+Frame: camera_bot_base_link, published by , Average Delay: 1.70257e+09, Max Delay: 1.70257e+09
+
+All Broadcasters:
+Node:  157.79 Hz, Average Delay: 1.49486e+09 Max Delay: 1.70257e+09
+```
+
+Agora você tem o seguinte:
+
+* Atraso médio de transformação para o mundo da cadeia -> camera_bot_base_link == 1,6717e+09 segundos.
+* Isso indica que se comporta como uma transformação estática, ou seja, o atraso é nulo.
+
+Ótimo! No entanto, agora você precisa resolver os seguintes problemas:
+
+* Os quadros de transformação da tartaruga não estão representados corretamente no RVIZ2.
+* Isso ocorre porque nenhum dos quadros do robô está CONECTADO.
+
+Corrija isso usando uma **transformação estática**.
