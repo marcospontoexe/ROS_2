@@ -186,3 +186,189 @@ Então você corrigirá esses problemas e, no processo, aprenderá sobre TF2 no 
 Objetivo: Resolver o problema em que o Cam_bot não tem uma transformação de **cam_bot_base_link para world**.
 
 Os comandos `ros2 topic list` e `ros2 topic info -v` são úteis para ajudar você a configurar algumas definições do Rviz, como determinar uma configuração de **QoS** confiável para esse tópico.
+
+Como você pode ver no rviz, ambos os modelos de robô são brancos e se sobrepõem. Isso significa que não há transformação do quadro do mundo para o link raiz de nenhum modelo de robô:
+
+1[errornotf_humble1](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/errornotf_humble1.png)   
+
+Além disso, você deve ver que, no RVIZ, o modelo do robô não se move, mas a imagem da câmera à esquerda mostra que ele está se movendo.
+
+Este é o comportamento esperado, já que o Quadro Fixo está definido como chassi.
+
+No entanto, e se você quiser mover o robô e também ver esse movimento refletido dentro da área de visualização 3D principal do RVIZ?
+
+Você não pode fazer isso agora porque sua árvore TF tem uma transformação ausente.
+
+Não há transformação da estrutura do chassi para a estrutura do mundo. Verifique isso observando a árvore TF: `ros2 run rqt_tf_tree rqt_tf_tree`.
+
+![tftree_u2_unconnected](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/tftree_u2_unconnected.png)
+
+Como você pode ver, você tem duas árvores TF com duas raízes diferentes. O nó mais alto em uma árvore é chamado de raiz. Observe também que não há um quadro de mundo.
+
+Resolva isso agora. No entanto, primeiro feche o RVIZ e o rqt_tf_tree antes de continuar.
+
+Crie um script Python chamado cam_bot_odom_to_tf_pub.py dentro do pacote my_tf_ros2_course_pkg.
+
+Este script extrai a odometria do Cam_bot e publica uma transformação TF estática do camera_bot_base_link para o mundo do quadro.
+
+Como este pacote é do tipo de compilação **ament_cmake**, crie uma pasta chamada **scripts** para colocar um script Python lá.
+
+**cam_bot_odom_to_tf_pub.py:**
+
+```python
+#! /usr/bin/env python3
+
+import sys
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import ReliabilityPolicy, DurabilityPolicy, QoSProfile
+import tf2_ros
+from geometry_msgs.msg import TransformStamped
+from nav_msgs.msg import Odometry
+
+
+class CamBotOdomToTF(Node):
+
+    def __init__(self, robot_base_frame="camera_bot_base_link"):
+        super().__init__('odom_to_tf_broadcaster_node')
+
+        self._robot_base_frame = robot_base_frame
+        
+        # Create a new `TransformStamped` object.
+        # A `TransformStamped` object is a ROS message that represents a transformation between two frames.
+        self.transform_stamped = TransformStamped()
+        # This line sets the `header.frame_id` attribute of the `TransformStamped` object.
+        # The `header.frame_id` attribute specifies the frame in which the transformation is defined.
+        # In this case, the transformation is defined in the `world` frame.
+        self.transform_stamped.header.frame_id = "world"
+        # This line sets the `child_frame_id` attribute of the `TransformStamped` object.
+        # The `child_frame_id` attribute specifies the frame that is being transformed to.
+        # In this case, the robot's base frame is being transformed to the `world` frame.
+        self.transform_stamped.child_frame_id = self._robot_base_frame
+
+        self.subscriber = self.create_subscription(
+            Odometry,
+            '/cam_bot_odom',
+            self.odom_callback,
+            QoSProfile(depth=1, durability=DurabilityPolicy.VOLATILE, reliability=ReliabilityPolicy.BEST_EFFORT))
+
+        # This line creates a new `TransformBroadcaster` object.
+        # A `TransformBroadcaster` object is a ROS node that publishes TF messages.
+        self.br = tf2_ros.TransformBroadcaster(self)
+
+        self.get_logger().info("odom_to_tf_broadcaster_node ready!")
+
+    def odom_callback(self, msg):
+        self.cam_bot_odom = msg
+        # print the log info in the terminal
+        self.get_logger().debug('Odom VALUE: "%s"' % str(self.cam_bot_odom))
+        self.broadcast_new_tf()
+
+    def broadcast_new_tf(self):
+        """
+        This function broadcasts a new TF message to the TF network.
+        """
+
+        # Get the current odometry data.
+        position = self.cam_bot_odom.pose.pose.position
+        orientation = self.cam_bot_odom.pose.pose.orientation
+
+        # Set the timestamp of the TF message.
+        # The timestamp of the TF message is set to the current time.
+        self.transform_stamped.header.stamp = self.get_clock().now().to_msg()
+
+        # Set the translation of the TF message.
+        # The translation of the TF message is set to the current position of the robot.
+        self.transform_stamped.transform.translation.x = position.x
+        self.transform_stamped.transform.translation.y = position.y
+        self.transform_stamped.transform.translation.z = position.z
+
+        # Set the rotation of the TF message.
+        # The rotation of the TF message is set to the current orientation of the robot.
+        self.transform_stamped.transform.rotation.x = orientation.x
+        self.transform_stamped.transform.rotation.y = orientation.y
+        self.transform_stamped.transform.rotation.z = orientation.z
+        self.transform_stamped.transform.rotation.w = orientation.w
+
+        # Send (broadcast) the TF message.
+        self.br.sendTransform(self.transform_stamped)
+
+
+def main(args=None):
+
+    rclpy.init()
+    odom_to_tf_obj = CamBotOdomToTF()
+    rclpy.spin(odom_to_tf_obj)
+
+if __name__ == '__main__':
+    main()
+```
+
+Isso cria o objeto TF Broadcasting que você usa para transmitir os TFs:
+
+```python
+self.br = tf2_ros.TransformBroadcaster(self)
+```
+
+* Esta parte cria a mensagem usada para o TF.
+* Defina os valores que não serão alterados.
+* frame_id = O quadro respeita a transformação, o Quadro Pai.
+* child_frame_id é o quadro no qual você está publicando a transformação do TF.
+* Observe que, ao transmitir, não importa se esses quadros existem ou não.
+
+```python
+self.transform_stamped = TransformStamped()
+self.transform_stamped.header.frame_id = "world"
+self.transform_stamped.child_frame_id = self._robot_base_frame
+```
+
+Observe que, ao transmitir, não importa se esses quadros existem:
+
+* Se ambos existirem, você publicará um novo TF que provavelmente interferirá no que outra pessoa está publicando.
+* Se um dos quadros existir e o outro não, o que não existe será criado e publicado para transformar o que existe.
+* Se nenhum existir, ambos os quadros serão criados.
+
+Na realidade, os quadros não são criados. Os dados do TF são apenas um tópico que possui transformações entre quadros, nada mais. Portanto, não há conexão real entre os quadros do TF e o robô real/simulado por padrão.
+
+```python
+def broadcast_new_tf(self):
+    """
+    This function broadcasts a new TF message to the TF network.
+    """
+
+    # Get the current odometry data.
+    position = self.cam_bot_odom.pose.pose.position
+    orientation = self.cam_bot_odom.pose.pose.orientation
+
+    # Set the timestamp of the TF message.
+    # The timestamp of the TF message should be set to the current time.
+    self.transform_stamped.header.stamp = self.get_clock().now().to_msg()
+
+    # Set the translation of the TF message.
+    # The translation of the TF message should be set to the current position of the robot.
+    self.transform_stamped.transform.translation.x = position.x
+    self.transform_stamped.transform.translation.y = position.y
+    self.transform_stamped.transform.translation.z = position.z
+
+    # Set the rotation of the TF message.
+    # The rotation of the TF message should be set to the current orientation of the robot.
+    self.transform_stamped.transform.rotation.x = orientation.x
+    self.transform_stamped.transform.rotation.y = orientation.y
+    self.transform_stamped.transform.rotation.z = orientation.z
+    self.transform_stamped.transform.rotation.w = orientation.w
+
+    # Send (broadcast) the TF message.
+    self.br.sendTransform(self.transform_stamped)
+```
+
+* Neste caso, você está extraindo a posição e a orientação do robô por meio de sua odometria. Robôs normalmente publicam esses tópicos de odometria. Esta é uma ótima maneira de obter os primeiros dados do TF.
+
+* Em seguida, use o método sendTransform() para publicar a transformação preparada.
+
+```python
+self.subscriber = self.create_subscription(
+    Odometry,
+    '/cam_bot_odom',
+    self.listener_callback,
+    QoSProfile(depth=1, durability=DurabilityPolicy.VOLATILE, reliability=ReliabilityPolicy.BEST_EFFORT))
+```
