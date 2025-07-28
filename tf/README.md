@@ -189,20 +189,21 @@ O ROS usa tópicos para comunicar transformações. Como resultado, você pode v
 
 Há um tópico chamado **/tf** e outro chamado **/tf_static**, onde todos os TFs são publicados. O único problema é que TODOS os quadros são publicados lá.
 
-Existe uma ferramenta de linha de comando útil que filtra a transformação de seu interesse e a exibe. Ou, mais importante, **ela calcula uma transformação indireta entre dois quadros conectados**, mas não diretamente. Isso é útil e usado em muitas aplicações.
+Existe uma ferramenta de linha de comando útil que filtra a transformação de seu interesse e a exibe. Ou, mais importante, **ela calcula uma transformação indireta entre dois quadros conectados** (quadros intermediários fazendo a conexão entre o qudro de referência e o quadro alvo). Isso é útil e usado em muitas aplicações.
 
-O tópico **/tf** publica apenas os TFs diretos, não todas as transformações entre todos os quadros. **tf_echo** retorna as transformações entre quaisquer quadros conectados para você.
+* O tópico **/tf** publica apenas os TFs diretos, não todas as transformações entre todos os quadros. 
+* **tf_echo** retorna as transformações entre quaisquer quadros conectados para você.
 
 ### exemplo
 Neste exemplo, veja como ecoar (echo) o tópico /tf e, em seguida, usar a ferramenta tf_echo para filtrar os dados do tópico /tf.
 
 1. Execute o seguinte comando para ver uma publicação do tópico /tf diretamente: `ros2 topic echo /tf`.
 
-Como você pode ver, muitos dados são publicados a cada segundo. Portanto, é difícil ou impossível obter os dados necessários, pois, aqui, você está publicando apenas as transformações TF de um quadro para o próximo quadro conectado.
+Como você pode ver, muitos dados são publicados a cada segundo. Portanto, é difícil ou impossível obter os dados necessários, pois, aqui, você está publicando apenas as transformações TF de um quadro para o próximo quadro conectado (quadros conectados diretamente).
 
 No entanto, se você estiver interessado em dois quadros que **não estão diretamente conectados**, precisará de outra ferramenta: **tf2_echo**.
 
-2. Agora, filtre os dados do TF com a ferramenta tf2_echo para ver apenas a transformação entre o quadro /rgb_camera_link_frame e o quadro /turtle_chassis. Aqui estão o caminho e as transformações acumuladas que este sistema realiza e, no final, fornece um resultado:
+2. Agora, filtre os dados do TF com a ferramenta **tf2_echo** para ver apenas a transformação entre o quadro **/rgb_camera_link_frame** e o quadro **/turtle_chassis**. Aqui estão o caminho e as transformações acumuladas que este sistema realiza e, no final, fornece um resultado:
 
 ![tfecho](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/tftransformecho_ros2_1.png)
 
