@@ -161,12 +161,12 @@ Qual é a posição do Cam_bot no espaço? Para obter um valor útil para progra
 
 Mas como trabalhar com **quadros de coordenadas** no ROS? Quais são as ferramentas que o ROS oferece para isso? O restante desta unidade tem como objetivo delinear ferramentas e bibliotecas úteis que podem ser usadas para visualizar e depurar problemas de TF.
 
-
-
 ## Ver quadros TF em formato PDF
 O ROS 2 permite visualizar os quadros TF de um robô em formato PDF usando a ferramenta **view_frames**. Este nó do ROS 2 gera um diagrama da árvore TF atual e o salva como um arquivo PDF, que você pode visualizar facilmente.
 
 O comando a seguir produz um arquivo PDF no diretório onde é executado, contendo a árvore TF atual que está sendo transmitida no sistema: `ros2 run tf2_tools view_frames`.
+
+![viewframse1_humble](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/viewframse1_humble.png)
 
 O pdf retorna o que chamamos de **árvore TF**. Ela representa todos os **quadros** dos robôs no sistema **e suas conexões**. O pdf também fornece algumas informações extras:
 * Broadcaster: Este é o nome do transmissor de dados TF.
@@ -174,7 +174,7 @@ O pdf retorna o que chamamos de **árvore TF**. Ela representa todos os **quadro
 * O número da transformação mais recente e sua antiguidade. 0,0 significa que se trata de uma transformação constante ou Transformação Estática.
 * A quantidade de dados armazenada no buffer TF em segundos de dados.
 
-# Visualizar quadros TF usando rqt_tf_tree
+## Visualizar quadros TF usando rqt_tf_tree
 **rqt_tf_tree** oferece a mesma funcionalidade que **view_frames**, com um benefício adicional:
 
 Você pode atualizar a visualização e ver as alterações em **tempo real**, sem precisar gerar um novo PDF a cada vez.
@@ -184,7 +184,7 @@ Para rodar o rqt_tf_tree use o comando: `ros2 run rqt_tf_tree rqt_tf_tree`.
 
 Este TF não é estático, mas pode ser atualizado para mostrar o status atual da árvore de TFs. Pressione o botão de atualização sempre que desejar a atualização mais recente.
 
-# Visualizar quadros TF no terminal usando tf_echo
+## Visualizar quadros TF no terminal usando tf_echo
 O ROS usa tópicos para comunicar transformações. Como resultado, você pode ver todos esses dados brutos por meio de **tópicos**.
 
 Há um tópico chamado **/tf** e outro chamado **/tf_static**, onde todos os TFs são publicados. O único problema é que TODOS os quadros são publicados lá.
@@ -193,7 +193,7 @@ Existe uma ferramenta de linha de comando útil que filtra a transformação de 
 
 O tópico **/tf** publica apenas os TFs diretos, não todas as transformações entre todos os quadros. **tf_echo** retorna as transformações entre quaisquer quadros conectados para você.
 
-## exemplo
+### exemplo
 Neste exemplo, veja como ecoar (echo) o tópico /tf e, em seguida, usar a ferramenta tf_echo para filtrar os dados do tópico /tf.
 
 1. Execute o seguinte comando para ver uma publicação do tópico /tf diretamente: `ros2 topic echo /tf`.
@@ -231,7 +231,7 @@ A principal diferença, além do mundo, é o fato de que:
 
 Então você corrigirá esses problemas e, no processo, aprenderá sobre TF2 no ROS2.
 
-# TF Broadcaster 
+## TF Broadcaster 
 Objetivo: Resolver o problema em que o Cam_bot não tem uma transformação de **cam_bot_base_link para world**.
 
 Os comandos `ros2 topic list` e `ros2 topic info -v` são úteis para ajudar você a configurar algumas definições do Rviz, como determinar uma configuração de **QoS** confiável para esse tópico.
@@ -439,7 +439,7 @@ você deverá ver um gráfico parecido com a imagem abaixo:
 
 ![worldtree_humble](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/worldtree_humble.png)
 
-# tf2_monitor
+## tf2_monitor
 Esta ferramenta é usada para verificar o **atraso entre transformações**. Isso significa quanto tempo decorre entre a publicação de um quadro e outro quadro conectado.
 
 * Se estiverem conectados diretamente, é o tempo entre esses quadros.
