@@ -726,7 +726,11 @@ Vamos explorar como usar a linha de comando para transmitir transformações est
 3. No entanto, você também pode usar esses comandos dentro de um **arquivo de inicialização**. É isso que você usará para publicar uma Transformação Estática do mundo (frame raiz do Cam_bot) -> odom (frame raiz do TurtleBot).
 
 ### Static Broadcaster por meio de um arquivo de inicialização (launch)
-Vamos agora explorar como usar arquivos de inicialização para transmitir transformações estáticas no ROS 2:
+Vamos agora explorar como usar arquivos de inicialização para transmitir transformações estáticas no ROS 2.
+
+* Estamos publicando o TF do **camera_bot_base_link** no odom, como fizemos na seção anterior.
+* Estamos publicando o TF estático do **Odom** para o **world**.
+* Isso conectará o quadro do mundo ao quadro do Odom, e então o quadro do Odom será conectado ao link base do camera_bot_base, conectando assim todas as partes do robô.
 
 **publish_static_transform_odom_to_world.launch.py:**
 
@@ -753,3 +757,411 @@ def generate_launch_description():
 ```
 
 O arquivo de inicialização acima define um nó chamado **static_tf_pub**. Este nó inicia o executável **static_transform_publisher** do pacote **tf2_ros**. Este nó é configurado para publicar uma transformação estática entre os quadros **world** e **odom** usando os argumentos. Os argumentos para o nó são a ***translação (x, y e z)*** e a ***rotação (roll, pitch, yaw)***  da transformação.
+
+Verifique a árvore TF: `ros2 run rqt_tf_tree rqt_tf_tree`:
+
+![working_completetreetf_ros2_u2](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/working_completetreetf_ros2_u2.png)
+
+Agora, todos os quadros TF estão conectados em uma única ÁRVORE TF. Isso permite que o RVIZ renderize tudo no espaço. E agora, você deve conseguir mover os dois robôs e verificar se a posição deles no espaço no RVIZ2 está correta e igual à do mundo real/simulação.
+
+### Static Broadcaster via Python script
+Por fim, vamos explorar como usar um script Python para transmitir transformações estáticas no ROS 2.
+
+Escreva um script para criar um novo quadro anexado à tartaruga que fique mais próximo dela, para que você tenha um bom primeiro plano.
+
+O script Python abaixo pode ser usado para publicar qualquer coisa estaticamente onde você quiser, essencialmente da mesma forma que os comandos que você usou anteriormente:
+
+**static_broadcaster_front_turtle_frame.py:**
+
+```python
+#! /usr/bin/env python3
+import sys
+from geometry_msgs.msg import TransformStamped
+import rclpy
+from rclpy.node import Node
+from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
+import tf_transformations
+
+class StaticFramePublisher(Node):
+    def __init__(self):
+        super().__init__('static_broadcaster_front_turtle_frame_node')
+
+        # This line creates a `StaticTransformBroadcaster` object.
+        # The `StaticTransformBroadcaster` object is used to publish static transforms between frames.
+        self._tf_publisher = StaticTransformBroadcaster(self)
+
+        # Publish static transforms once at startup
+        self.make_transforms()
+
+        self.get_logger().info("static_broadcaster_front_turtle_frame ready!")
+
+    def make_transforms(self):
+        static_transformStamped = TransformStamped()
+        static_transformStamped.header.stamp = self.get_clock().now().to_msg()
+        static_transformStamped.header.frame_id = sys.argv[1]
+        static_transformStamped.child_frame_id = sys.argv[2]
+        static_transformStamped.transform.translation.x = float(sys.argv[3])
+        static_transformStamped.transform.translation.y = float(sys.argv[4])
+        static_transformStamped.transform.translation.z = float(sys.argv[5])
+        quat = tf_transformations.quaternion_from_euler(float(sys.argv[6]), float(sys.argv[7]), float(sys.argv[8]))
+        static_transformStamped.transform.rotation.x = quat[0]
+        static_transformStamped.transform.rotation.y = quat[1]
+        static_transformStamped.transform.rotation.z = quat[2]
+        static_transformStamped.transform.rotation.w = quat[3]
+
+        self._tf_publisher.sendTransform(static_transformStamped)
+
+def main():
+    rclpy.init()
+    assert len(sys.argv) > 8, "Please add all the arguments: ros2 run tf_ros2_solutions parent_frame child_frame x y z roll pitch yaw"
+    node_obj = StaticFramePublisher()
+    try:
+        rclpy.spin(node_obj)
+    except KeyboardInterrupt:
+        pass
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()
+```
+
+A única diferença para o exemplo anteriro (tf dinâ,ica) é que você cria um objeto StaticTransformBroadcaster:
+
+```python
+StaticTransformBroadcaster(self)
+```
+
+Em vez de um objeto **TransformBroadcaster** regular como feito antes:
+
+
+```python
+TransformBroadcaster(self)
+```
+
+Isso torna o quadro permanente após a publicação. Portanto, você não precisa publicá-lo regularmente para não considerá-lo obsoleto. Essa é a vantagem de usar um objeto transmissor de transformação estático.
+
+É por isso que não há loop de transmissão, apenas o spin.
+
+Considere os seguintes parâmetros ao iniciar o novo script static_broadcaster_front_turtle_frame.py:
+
+* quadro pai = turtle_chassis
+* quadro filho = my_front_turtle_frame (você pode colocar o nome que quiser)
+* X = 0,4 (são 0,4 metros no eixo X do quadro pai)
+* Y = 0,0
+* Z = 0,4 (são 0,4 metros no eixo Z do quadro pai)
+* Roll = 0,0
+* Pitch = 0,7 (você quer que ele aponte para 45 graus/0,7 radianos de inclinação para baixo)
+* Yaw = 3,1416 (você quer que ele aponte para 180 graus/3,1416 radianos de inclinação para baixo)
+
+Como é uma transformação estática, a transformação do quadro permanece lá para sempre — **não há necessidade de publicá-la novamente**.
+
+##  TF Listener (Ouvinte)
+Os Ouvintes TF recebem dados TF e os utilizam para o que você precisar. Quando um novo nó inicia um ouvinte TF, ele escuta os tópicos tf e tf_static. Em seguida, ele cria um buffer de relacionamentos de quadros, que usa para resolver consultas TF. Portanto, cada nó só tem conhecimento das transformações publicadas desde o início daquele nó.
+
+Para mostrar como isso funciona, crie um script que faça o Cam_bot seguir um quadro, neste caso, o turtle_attach_frame, como você fez na seção anterior.
+
+**move_generic_model.py:**
+
+```python
+#! /usr/bin/env python3
+
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile
+
+from tf2_ros import TransformException
+from tf2_ros.buffer import Buffer
+from tf2_ros.transform_listener import TransformListener
+
+import tf_transformations
+
+from std_msgs.msg import String
+
+from gazebo_msgs.srv import SetEntityState
+from gazebo_msgs.msg import EntityState
+# from gazebo_msgs.msg import ModelState
+
+from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Vector3
+
+
+class Coordinates:
+    def __init__(self, x, y, z, roll, pitch, yaw):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.roll = roll
+        self.pitch = pitch
+        self.yaw = yaw
+        
+class CamBotMove(Node):
+    def __init__(self, timer_period=0.05, model_name="cam_bot", init_dest_frame="carrot", trans_speed=1.0, rot_speed=0.1):
+        super().__init__('force_move_cam_bot')
+        
+        self._model_name = model_name
+
+        self.set_destination_frame(new_dest_frame=init_dest_frame)
+        self.set_translation_speed(speed=trans_speed)
+        self.set_rotation_speed(speed=rot_speed)
+
+        # For the TF listener
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+
+        self.timer_period = timer_period
+        self.timer_rate = 1.0 / self.timer_period
+        self.timer = self.create_timer(self.timer_period, self.timer_callback)
+
+        self.subscriber= self.create_subscription(
+            String,
+            '/destination_frame',
+            self.move_callback,
+            QoSProfile(depth=1))
+
+        self.set_entity_client = self.create_client(SetEntityState, "/cam_bot/set_entity_state")
+        while not self.set_entity_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        self.get_logger().info('service READY...')
+        
+        # create a request
+        self.req = SetEntityState.Request()
+
+        self.timer = self.create_timer(self.timer_period, self.timer_callback)
+
+    def timer_callback(self):
+        self.move_step_speed()
+        self.get_logger().info("Moved the Robot to frame ="+str(self.objective_frame))
+
+    def set_translation_speed(self, speed):
+        self.trans_speed = speed
+    
+    def set_rotation_speed(self, speed):
+        self.rot_speed = speed
+
+    def set_destination_frame(self, new_dest_frame):
+        self.objective_frame = new_dest_frame
+
+    def move_callback(self, msg):
+        self.set_destination_frame(new_dest_frame=msg.data)
+        
+    def move_step_speed(self):
+        coordinates_to_move_to = self.calculate_coord()
+        if coordinates_to_move_to is not None:
+            self.move_model(coordinates_to_move_to)
+        else:
+            self.get_logger().warning("No Coordinates available yet...")
+
+    def get_model_pose_from_tf(self, origin_frame="world", dest_frame="camera_bot_base_link"):
+        """
+        Extract the pose from the TF
+        """
+        # Look up for the transformation between dest_frame and turtle2 frames
+        # and send velocity commands for turtle2 to reach dest_frame
+        try:
+            now = rclpy.time.Time()
+            trans = self.tf_buffer.lookup_transform(
+                origin_frame,
+                dest_frame,
+                now)
+        except TransformException as ex:
+            self.get_logger().error(
+                f'Could not transform {origin_frame} to {dest_frame}: {ex}')
+            return None
+
+
+        translation_pose = trans.transform.translation
+        rotation_pose = trans.transform.rotation
+
+        self.get_logger().info("type translation_pose="+str(type(translation_pose)))
+        self.get_logger().info("type rotation_pose="+str(type(rotation_pose)))
+
+
+        pose = Pose()
+        pose.position.x = translation_pose.x
+        pose.position.y = translation_pose.y
+        pose.position.z = translation_pose.z
+        pose.orientation.x = rotation_pose.x
+        pose.orientation.y = rotation_pose.y
+        pose.orientation.z = rotation_pose.z
+        pose.orientation.w = rotation_pose.w
+
+        return pose
+
+    def calculate_coord(self):
+        """
+        Gets the current position of the model and adds the increment based on the Publish rate
+        """
+        pose_dest = self.get_model_pose_from_tf(origin_frame="world", dest_frame=self.objective_frame)
+        self.get_logger().error("POSE DEST="+str(pose_dest))
+        if pose_dest is not None:
+
+            explicit_quat = [pose_dest.orientation.x, pose_dest.orientation.y,
+                             pose_dest.orientation.z, pose_dest.orientation.w]
+            pose_now_euler = tf_transformations.euler_from_quaternion(explicit_quat)
+
+            roll = pose_now_euler[0]
+            pitch = pose_now_euler[1]
+            yaw = pose_now_euler[2]
+
+            coordinates_to_move_to = Coordinates(x=pose_dest.position.x,
+                                                y=pose_dest.position.y,
+                                                z=pose_dest.position.z,
+                                                roll=roll,
+                                                pitch=pitch,
+                                                yaw=yaw)
+        else:
+            coordinates_to_move_to = None
+
+        return coordinates_to_move_to
+
+    def move_model(self, coordinates_to_move_to):
+        pose = Pose()
+
+        pose.position.x = coordinates_to_move_to.x
+        pose.position.y = coordinates_to_move_to.y
+        pose.position.z = coordinates_to_move_to.z
+
+        quaternion = tf_transformations.quaternion_from_euler(coordinates_to_move_to.roll,
+                                                              coordinates_to_move_to.pitch,
+                                                              coordinates_to_move_to.yaw)
+        pose.orientation.x = quaternion[0]
+        pose.orientation.y = quaternion[1]
+        pose.orientation.z = quaternion[2]
+        pose.orientation.w = quaternion[3]
+
+        # You set twist to Null to remove any prior movements
+        twist = Twist()
+        linear = Vector3()
+        angular = Vector3()
+
+        linear.x = 0.0
+        linear.y = 0.0
+        linear.z = 0.0
+
+        angular.x = 0.0
+        angular.y = 0.0
+        angular.z = 0.0
+
+        twist.linear = linear
+        twist.angular = angular
+
+        state = EntityState()
+        state.name = self._model_name
+        state.pose = pose
+        state.twist = twist
+        state.reference_frame = "world"
+
+        self.req.state = state
+
+        self.get_logger().error("STATE to SEND="+str(self.req.state))
+
+        # send the request
+        try:     
+            self.future = self.set_entity_client.call_async(self.req)
+        except Exception as e:
+            self.get_logger().error('Error on calling service: %s', str(e))
+        
+            
+
+def main(args=None):
+    rclpy.init()
+    move_obj = CamBotMove()
+    print("Start Moving")
+    rclpy.spin(move_obj)
+
+if __name__ == '__main__':
+    main()
+```
+
+Este script é bastante complexo, mas vamos analisar os elementos que definem um TF Listener:
+
+```python
+# For the TF listener
+self.tf_buffer = Buffer()
+self.tf_listener = TransformListener(self.tf_buffer, self)
+```
+
+As linhas de código acima iniciam um objeto ouvinte do TF. Observe que você também precisa de um objeto Buffer.
+
+```python
+def get_model_pose_from_tf(self, origin_frame="world", dest_frame="camera_bot_base_link"):
+    """
+    Extract the pose from the TF
+    """
+    # Look up for the transformation between dest_frame and turtle2 frames
+    # and send velocity commands for turtle2 to reach dest_frame
+    try:
+        now = rclpy.time.Time()
+        trans = self.tf_buffer.lookup_transform(
+            origin_frame,
+            dest_frame,
+            now)
+    except TransformException as ex:
+        self.get_logger().error(
+            f'Could not transform {origin_frame} to {dest_frame}: {ex}')
+        return None
+
+    translation_pose = trans.transform.translation
+    rotation_pose = trans.transform.rotation
+
+    self.get_logger().info("type translation_pose="+str(type(translation_pose)))
+    self.get_logger().info("type rotation_pose="+str(type(rotation_pose)))
+
+    pose = Pose()
+    pose.position.x = translation_pose.x
+    pose.position.y = translation_pose.y
+    pose.position.z = translation_pose.z
+    pose.orientation.x = rotation_pose.x
+    pose.orientation.y = rotation_pose.y
+    pose.orientation.z = rotation_pose.z
+    pose.orientation.w = rotation_pose.w
+
+    return pose
+```
+
+Esta linha obtém a hora atual:
+
+```python
+now = rclpy.time.Time()
+```
+
+Esta linha aqui verifica o buffer e procura as transformações de origin_frame para dest_frame no momento:
+
+```python
+trans = self.tf_buffer.lookup_transform(origin_frame,dest_frame,now)
+```
+
+Se nada for encontrado, ele captura a exceção.
+
+Finalmente, use as informações da transformação para criar um objeto **Pose()** para mover o robô Cam_bot para esse local preciso. Isso coloca o robô no mesmo quadro que você solicitou à transformação por meio de um tópico chamado **/destination_frame**.
+
+Antes de tentar isso, crie um script de inicialização que execute tudo o que você fez nas seções anteriores, necessário para que todas as transformações funcionem, além deste novo script. Isso facilitará sua vida:
+
+**start_tf_fixes.launch.xml:**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+    <include file="$(find-pkg-share my_tf_ros2_course_pkg)/launch/publish_static_transform_odom_to_world.launch.py"/>
+
+    <node pkg="my_tf_ros2_course_pkg" exec="cam_bot_odom_to_tf_pub_late_tf_fixed.py" name="cam_bot_odom_to_tf_pub_late_tf_fixed_node">
+    </node>
+
+    <node pkg="my_tf_ros2_course_pkg" exec="move_generic_model.py" name="move_generic_model_node">
+    </node>
+
+</launch>
+```
+
+Publique o TF estático que você deseja: `ros2 run my_tf_ros2_course_pkg static_broadcaster_front_turtle_frame.py turtle_chassis my_front_turtle_frame 0.4 0 0.4 0 0.7 3.1416`
+
+Mate esse nó com CTRL+C.
+
+Em seguida, diga ao Cam_bot para seguir esse quadro: `ros2 topic pub /destination_frame std_msgs/msg/String "data: 'my_front_turtle_frame'"`
+
+Agora, se você mover a tartaruga, o Cam_bot deverá segui-la.
+
+# Robot State Publisher
+
