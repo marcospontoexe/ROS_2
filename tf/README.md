@@ -252,9 +252,32 @@ Neste exemplo, você representa os dados do tópico /tf no espaço 3D e observa 
 
 ![rviz2_config_2](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rviz2_config_2.png)
 
+Agora você deve ver algo semelhante a isto:
 
+![cambotrviz_humble1](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/cambotrviz_humble1.png)
 
+Agora, observe que um quadro sempre segue a tartaruga. Esse quadro é chamado **turtle_attach_frame**.
 
+8. Diga ao **Cam_bot** para imitar a posição e a orientação do **turtle_attach_frame**. Ao fazer isso, ele segue a tartaruga e a câmera captura a tartaruga o tempo todo.
+
+Para isso, execute o seguinte comando: `ros2 run turtle_tf_3d_ros2 move_generic_model.py`. Este script ativa o movimento para um sistema de quadros do Cam_bot.
+
+Ao iniciar, alguns AVISOS e ERROS apareceram. Isso é normal.
+
+```shell
+[WARN] [1702569495.705446757] [force_move_cam_bot]: No Coordinates available yet...
+[INFO] [1702569495.706380946] [force_move_cam_bot]: Moved the Robot to frame =carrot
+[ERROR] [1702569495.725491162] [force_move_cam_bot]: Could not transform world to carrot: "carrot" passed to lookupTransform argument source_frame does not exist.
+```
+
+Ele está aguardando que você informe qual sistema de coordenadas seguir.
+É isso que você fará na próxima etapa.
+
+9. Envie um comando para o tópico **/desired_frame** para dizer ao Cam_bot para se mover e imitar a posição e orientação daquele quadro: `ros2 topic pub /destination_frame std_msgs/msg/String "data: 'turtle_attach_frame'"`.
+
+Agora você deve conseguir que o Cam_bot siga a tartaruga por onde ela for.
+
+Como você pode ver, usando os TFs publicados, o **Cam_bot** pode seguir a orientação que você deseja atingir, neste caso, a **tartaruga**.
 
 # Broadcast & Listen nos dados de TF
 Entender como os TFs são publicados e recebidos é crucial para tarefas como localização, navegação e manipulação de robôs.
