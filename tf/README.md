@@ -372,3 +372,45 @@ self.subscriber = self.create_subscription(
     self.listener_callback,
     QoSProfile(depth=1, durability=DurabilityPolicy.VOLATILE, reliability=ReliabilityPolicy.BEST_EFFORT))
 ```
+
+```python
+def odom_callback(self, msg):
+    self.cam_bot_odom = msg
+    # print the log info in the terminal
+    self.get_logger().debug('Odom VALUE: "%s"' % str(self.cam_bot_odom))
+    self.broadcast_new_tf()
+```
+
+* Aqui está o código relacionado à extração dos dados de odometria.
+* Cada vez que você recebe dados de odometria, você transmite uma nova transformação TF.
+
+Após compilar o pacote e executar: `ros2 run rqt_tf_tree rqt_tf_tree` novamente.
+
+você deverá ver um gráfico parecido com a imagem abaixo:
+
+![worldtree_humble](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/worldtree_humble.png)
+
+# tf2_monitor
+Esta ferramenta é usada para verificar o **atraso entre transformações**. Isso significa quanto tempo decorre entre a publicação de um quadro e outro quadro conectado.
+
+* Se estiverem conectados diretamente, é o tempo entre esses quadros.
+* No entanto, suponha que os quadros NÃO estejam conectados diretamente. Nesse caso, o tempo será acumulado desde a publicação do quadro original até a publicação do quadro de destino.
+
+E por que você precisa disso? Um sistema comum e crítico são os carimbos de tempo (time stamps). Os dados do sensor, chamados de quadros, devem ser consistentes com a publicação de tempo do TF. Caso contrário, os dados do sensor serão descartados.
+
+Analise seu sistema para entender melhor isso. 
+Agora veja os tempos do quadro **camera_bot_base_link** até **rgb_camera_link_frame**: `ros2 run tf2_ros tf2_monitor camera_bot_base_link rgb_camera_link_frame`.
+
+```shell
+RESULTS: for camera_bot_base_link to rgb_camera_link_frame
+Chain is: rgb_camera_link_frame -> chassis -> camera_bot_base_link
+Net delay     avg = 3.23952e+08: max = 1.70257e+09
+
+Frames:
+Frame: camera_bot_base_link, published by , Average Delay: 0.000354682, Max Delay: 0.00420332
+Frame: chassis, published by , Average Delay: 1.70257e+09, Max Delay: 1.70257e+09
+Frame: rgb_camera_link_frame, published by , Average Delay: 1.70257e+09, Max Delay: 1.70257e+09
+
+All Broadcasters:
+Node:  155.869 Hz, Average Delay: 1.28033e+09 Max Delay: 1.70257e+09
+```
