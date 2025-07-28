@@ -112,3 +112,25 @@ Ao expandir a exibição do TF, você pode ver diversas opções configuráveis.
 13. Agora, mova o robô para ver como todas essas transformações são atualizadas e verifique se a estrutura da rocha não se move.
 
 # Os vários quadros de coordenadas de um robô
+Ao trabalhar com robôs, é criado um **modelo de robô** para representar a estrutura do robô. Use arquivos **URDF** e **XACRO** no ROS para criar esses modelos de robô. Para trabalhar com transformações (tf), saiba que cada junta do robô possui um sistema de coordenadas associado. Dessa forma, você pode acompanhar facilmente a posição dos links do robô no espaço.
+
+# Ver quadros TF em formato PDF
+O ROS 2 permite visualizar os quadros TF de um robô em formato PDF usando a ferramenta **view_frames**. Este nó do ROS 2 gera um diagrama da árvore TF atual e o salva como um arquivo PDF, que você pode visualizar facilmente.
+
+O comando a seguir produz um arquivo PDF no diretório onde é executado, contendo a árvore TF atual que está sendo transmitida no sistema: `ros2 run tf2_tools view_frames`.
+
+O pdf retorna o que chamamos de **árvore TF**. Ela representa todos os **quadros** dos robôs no sistema **e suas conexões**. O pdf também fornece algumas informações extras:
+* Broadcaster: Este é o nome do transmissor de dados TF.
+* A taxa média de publicação em Hz.
+* O número da transformação mais recente e sua antiguidade. 0,0 significa que se trata de uma transformação constante ou Transformação Estática.
+* A quantidade de dados armazenada no buffer TF em segundos de dados.
+
+# Visualizar quadros TF usando rqt_tf_tree
+**rqt_tf_tree** oferece a mesma funcionalidade que **view_frames**, com um benefício adicional:
+
+Você pode atualizar a visualização e ver as alterações em **tempo real**, sem precisar gerar um novo PDF a cada vez.
+Isso é especialmente útil ao testar novas transmissões de TF, pois permite verificar rapidamente se o TF que você está usando está publicando ativamente ou se é uma publicação desatualizada.
+
+Para rodar o rqt_tf_tree use o comando: `ros2 run rqt_tf_tree rqt_tf_tree`.
+
+Este TF não é estático, mas pode ser atualizado para mostrar o status atual da árvore de TFs. Pressione o botão de atualização sempre que desejar a atualização mais recente.
