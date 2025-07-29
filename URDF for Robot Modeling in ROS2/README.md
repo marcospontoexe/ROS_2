@@ -52,7 +52,7 @@ Os arquivos urdf devem ser criados dentro do diretório **urdf**.
 ### O que é um LINK (Elo)
 LINKS são as unidades individuais que, por meio da montagem, formam um robô.
 
-[Veja nesse exemplo]() um arquivo urdf chamado **marcos_bot_simple.urdf**:
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/exemplos/marcos_bot_description/urdf/marcos_bot_simple.urdf) um arquivo urdf chamado **marcos_bot_simple.urdf**:
 
 * Este URDF será apenas um único LINK.
 * O nome do link é **base_link**.
@@ -80,7 +80,7 @@ Eles devem ser definidos dentro do elemento de **geometry** da seguinte maneira:
 ```
 
 ## Visualize arquivos URDF no RVIZ2
-[Veja nesse exemplo]() um launch para executar um arquivo urdf.
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/exemplos/marcos_bot_description/launch/urdf_visualize.launch.py) um launch para executar um arquivo urdf.
 
 Aqui, revise alguns elementos do arquivo launch:
 
