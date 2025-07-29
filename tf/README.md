@@ -336,7 +336,7 @@ Resolva isso agora. No entanto, primeiro feche o RVIZ e o rqt_tf_tree antes de c
 
 Crie um script Python chamado cam_bot_odom_to_tf_pub.py dentro do pacote my_tf_ros2_course_pkg.
 
-Este script extrai a odometria do Cam_bot e publica uma transformação TF estática do camera_bot_base_link para o mundo do quadro.
+Este script extrai a odometria do Cam_bot e publica uma transformação TF estática do camera_bot_base_link para quadro mundo.
 
 Como este pacote é do tipo de compilação **ament_cmake**, crie uma pasta chamada **scripts** para colocar um script Python lá.
 
@@ -731,7 +731,7 @@ Vamos agora explorar como usar arquivos de inicialização para transmitir trans
 
 * Estamos publicando o TF do **camera_bot_base_link** no odom, como fizemos na seção anterior.
 * Estamos publicando o TF estático do **Odom** para o **world**.
-* Isso conectará o quadro do mundo ao quadro do Odom, e então o quadro do Odom será conectado ao link base do camera_bot_base, conectando assim todas as partes do robô.
+* Isso conectará o quadro do mundo ao quadro do Odom, e então o quadro do Odom será conectado ao base_link do camera_bot_base, conectando assim todas as partes do robô.
 
 **publish_static_transform_odom_to_world.launch.py:**
 
@@ -826,7 +826,7 @@ if __name__ == "__main__":
     main()
 ```
 
-A única diferença para o exemplo anteriro (tf dinâ,ica) é que você cria um objeto StaticTransformBroadcaster:
+A única diferença para o exemplo anterior (tf dinâmica) é que você cria um objeto StaticTransformBroadcaster:
 
 ```python
 StaticTransformBroadcaster(self)
