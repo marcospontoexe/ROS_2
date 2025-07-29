@@ -303,6 +303,7 @@ Tarefas:
     * No campo "Tópico de Descrição", digite o tópico que publica os dados do modelo de robô. Neste caso, o tópico é **/cam_bot_robot_description**.
 
 e outro para a **tartaruga**. Os tópicos precisam ser configurados corretamente.
+
 3. Adicione um novo **display TF** para visualizar os quadros TF na visualização 3D com a grade.
 4. Selecione "mundo" como **Quadro Fixo** nas Opções Globais.
 5. Adicione também um **display de Imagem** para mostrar a visualização da perspectiva da câmera do robô. Lembre-se de que você precisa preencher o "Tópico de Imagem".
