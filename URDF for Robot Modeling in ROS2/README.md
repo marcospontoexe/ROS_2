@@ -36,7 +36,7 @@ Nesta unidade, você aprenderá a criar uma representação visual de um robô e
 
 Se você tem um robô real e deseja aproveitar a infraestrutura do ROS, precisa de uma descrição virtual de como o robô é montado e onde cada sensor está localizado. Por exemplo, se uma câmera estiver montada na cabeça do robô, o arquivo URDF permite usar a estrutura TF no ROS para identificar a localização exata da câmera, com base nas leituras das juntas e dos sensores. Além disso, essa descrição permite visualizar o modelo do robô dentro do RViz.
 
-# O que é um arquivo URDF
+## O que é um arquivo URDF
 URDF (Unified Robot Description Format) é uma forma estruturada de definir as propriedades **físicas e cinemáticas** de um robô no ROS 2. Simplificando, é um formato baseado em XML usado para descrever a estrutura e os componentes de um robô.
 
 Um arquivo URDF pode definir vários aspectos de um robô, incluindo:
@@ -233,7 +233,7 @@ Os elementos básicos para definir uma junção são:
 * parent e child: Aqui, você define quem está conectado ao seu link. Neste caso, base_link foi o Pai para head_link.
 * Origem: Todas as coordenadas (X, Y e Z e R, P, Y) são referenciados ao eixo Pai, não ao eixo Filho: Neste caso, o quadro de origem do head_link está 0,11 metros acima no EIXO Z da origem do quadro do base_link.
 
-# TF Frames e LINKS
+### TF Frames e LINKS
 Automaticamente, cada LINK que você define em um URDF tem um TF FRAME associado.
 
 1. Adicione TF no elemento RVIZ2.
@@ -262,6 +262,84 @@ GID: e6.22.10.01.18.5b.3c.f9.71.dd.e4.02.00.00.16.03.00.00.00.00.00.00.00.00
 * O CONCEITO MAIS IMPORTANTE AQUI é que **cada link possui um QUADRO associado**.
 * Este quadro é independente do quadro de referência da forma geométrica visual.
 * Para ilustrar esse conceito, você pode adicionar o deslocamento dos elementos visuais se desejar que a forma geométrica fique em uma posição diferente do quadro do link associado.
-* Faça essa modificação para que a caixa visual head_link seja deslocada 0,1 metro no eixo Z do QUADRO head_link.
+* Faça essa modificação para que a caixa visual head_link seja deslocada 0,1 metro no eixo Z do QUADRO head_link, usando o parametro **origin**.
 
-You should see something like this:
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="head_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0.1" /> <!-- ORIGIN DISPLACEMENT ADDED -->
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_head_link_joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0.11" />
+        <parent link="base_link" />
+        <child link="head_link" />
+    </joint>
+
+</robot>
+```
+
+Você deverá ver algo assim:
+
+![visualdisplacement](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/visualdisplacement.png)
+
+* Observe que a caixa visual de geometria associada ao head_link não se origina no mesmo local que o **quadro head_link**.
+* NOVAMENTE, isso serve para mostrar que uma coisa são os quadros LINK e outra são as formas geométricas associadas a esses links. Eles NÃO são a mesma coisa.
+
+* Observe que no RVIZ2 agora você pode selecionar os diferentes links em um menu suspenso (base_link ou head_link).
+* Por que não conseguimos fazer isso quando tínhamos apenas UM LINK?
+* O motivo é que, com apenas UM LINK, os TFs NÃO são publicados.
+* Precisamos de pelo menos dois links com uma junção para iniciar a publicação do TF.
+
+## Tipos de Juntas (joints)
+* Lembra da definição da junção urdf para o seu base_link_to_head_link_joint?
+* Viu o parâmetro **type**? Neste caso, corrigido.
+
+```xml
+<joint name="base_link_to_head_link_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.11" />
+    <parent link="base_link" />
+    <child link="head_link" />
+</joint>
+```
+
+Não existem apenas tipos de juntas fixas.
+
+Estes são os tipos de juntas disponíveis:
+* continuous
+* revolute
+* prismatic
+* fixed 
+
+Existem também dois outros tipos:
+* flutuante (floating): OBSERVE que esta articulação não funciona corretamente no ROS2.
+* planar: OBSERVE que esta articulação não funciona corretamente no ROS2.
+
+Aqui está uma postagem sobre como reproduzir essas juntas planas e flutuantes com combinações de outros tipos de juntas: [Planar and Floating joints patch](https://robotics.stackexchange.com/questions/28609/how-to-achieve-planar-joint).
+
+Veja alguns exemplos de como você teria que alterar seu **base_link_to_head_link_joint** para todos os outros tipos de juntas:
+
+**continuous**
+```xml
+<joint name="base_link_to_head_link_joint" type="continuous">
+  <origin xyz="0 0 0.11" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="head_link"/>
+  <axis xyz="0 0 1"/>
+</joint>
+```
