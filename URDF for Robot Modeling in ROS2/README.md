@@ -368,3 +368,146 @@ Veja alguns exemplos de como você teria que alterar seu **base_link_to_head_lin
 </joint>
 ```
 
+### Mover as juntas com Publisher Joint State 
+DOIS nós se confundem bastante:
+
+* Robot State Publisher
+* Joint State Publisher
+
+O Robot State Publisher publica os tópicos **/robot_description** e **/tf**.
+
+A principal função do Robot State Publisher é publicar os **QUADROS** DE **LINK**.
+
+Com links conectados por JUNTAS FIXAS, não há problema. Você já viu. MAS, e se as JUNTAS SE MOVIMENTAREM?
+
+Como o Robot State Publisher pode saber a orientação de um elo se a junta à qual ele está conectado se moveu?
+
+Alguém deve publicar esses valores de junta (ângulos em juntas contínuas ou de revolução, metros em juntas prismáticas ou planas). É aqui que entra o **Joint State Publisher**:
+* Você pode publicar esses joint states por meio de dois métodos:
+    1. Os codificadores (**encoders**) de hardware do robô (simulados ou não)
+    2. Manualmente usando o comando **joint_state_publisher_gui**: `ros2 run joint_state_publisher_gui joint_state_publisher_gui`.
+
+* Este nó (joint_state_publisher_gui) permite que você defina o estado da junta **manualmente**, permitindo que o Robot State Publisher saiba os valores da junta e, portanto, consiga publicar os quadros TF.
+
+Mude sua junta para uma junta contínua:
+
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="head_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0.1" />
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_head_link_joint" type="continuous">
+        <origin xyz="0 0 0.11" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="head_link"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+
+</robot>
+```
+
+Execute o joint_state_publisher_gui: `ros2 run joint_state_publisher_gui joint_state_publisher_gui`.
+
+Ao compilar e executar a launch novamente, aparece um erro no RobotModel. Além disso, o head_link aparece em BRANCO e a TF desaparece.
+
+Isso é completamente compreensível, pois o valor da junção que conecta base_link com head_link agora é desconhecido. O ERobot State Publisher ainda não sabe e, portanto, não pode publicar o quadro TF e posicionar a caixa visual do head_link.
+
+Publique esse valor usando a interface gráfica joint_state_publisher_gui.
+
+Agora, o head_link não está mais branco e todos os quadros do TF são renderizados.
+Se você mover o controle deslizante, a caixa do head_link deverá girar.
+
+O head_link está girando em torno do eixo Z, AZUL. Mas, qual eixo Z? O eixo inicial do quadro base_link (Pai) ou do quadro head_link (Filho).
+
+Neste caso, onde a junta tem um eixo de rotação, ele sempre se refere ao E**IXO DO QUADRO FILHO**. Neste caso, o eixo Z do quadro head_link.
+Este não é o mesmo caso no elemento de origem da junta, onde tudo se refere ao QUADRO PARENTES. O motivo é que você definiu esse eixo como **ativo** no marcos_bot_simple.urdf.
+
+```xml
+<axis xyz="0 0 1"/>
+```
+
+Altere-o para girar em torno do eixo X, (VERMELHO). Ele gira em torno do eixo X do QUADRO head_link, não do eixo X do QUADRO base_link:
+
+
+```xml
+<axis xyz="1 0 0"/>
+```
+
+## Materiais URDF
+Você pode atribuir **materiais** aos elementos visuais dos seus **links**. Materiais são essencialmente cores.
+
+Altere os materiais dos seus elementos visuais dos links, coloque o material depois do elemento **geometry**, dentro dos elementos **visual**:
+
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+    <material name="blue">
+        <color rgba="0.006 0.151 0.581 1"/>
+    </material>
+
+    <material name="white">
+        <color rgba="1.0 0.91 0.827 1"/>
+    </material>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+       <material name="white"/>
+    </visual>
+  </link>
+
+  <link name="head_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0.1" />
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+    <joint name="base_link_to_head_link_joint" type="revolute">
+        <origin xyz="0 0 0.11" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="head_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-1.57" upper="1.57"/>
+    </joint>    
+
+</robot>
+```
+
+Os nomes dos materiais são inventados. Você pode dar o nome que quiser. É um elemento. Neste caso, você criou dois, branco e azul.
+URDF Meshes
+
+## Malhas (meshes) URDF
+Além de formas geométricas básicas como CAIXA (Cubo), CILINDRO e ESFERA, você também pode usar malhas 3D. Os formatos suportados são **.DAE, .STL e OBJ**.
+
+Aqui, os materiais não afetarão DAE ou OBJ, pois já possuem seus próprios materiais e texturas atribuídos.
+
+Nesse exemplos a malha (URDF) serão baixadas deste Git:
+
+```shell
+cd ~/ros2_ws/src/
+git clone https://bitbucket.org/theconstructcore/urdf_meshes.git
+cp -r ~/ros2_ws/src/urdf_meshes/meshes ~/ros2_ws/src/urdfbot_description/
+```
