@@ -36,7 +36,7 @@ Nesta unidade, você aprenderá a criar uma representação visual de um robô e
 
 Se você tem um robô real e deseja aproveitar a infraestrutura do ROS, precisa de uma descrição virtual de como o robô é montado e onde cada sensor está localizado. Por exemplo, se uma câmera estiver montada na cabeça do robô, o arquivo URDF permite usar a estrutura TF no ROS para identificar a localização exata da câmera, com base nas leituras das juntas e dos sensores. Além disso, essa descrição permite visualizar o modelo do robô dentro do RViz.
 
-## O que é um arquivo URDF
+# O que é um arquivo URDF
 URDF (Unified Robot Description Format) é uma forma estruturada de definir as propriedades **físicas e cinemáticas** de um robô no ROS 2. Simplificando, é um formato baseado em XML usado para descrever a estrutura e os componentes de um robô.
 
 Um arquivo URDF pode definir vários aspectos de um robô, incluindo:
@@ -49,15 +49,30 @@ Um arquivo URDF pode definir vários aspectos de um robô, incluindo:
 
 Os arquivos urdf devem ser criados dentro do diretório **urdf**.
 
-### O que é um LINK (Elo)
+## O que é um LINK (Elo)
 LINKS são as unidades individuais que, por meio da montagem, formam um robô.
 
-[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/exemplos/marcos_bot_description/urdf/marcos_bot_simple.urdf) um arquivo urdf chamado **marcos_bot_simple.urdf**:
+Veja nesse exemplo a baixo um arquivo urdf que:
 
 * Este URDF será apenas um único LINK.
 * O nome do link é **base_link**.
 * Dentro dele, defina uma geometria dentro do elemento visual.
 * Uma geometria é o formato que você deseja dar a este link, neste caso, uma caixa simples.
+
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+</robot>
+```
 
 Todas as medidas em URDF estão no **Sistema Internacional de Unidades**:
 
@@ -79,7 +94,7 @@ Eles devem ser definidos dentro do elemento de **geometry** da seguinte maneira:
 <sphere radius="0.06"/>
 ```
 
-## Visualize arquivos URDF no RVIZ2
+### Visualize arquivos URDF no RVIZ2
 [Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/exemplos/marcos_bot_description/launch/urdf_visualize.launch.py) um launch para executar um arquivo urdf.
 
 Aqui, revise alguns elementos do arquivo launch:
@@ -158,3 +173,95 @@ Quando tiver concluído essas etapas, você deverá ter algo semelhante a isto:
 ![rviz2basic1](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/rviz2basic1.png)
 
 A caixa vermelha na janela de exibição principal representa o modelo de robô que você construiu.
+
+## O que é uma junta (joint)
+A **CONEXÃO** entre DOIS LINKS é chamada de JUNTA.
+
+Veja no exemplo a baixo um arquivo urdf que conecta dois links, **base_link** e **head_link**, com uma **JOINT**.
+
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="head_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_head_link_joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0.11" />
+        <parent link="base_link" />
+        <child link="head_link" />
+    </joint>
+
+</robot>
+```
+
+Ao executar a [launch](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/exemplos/marcos_bot_description/launch/urdf_visualize.launch.py) e abrir o rviz novamente com as configurações feitas anteriormente, verá o seguinte:
+
+![joint](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/rvizjoinst2v2.png)
+
+* Você tem dois **links**:
+    1. base_link: Este é o link raiz, o Parent de onde todos os links serão suspensos. Ele precisa ser ÚNICO.
+    2. head_link: Este link representa a cabeça do seu robo, uma caixa de 0,1 metro de cada lado.
+* Você tem uma **junta**:
+    1. **base_link_to_head_link_joint**: Esta é uma junta fixa, o que significa que NÃO há movimento entre os dois elos. É como se você tivesse soldado os dois elos.
+* No entanto, as articulações podem se mover.
+* JOINTS são as articulações do robô.
+
+```xml
+<joint name="base_link_to_head_link_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.11" />
+    <parent link="base_link" />
+    <child link="head_link" />
+</joint>
+```
+
+Os elementos básicos para definir uma junção são:
+
+* parent e child: Aqui, você define quem está conectado ao seu link. Neste caso, base_link foi o Pai para head_link.
+* Origem: Todas as coordenadas (X, Y e Z e R, P, Y) são referenciados ao eixo Pai, não ao eixo Filho: Neste caso, o quadro de origem do head_link está 0,11 metros acima no EIXO Z da origem do quadro do base_link.
+
+# TF Frames e LINKS
+Automaticamente, cada LINK que você define em um URDF tem um TF FRAME associado.
+
+1. Adicione TF no elemento RVIZ2.
+2. Defina também o **alfa** como 0,5 no elemento RobotModel para tornar os links transparentes.
+
+O nó **Robot State Publisher** publica todos os quadros TF. Ele também publica os **quadros TF** de todos os links no tópico **/tf**, de onde o RVIZ2 está lendo.
+
+Dê uma olhada no tópico /tf: `ros2 topic info /tf --verbose`
+
+```shell
+Type: tf2_msgs/msg/TFMessage                                                  
+Publisher count: 1                                                           
+Node name: robot_state_publisher_node                                          
+Topic type: tf2_msgs/msg/TFMessage                                            
+Endpoint type: PUBLISHER                                                      
+GID: e6.22.10.01.18.5b.3c.f9.71.dd.e4.02.00.00.16.03.00.00.00.00.00.00.00.00 
+    QoS profile:                                                                 
+    Reliability: RELIABLE                                                      
+    Durability: VOLATILE                                                       
+    Lifespan: 9223372036854775807 nanoseconds                                  
+    Deadline: 9223372036854775807 nanoseconds                                  
+    Liveliness: AUTOMATIC                                                       
+    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                               
+```
+
+O CONCEITO MAIS IMPORTANTE AQUI é que **cada link possui um QUADRO associado**.
+Este quadro é independente do quadro de referência da forma geométrica visual.
+Para ilustrar esse conceito, você pode adicionar o deslocamento dos elementos visuais se desejar que a forma geométrica fique em uma posição diferente do quadro do link associado.
+Faça essa modificação para que a caixa visual head_link seja deslocada 0,1 metro no eixo Z do QUADRO head_link.
+
+You should see something like this:
