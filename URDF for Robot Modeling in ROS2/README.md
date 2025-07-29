@@ -259,9 +259,9 @@ GID: e6.22.10.01.18.5b.3c.f9.71.dd.e4.02.00.00.16.03.00.00.00.00.00.00.00.00
     EDITING THIS FILE BY HAND IS NOT RECOMMENDED                               
 ```
 
-O CONCEITO MAIS IMPORTANTE AQUI é que **cada link possui um QUADRO associado**.
-Este quadro é independente do quadro de referência da forma geométrica visual.
-Para ilustrar esse conceito, você pode adicionar o deslocamento dos elementos visuais se desejar que a forma geométrica fique em uma posição diferente do quadro do link associado.
-Faça essa modificação para que a caixa visual head_link seja deslocada 0,1 metro no eixo Z do QUADRO head_link.
+* O CONCEITO MAIS IMPORTANTE AQUI é que **cada link possui um QUADRO associado**.
+* Este quadro é independente do quadro de referência da forma geométrica visual.
+* Para ilustrar esse conceito, você pode adicionar o deslocamento dos elementos visuais se desejar que a forma geométrica fique em uma posição diferente do quadro do link associado.
+* Faça essa modificação para que a caixa visual head_link seja deslocada 0,1 metro no eixo Z do QUADRO head_link.
 
 You should see something like this:
