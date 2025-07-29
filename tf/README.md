@@ -1165,4 +1165,304 @@ Em seguida, diga ao Cam_bot para seguir esse quadro: `ros2 topic pub /destinatio
 Agora, se você mover a tartaruga, o Cam_bot deverá segui-la.
 
 # Robot State Publisher
+Nesta sessão, você explorará o Robot State Publisher, uma ferramenta crucial no ROS 2 para lidar com transformações TF dos links de um robô com base em seu modelo URDF. Entender como usar essa ferramenta de forma eficaz ajudará você a gerenciar e visualizar o estado do seu robô com precisão.
 
+O robot_state_publisher é um nó do ROS responsável por publicar as transformações (TFs) entre os links de um robô com base nas juntas (joints) e na descrição do robô (normalmente em URDF).
+
+O robot_state_publisher lê o arquivo URDF do robô (que descreve os links e juntas) e publica a árvore de transformações TF com base nas posições atuais das juntas (vindo do tópico /joint_states).
+
+## Exemplo
+Use o pacote que você gerou anteriormente para criar um arquivo de inicialização que gera um robô dentro do Gazebo. Para começar, você precisa de um novo arquivo de inicialização:
+
+**spawn_without_robot_state_publisher.launch.py:**
+
+```python
+import os
+
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import ExecuteProcess
+from launch.substitutions import LaunchConfiguration
+
+
+def generate_launch_description():
+    urdf_file = 'unicycle.urdf'
+    package_description = 'unicycle_robot_pkg'
+
+    urdf = os.path.join(get_package_share_directory(
+        package_description), 'urdf', urdf_file)
+
+    xml = open(urdf, 'r').read()
+
+    xml = xml.replace('"', '\\"')
+
+    spawn_args = '{name: \"my_robot\", xml: \"' + xml + '\" }'
+    
+    spawn_robot =  ExecuteProcess(
+            cmd=['ros2', 'service', 'call', '/spawn_entity',
+                 'gazebo_msgs/SpawnEntity', spawn_args],
+            output='screen')
+
+    return LaunchDescription([
+
+     spawn_robot,
+    ])
+```
+
+Ao executar este arquivo de inicialização, ele chama generate_launch_description() primeiro e processa a sequência de instruções em seu corpo de função.
+
+As primeiras linhas são usadas para ler os dados de descrição do robô na variável **spawn_args**.
+
+A ação **ExecuteProcess** chamada **spawn_robot** é definida com o argumento cmd correspondente. Isso significa que este arquivo de inicialização executa uma chamada de serviço para o serviço **/spawn_entity** como se você fosse executar essa chamada de serviço a partir da linha de comando.
+
+Por fim, adicione **spawn_robot** à lista **LaunchDescription**.
+
+Pronto. Este arquivo permite que você crie um modelo de robô em uma simulação sem executar o nó robot_state_publisher. 
+
+Ao abrir o ROS2 você deverá ver algo assim:
+
+![rstatepub_humble2](https://github.com/marcospontoexe/ROS_2/blob/main/tf/imagens/rstatepub_humble2.png)
+
+Observe que dois quadros tf estão sendo publicados. 
+
+Então, por que isso acontece?
+
+* Primeiro, já explicamos que os quadros das diferentes partes do corpo e o tópico /robot_description do robô não estão sendo publicados. O responsável normalmente é o EDITOR DO ESTADO DO ROBÔ.
+* Em segundo lugar, os dois quadros publicados são unicycle_base_link e odom. Esses quadros são publicados por um plugin dentro do **URDF** do robô, chamado **differential_drive**. Ele recebe comandos de velocidade para mover o robô e publicar a transformação no quadro de odometria.
+
+Você pode ter uma visão melhor disso através das informações do tópico: `ros2 topic info /tf --verbose`
+
+```shell
+Type: tf2_msgs/msg/TFMessage
+
+Publisher count: 1
+
+Node name: differential_drive_controller
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: PUBLISHER
+GID: 71.11.10.01.30.5a.ee.3c.78.e0.9a.4a.00.00.67.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  Durability: VOLATILE
+  Lifespan: 9223372036854775807 nanoseconds
+  Deadline: 9223372036854775807 nanoseconds
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: 9223372036854775807 nanoseconds
+
+Subscription count: 1
+
+Node name: transform_listener_impl_558a69882220
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: d6.ce.10.01.7f.58.4f.9a.3c.5b.5a.fe.00.00.28.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  Durability: VOLATILE
+  Lifespan: 9223372036854775807 nanoseconds
+  Deadline: 9223372036854775807 nanoseconds
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: 9223372036854775807 nanoseconds
+```
+
+Você pode ver que o único publicador de TFs aqui é o **differential_drive_controller**. E este controlador publica SOMENTE a transformação entre o **unicycle_base_link** do robô e o quadro **odom**.
+
+Se você mover o robô, os TFs se moverão sem problemas.
+
+## Robot State Publisher
+O Robot State Publisher possui diversas funções que analisaremos agora:
+
+* Ele recebe o arquivo de descrição do modelo do robô **URDF** ou XACRO como INPUT.
+* Ele publica essa descrição no tópico padrão /robot_description, a partir do qual outras ferramentas como Gazebo ou RVIZ farão a leitura.
+* Ele publica as transformações entre TODOS os links (partes do corpo) definidos no modelo do robô. Existem basicamente dois tipos de juntas que conectam links e, portanto, precisam de TFs transmitidos:
+    * Articulações FIXAS: Seus TFs são publicados diretamente, pois o robot_state_publisher não precisa de informações adicionais. O URDF é mais do que suficiente, pois declara as transformações entre os links conectados.
+    * Articulações MÓVEIS: O robot_state_publisher precisa de uma informação adicional para publicar essas transformações: os **joint_states**. Isso se refere às informações sobre os ângulos ou a posição de todas as articulações que podem ser movidas, como rodas, cabeças, braços e garras. Em robôs reais, isso normalmente é publicado pelos controladores do robô. No Gazebo, inicie o nó joint_state_publisher ou use um plugin do Gazebo para inseri-lo no arquivo de descrição do modelo do robô URDF ou XACRO.
+
+Em um arquivo de inicialização do ROS2 Python, adicione um nó **joint_state_publisher** criando um objeto Node como este e, em seguida, inclua esse objeto na lista de argumentos que você passa para a função LaunchDescription:
+
+```python
+   joint_state_publisher_node = Node(
+        package='joint_state_publisher',
+        executable='joint_state_publisher',
+        name='joint_state_publisher'
+    )
+
+....
+
+   return LaunchDescription([
+        ....
+        ....
+        joint_state_publisher_node,
+        robot_state_publisher_node,
+        ......
+        ......
+    ])
+```
+
+Observe que, neste caso, o modelo do robô possui um plugin do **Joint State Publisher** dentro da descrição do modelo do robô. Portanto, não será necessário iniciar um nó separado do Joint State Publisher por meio do arquivo de inicialização.
+
+### Exemplo
+Crie um novo arquivo de inicialização, que, neste caso, inicia o robot_state_publisher:
+
+**spawn.launch.py:**
+
+```python
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch_ros.actions import Node
+import xacro
+
+
+def generate_launch_description():
+    # Position and orientation
+    # [X, Y, Z]
+    position = [0.0, 0.0, 1.0]
+    # [Roll, Pitch, Yaw]
+    orientation = [0.0, 0.0, 0.0]
+    # Base Name or robot
+    robot_base_name = "unicycle_bot"
+
+    entity_name = robot_base_name
+
+    # Spawn ROBOT Set Gazebo
+    spawn_robot = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        name='cam_bot_spawn_entity',
+        output='screen',
+        emulate_tty=True,
+        arguments=['-entity',
+                   entity_name,
+                   '-x', str(position[0]), '-y', str(position[1]
+                                                     ), '-z', str(position[2]),
+                   '-R', str(orientation[0]), '-P', str(orientation[1]
+                                                        ), '-Y', str(orientation[2]),
+                   '-topic', '/unicycle_bot_robot_description'
+                   ]
+    )
+
+    ####### DATA INPUT ##########
+    urdf_file = 'unicycle.urdf'
+    #xacro_file = "box_bot.xacro"
+    package_description = "unicycle_robot_pkg"
+
+    ####### DATA INPUT END ##########
+    print("Fetching URDF ==>")
+    robot_desc_path = os.path.join(get_package_share_directory(package_description), "urdf", urdf_file)
+
+    robot_desc = xacro.process_file(robot_desc_path)
+    xml = robot_desc.toxml()
+
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='unicycle_robot_state_publisher',
+        emulate_tty=True,
+        parameters=[{'use_sim_time': True, 'robot_description': xml}],
+        remappings=[("/robot_description", "/unicycle_bot_robot_description")
+        ],
+        output="screen"
+    )
+
+
+    # create and return launch description object
+    return LaunchDescription(
+        [
+            spawn_robot,
+            robot_state_publisher_node
+        ]
+    )
+```
+
+Como você pode ver, a parte de geração do Gazebo é a mesma.
+
+E o Robot State Publisher também é semelhante.
+
+Você remapeará para usar o tópico **/unicycle_bot_robot_description** em vez do tópico **/robot_description**.
+
+Se você mover o robô, verá que tudo funciona perfeitamente no rivz. E se você verificar o tópico do TF agora, verá que há outro nó publicando: `ros2 topic info /tf --verbose`
+
+```shell
+Type: tf2_msgs/msg/TFMessage
+
+Publisher count: 2
+
+Node name: differential_drive_controller
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: PUBLISHER
+GID: 61.b9.10.01.f3.47.ab.03.33.0a.ae.c5.00.00.67.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  Durability: VOLATILE
+  Lifespan: 9223372036854775807 nanoseconds
+  Deadline: 9223372036854775807 nanoseconds
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: 9223372036854775807 nanoseconds
+
+Node name: unicycle_robot_state_publisher
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: PUBLISHER
+GID: 74.af.10.01.51.9c.3d.39.50.80.97.e3.00.00.16.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  Durability: VOLATILE
+  Lifespan: 9223372036854775807 nanoseconds
+  Deadline: 9223372036854775807 nanoseconds
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: 9223372036854775807 nanoseconds
+
+Subscription count: 1
+
+Node name: transform_listener_impl_56045dfcd8d0
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: d5.e3.10.01.cf.5d.3a.ae.9f.a8.cb.b7.00.00.28.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  Durability: VOLATILE
+  Lifespan: 9223372036854775807 nanoseconds
+  Deadline: 9223372036854775807 nanoseconds
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: 9223372036854775807 nanoseconds
+```
+
+Agora você tem DOIS publicadores para TF:
+
+* unicycle_robot_state_publisher
+* differential_drive_controller
+
+Você também pode dar uma olhada para ver o que o Robot State Publisher faz com o comando ros2 node info: `ros2 node info /unicycle_robot_state_publisher`
+
+```shell
+/unicycle_robot_state_publisher
+  Subscribers:
+    /clock: rosgraph_msgs/msg/Clock
+    /joint_states: sensor_msgs/msg/JointState
+    /parameter_events: rcl_interfaces/msg/ParameterEvent
+  Publishers:
+    /parameter_events: rcl_interfaces/msg/ParameterEvent
+    /rosout: rcl_interfaces/msg/Log
+    /tf: tf2_msgs/msg/TFMessage
+    /tf_static: tf2_msgs/msg/TFMessage
+    /unicycle_bot_robot_description: std_msgs/msg/String
+  Service Servers:
+    /unicycle_robot_state_publisher/describe_parameters: rcl_interfaces/srv/DescribeParameters
+    /unicycle_robot_state_publisher/get_parameter_types: rcl_interfaces/srv/GetParameterTypes
+    /unicycle_robot_state_publisher/get_parameters: rcl_interfaces/srv/GetParameters
+    /unicycle_robot_state_publisher/list_parameters: rcl_interfaces/srv/ListParameters
+    /unicycle_robot_state_publisher/set_parameters: rcl_interfaces/srv/SetParameters
+    /unicycle_robot_state_publisher/set_parameters_atomically: rcl_interfaces/srv/SetParametersAtomically
+  Service Clients:
+
+  Action Servers:
+
+  Action Clients:
+```
+
+Veja como ele tem como entrada joint_states
+Ele tem /tf, /tf_static (para as juntas fixas) e /unicycle_bot_robot_description como saída.
