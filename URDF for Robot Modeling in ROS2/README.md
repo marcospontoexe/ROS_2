@@ -343,3 +343,28 @@ Veja alguns exemplos de como você teria que alterar seu **base_link_to_head_lin
   <axis xyz="0 0 1"/>
 </joint>
 ```
+---
+
+**revolute**
+```xml
+<joint name="base_link_to_head_link_joint" type="revolute">
+  <origin xyz="0 0 0.11" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="head_link"/>
+  <axis xyz="0 0 1"/>
+  <limit effort="100" velocity="1.0" lower="-1.57" upper="1.57"/>
+</joint>
+```
+---
+
+**prismatic**
+```xml
+<joint name="base_link_to_head_link_joint" type="prismatic">
+  <origin xyz="0 0 0.11" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="head_link"/>
+  <axis xyz="0 0 1"/>
+  <limit effort="100" velocity="0.1" lower="-0.1" upper="0.1"/>
+</joint>
+```
+
