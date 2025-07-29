@@ -141,3 +141,20 @@ user:~/ros2_ws$ xacro /home/user/ros2_ws/src/marcos_bot_description/urdf/marcos_
   </link>
 </robot>
 ```
+
+Execute o arquivo **urdf_visualize.launch.py**.
+Ele publicará o conteúdo do arquivo marcos_bot_simple.urdf no tópico **/robot_description**.
+O RVIZ2 lerá o tópico robot_description e mostrará os links definidos.
+
+Abra o RVIZ2, à qual você adicionará as representações do TF e um Modelo do Robô:
+
+Configuração:
+
+1. Fixed Frame: Na parte superior do painel esquerdo, clique no triângulo preto à esquerda de Opções Globais para visualizar/ocultar os detalhes das Opções Globais. Um dos elementos que serão exibidos é o campo Quadro Fixo com "mapa" como valor padrão. Clique no campo para ver um cursor piscando no texto. Defina como valor **base_link** e pressione Enter. NÃO ESTARÁ disponível como um menu suspenso; você precisa DIGITAR o valor de base_link.
+2. Modelo do Robô: Neste caso, clique no triângulo preto à esquerda de Modelo do Robô para abrir os detalhes. Role para baixo e confirme se a Origem da Descrição está definida como **Topic**. Em seguida, clique no espaço em branco à esquerda de **Description Topic** e DIGITE **/robot_description**. Em seguida, clique no triângulo preto à esquerda de Description Topic para visualizar mais campos. Defina a **Reliability Policy** como **Reliable** e a **Durability Policy** como **Transient Local**.
+
+Quando tiver concluído essas etapas, você deverá ter algo semelhante a isto:
+
+![rviz2basic1](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/rviz2basic1.png)
+
+A caixa vermelha na janela de exibição principal representa o modelo de robô que você construiu.
