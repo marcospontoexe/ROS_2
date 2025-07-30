@@ -688,3 +688,302 @@ OBSERVE como você definiu como eixo de ROTAÇÃO a nova JUNTA base_link_to_uppe
 RESUMO:
 * O eixo de rotação da articulação é feito em relação ao referencial FILHO.
 * A orientação e translação da JUNTA são feitas em relação ao EIXO do referencial PAI.
+
+Agora adicione o resto do braço:
+
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_body.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="head_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_head.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+    <joint name="base_link_to_head_link_joint" type="revolute">
+        <origin xyz="0 0 0.07" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="head_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-1.57" upper="1.57"/>
+    </joint>    
+
+    <!-- Right Arm -->
+
+     <link name="upper_arm_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_limb.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="base_link_to_upper_arm_r_link_joint" type="revolute">
+        <origin xyz="0 -0.03272 0.0279895" rpy="-1.57 0 0"/>
+        <parent link="base_link"/>
+        <child link="upper_arm_r_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-1.0" upper="1.0"/>
+    </joint>
+
+    <link name="lower_arm_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_limb.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="upper_arm_r_link_to_lower_arm_r_link_joint" type="revolute">
+        <origin xyz="0 0 -0.0568" rpy="0 0 0"/>
+        <parent link="upper_arm_r_link"/>
+        <child link="lower_arm_r_link"/>
+        <axis xyz="1 0 0"/>
+        <limit effort="100" velocity="1.0" lower="-1.0" upper="1.0"/>
+    </joint>
+
+
+    <link name="claw_a_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_claw.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="upper_arm_r_link_to_claw_a_r_link_joint" type="revolute">
+        <origin xyz="0 0 -0.065" rpy="-1.57 0 -1.57"/>
+        <parent link="lower_arm_r_link"/>
+        <child link="claw_a_r_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-0.7" upper="0.7"/>
+    </joint>
+
+    <link name="claw_b_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_claw.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="upper_arm_r_link_to_claw_b_r_link_joint" type="revolute">
+        <origin xyz="0 0 -0.065" rpy="-1.57 0 1.57"/>
+        <parent link="lower_arm_r_link"/>
+        <child link="claw_b_r_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-0.7" upper="0.7"/>
+    </joint>
+
+</robot>
+```
+
+Antes de adicionar o elemento mímico, diminua o tamanho dos quadros RVIZ TF para visualizar melhor o robô e suas articulações.
+Reduza a ESCALA DO MARCADOR dos quadros TF para 0,3.
+Você deve ter algo assim agora:
+
+![smallertfs](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/smallertfs.png)
+
+Você quer que ambas as garras se movam a mesma quantidade de radianos com um único controle deslizante, como em um robô com um único atuador para fechar e abrir as garras. É por isso que você usa o elemento **mimic**.
+
+Você deve posicionar o elemento mimic na junta que deseja simular. No seu caso, você quer que a junta **upper_arm_r_link_to_claw_B_r_link_joint** imite a **upper_arm_r_link_to_claw_A_r_link_joint**. Portanto, você posicionará o elemento mimic dentro da upper_arm_r_link_to_claw_B_r_link_joint da seguinte forma:
+
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_body.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="head_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_head.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+    <joint name="base_link_to_head_link_joint" type="revolute">
+        <origin xyz="0 0 0.07" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="head_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-1.57" upper="1.57"/>
+    </joint>    
+
+    <!-- Right Arm -->
+
+     <link name="upper_arm_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_limb.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="base_link_to_upper_arm_r_link_joint" type="revolute">
+        <origin xyz="0 -0.03272 0.0279895" rpy="-1.57 0 0"/>
+        <parent link="base_link"/>
+        <child link="upper_arm_r_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-1.0" upper="1.0"/>
+    </joint>
+
+    <link name="lower_arm_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_limb.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="upper_arm_r_link_to_lower_arm_r_link_joint" type="revolute">
+        <origin xyz="0 0 -0.0568" rpy="0 0 0"/>
+        <parent link="upper_arm_r_link"/>
+        <child link="lower_arm_r_link"/>
+        <axis xyz="1 0 0"/>
+        <limit effort="100" velocity="1.0" lower="-1.0" upper="1.0"/>
+    </joint>
+
+
+    <link name="claw_a_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_claw.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="upper_arm_r_link_to_claw_a_r_link_joint" type="revolute">
+        <origin xyz="0 0 -0.065" rpy="-1.57 0 -1.57"/>
+        <parent link="lower_arm_r_link"/>
+        <child link="claw_a_r_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-0.7" upper="0.7"/>
+    </joint>
+
+    <link name="claw_b_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_claw.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="upper_arm_r_link_to_claw_b_r_link_joint" type="revolute">
+        <origin xyz="0 0 -0.065" rpy="-1.57 0 1.57"/>
+        <parent link="lower_arm_r_link"/>
+        <child link="claw_b_r_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="0.0" upper="0.0"/>
+        <mimic joint="upper_arm_r_link_to_claw_a_r_link_joint" multiplier="1.0" offset="0.0"/>
+    </joint>
+</robot>
+```
+
+Defina a articulação mimética como "upper_arm_r_link_to_claw_a_r_link_joint". Defina o multiplicador como 1,0. Isso significa que para cada radiante ALFA, girado por upper_arm_r_link_to_claw_A_r_link_joint, sua articulação mimética upper_arm_r_link_to_claw_B_r_link_joint se moverá ALFA * 1,0, Ela se moverá na mesma proporção.
+
+Se você alterar o multiplicador, fará com que a junta mimetizadora se mova assimetricamente em relação à junta mimetizada original. Altere-o para 0,1, isso significa que ela se moverá DEZ VEZES MENOS radianos em relação à junta mimetizada original.
+
+A junta que possui o elemento mimic usará os mesmos limites da junta que está imitando. Então, por que deixá-lo se não é necessário?
+
+O elemento **limit** deve ser adicionado dentro da junta que possui o elemento mimic, mesmo que não seja levado em consideração, pois, caso contrário, o analisador URDF gerará um erro parecido com esse:
+
+```shell
+Error:   Joint [upper_arm_r_link_to_claw_b_r_link_joint] is of type REVOLUTE but it does not specify limits
+         at line 572 in /tmp/binarydeb/ros-galactic-urdfdom-2.3.5/urdf_parser/src/joint.cpp
+Error:   joint xml is not initialized correctly
+         at line 206 in /tmp/binarydeb/ros-galactic-urdfdom-2.3.5/urdf_parser/src/model.cpp
+ERROR: Model Parsing the xml failed
+```
+
+Verifique a integridade de um arquivo URDF usando o comando check_urdf, seguido pelo caminho do arquivo URDF: `check_urdf src/marcos_bot_description/urdf/marcos_bot_simple.urdf`
+
+## Elementos de simulação
+
+### <dynamics> (optional)
+Especifica as propriedades físicas da junta. Esses valores são usados para especificar as propriedades de modelagem da junta, usadas para simulação.
+
+* damping (opcional, padrão 0): O valor de **amortecimento** físico da junta (em newtons-segundos por metro [N∙s/m] para juntas prismáticas, em newtons-metros-segundos por radiano [N∙m∙s/rad] para juntas revolutas).
+* friction (opcional, padrão 0): O valor de **atrito estático** físico da junta (em newtons [N] para juntas prismáticas, em newtons-metros [N∙m] para juntas revolutas).
+
+```xml
+<dynamics damping="0.1" friction="0.05"/>
+```
+
+### <safety_controller> (optional)
+Pode conter os seguintes atributos:
+
+* soft_lower_limit (opcional, padrão 0): Um atributo que especifica o limite inferior da junta onde o controlador de segurança começa a limitar a posição da junta. Este limite deve ser maior que o limite inferior da junta (veja acima). Consulte os limites de segurança para obter mais detalhes.
+* soft_upper_limit (opcional, padrão 0): Um atributo que especifica o limite superior da junta onde o controlador de segurança começa a limitar a posição da junta. Este limite deve ser menor que o limite superior da junta (veja acima). Consulte os limites de segurança para obter mais detalhes.
+* k_position (opcional, padrão 0): Um atributo que especifica a relação entre os limites de posição e velocidade. Consulte os limites de segurança para obter mais detalhes.
+* k_velocity (obrigatório): Um atributo que especifica a relação entre os limites de esforço e velocidade. Consulte os limites de segurança para obter mais detalhes.
+
+### <calibration> (optional)
+As posições de referência da junta são usadas para calibrar a posição absoluta da junta.
+
+* rising (opcional): Quando a junta se move em uma direção positiva, esta posição de referência acionará uma borda ascendente.
+* falling (opcional): Quando a junta se move em uma direção positiva, esta posição de referência acionará uma borda descendente.
+
+Esses sistemas são usados para calibrar juntas com codificadores relativos e precisam saber onde estão os limites da amplitude de movimento para posicionar com precisão, antes de iniciar a operação.
+
+```xml
+<joint name="base_link_to_head_link_joint" type="revolute">
+    <origin xyz="0 0 0.07" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="head_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100" velocity="1.0" lower="-1.57" upper="1.57"/>
+    <!-- calibration definition -->
+    <calibration rising="1.5" falling="-1.5" reference_position="0.0"/>
+</joint>
+```
+
+* rising="1.5" significa que um interruptor de limite é ativado quando a junta se move para uma posição de 1,5 radianos (ou seja, passa de desligado para ligado).
+* falling="-1.5" indica que quando a junta se move para -1,5 radianos, um interruptor de limite previamente ativado é desativado (ou seja, passa de ligado para desligado).
+
+Aqui está uma representação conceitual:
+
+```html
+|          switch
+|        deactivated
+|      ___________________             <- Falling edge (-1.5 radians)
+|     /
+|    /
+|   /
+|  /
+| /_______________________             <- Joint movement direction
+|                          \
+|                           \
+|                            \
+|                             \        <- Rising edge (1.5 radians)
+|                              -----------------------
+|                                        switch
+|                                      activated
+```
