@@ -512,7 +512,7 @@ git clone https://bitbucket.org/theconstructcore/urdf_meshes.git
 cp -r ~/ros2_ws/src/urdf_meshes/meshes ~/ros2_ws/src/urdfbot_description/
 ```
 
-[Veja aqui]() os arquivos meshes.
+[Veja aqui](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/exemplos/marcos_bot_description/meshes) os arquivos meshes.
 
 Lembre de incluir o diretório no arquivo CMakeLists.txt:
 
@@ -596,6 +596,95 @@ Observe que a origem agora é '0,0' no deslocamento do eixo Z. O motivo é que a
 
 Aqui está uma comparação de onde cada uma das origens está:
 
-![headaxis]()
+![headaxis](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/headaxis.png)
 
-![boxaxis]()
+![boxaxis](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/boxaxis.png)
+
+É por isso que você não precisa do deslocamento para a cabeça, porque ela já tem um para posicionar melhor a malha visual.
+
+## Elementos especiais de juntas
+
+### <limit> (necessário apenas para juntas revolutas e prismáticas)
+
+Esse elemento pode conter os seguintes atributos:
+
+* lower (opcional, padrão 0): Um atributo que especifica o limite inferior da junta (em radianos para juntas de revolução, em metros para juntas prismáticas). Omita se a junta for contínua.
+* upper (opcional, padrão 0): Um atributo que especifica o limite superior da junta (em radianos para juntas de revolução, em metros para juntas prismáticas). Omita se a junta for contínua.
+* effort (**obrigatório**): Um atributo para impor o esforço máximo da junta (|esforço aplicado| < |esforço|). Consulte os limites de segurança.
+* velocity (**obrigatório**): Um atributo para impor a velocidade máxima da junta (em radianos por segundo [rad/s] para juntas de revolução, em metros por segundo [m/s] para juntas prismáticas). Consulte os limites de segurança.
+
+Observe que em URDFs sem simulação, os elementos de esforço e velocidade são irrelevantes. Esses elementos só são relevantes quando você usa a URDF para simulação.
+
+### <mimic> (opcional)
+Este elemento é usado para especificar que a junta definida imita outra junta existente. O valor desta junta pode ser calculado como:
+
+valor = multiplicador * valor_da_outra_junta + offset
+
+Atributos esperados e opcionais:
+
+* valor_da_outra_junta (obrigatório): Especifica o nome da junta a ser imitada.
+* multiplicador (opcional): Especifica o fator multiplicativo na fórmula acima.
+* offset (opcional): Especifica o deslocamento a ser adicionado na fórmula acima. O padrão é 0 (radianos para juntas de revolução, metros para juntas prismáticas).
+
+Veja um exemplo de como usar este elemento de imitação:
+Você vai adicionar braços e pernas ao seu robô.
+
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_body.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="head_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_head.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+    <joint name="base_link_to_head_link_joint" type="revolute">
+        <origin xyz="0 0 0.07" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="head_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-1.57" upper="1.57"/>
+    </joint>    
+
+    <!-- Right Arm -->
+
+    <link name="upper_arm_r_link">
+        <visual>
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <geometry>
+            <mesh filename="package://marcos_bot_description/meshes/urdfbot_limb.dae" scale="0.1 0.1 0.1"/>
+        </geometry>
+        </visual>
+    </link>
+
+    <joint name="base_link_to_upper_arm_r_link_joint" type="revolute">
+        <origin xyz="0 -0.03272 0.0279895" rpy="-1.57 0 0"/>
+        <parent link="base_link"/>
+        <child link="upper_arm_r_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-1.0" upper="1.0"/>
+    </joint>
+
+</robot>
+```
+
+OBSERVE como você definiu como eixo de ROTAÇÃO a nova JUNTA base_link_to_upper_arm_r_link_joint.
+
+* O eixo de rotação é o eixo Z do upper_arm_r_link, NÃO o eixo Z do quadro base_link.
+* OBSERVE também que você rotacionou o upper_arm_r_link em relação ao base_link a partir do eixo de rotação (eixo X).
+
+RESUMO:
+* O eixo de rotação da articulação é feito em relação ao referencial FILHO.
+* A orientação e translação da JUNTA são feitas em relação ao EIXO do referencial PAI.
