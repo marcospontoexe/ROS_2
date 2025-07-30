@@ -1333,4 +1333,24 @@ ament_package()
 
 Compile e execute a launch: `ros2 launch marcos_box_bot_gazebo start_world.launch.py`.
 
-![startworld_urdfros2]()
+![startworld_urdfros2](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/startworld_urdfros2.png)
+
+Observe os caminhos adicionados pela interface gráfica do Gazebo. O painel cinza à esquerda possui três abas: World, Insert, and Layers. Clique na aba Insert. Em seguida, clique no triângulo branco à esquerda de home/user/.gazebo/models para fechar os detalhes.
+
+Como você pode ver, ele mostra os caminhos padrão para **home/user/.gazebo/models** e o banco de dados de modelos online de onde o Gazebo pode baixar modelos:
+* /home/user/.gazebo/models
+* Connecting to...
+
+Alguns caminhos extras do seu sistema:
+
+* /usr/share/gazebo-11/models
+* /usr/share/gazebo-9/models
+
+E aqueles que o seu script CMakeLists.txt copiou para a pasta de instalação do seu espaço de trabalho:
+
+* /home/user/ros2_ws/install/marcos_box_bot_description/share
+* /home/user/ros2_ws/install/marcos_box_bot_gazebo/share/marcos_box_bot_gazebo/models
+
+Se você arrastar e soltar o modelo dentro do caminho /home/user/ros2_ws/install/marcos_box_bot_gazebo/share/marcos_box_bot_gazebo/models que você copiou do git extra_material, você deverá ver uma sala como esta:
+
+![dragdropmodel]
