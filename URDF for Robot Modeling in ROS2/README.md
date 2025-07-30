@@ -1069,3 +1069,55 @@ Revise o funcionamento das diferentes peças, especialmente as rodas giratórias
 * Isso significa que você deve definir três juntas diferentes que girem em cada eixo.
 * No final, a roda giratória se comportará como uma junta esférica.
 
+Crie os seguintes novos arquivos:
+
+* Crie um pacote chamado **marcos_box_bot_description**.
+* Crie o arquivo URDF, **box_bot_geometric.urdf**, com os novos links (corpo e rodas) e elementos descritos.
+* Crie o arquivo URDF, **box_bot_geometric_meshe.urdf**, que terá uma versão em malha.
+* Crie o arquivo de inicialização **urdf_visualize_geometric.launch.py**, um novo lançamento que publica na **robot_description** o conteúdo de **box_bot_geometric.urdf**.
+* Crie o arquivo de inicialização **urdf_visualize_meshes.launch.py**, um novo lançamento publicado na **robot_description** o conteúdo de **box_bot_geometric_meshes.urdf**.
+* Ambas as inicializações devem iniciar o RVIZ2 com seu próprio arquivo RVIZ, urdf_vis.rviz.
+
+NOVO CONCEITO:
+* Links podem estar vazios, sem nenhum elemento visual dentro. Isso publicará apenas o frame do LINK.
+* Isso é usado para links auxiliares a outros links, facilitando a construção do robô.
+
+Exemplo para o FRAME base_link:
+
+```xml
+<link name="base_link">
+</link>
+```
+
+## Links
+
+* base_link, sem nenhum elemento visual.
+* chassis, com uma caixa **box_bot_blue** com geometria básica de tamanho size="0.1 0.1 0.1".
+* left_wheel, com um cilindro preto com forma geométrica básica de dimensões length="0.001" radius="0.035".
+* right_wheel, com um cilindro branco com forma geométrica básica de dimensões length="0.001" radius="0.035".
+* front_yaw_link, back_yaw_link, com um cilindro azul com forma geométrica básica de dimensões length="0.005" radius="0.010".
+* front_roll_link, back_roll_link, com um cilindro vermelho com forma geométrica básica de dimensões length="0.005" radius="0.010".
+* front_pitch_link, com uma esfera green_dark com forma geométrica básica de dimensões radius="0.010".
+* back_pitch_link, com uma esfera green_light com forma geométrica básica de dimensões radius="0.010".
+
+## JOINTS
+
+* Todos os tipos de juntas que precisam se mover devem ser do tipo continuous.
+* Front_pitch_joint: Conecta o front_roll_link com front_pitch_link
+  * Origem rpy="0 0 0" xyz="0 0 0"
+* Back_pitch_joint: Conecta o back_roll_link com back_pitch_link
+  * Origem rpy="0 0 0" xyz="0 0 0"
+* Front_roll_joint: Conecta o front_yaw_link com front_roll_link
+  * Origem rpy="0 0 0" xyz="0 0 0"
+* Back_roll_joint: Conecta o back_yaw_link com back_roll_link
+  * Origem rpy="0 0 0" xyz="0 0 0"
+* Front_yaw_joint: Conecta o chassis com o front_yaw_link
+  * Origem rpy="0 0 0" xyz="0.04 0 -0,05"
+* back_yaw_joint: Conecta o chassis com o back_yaw_link
+  * Origem rpy="0 0 0" xyz="-0,04 0 -0,05"
+* joint_right_wheel: Conecta o chassis com o right_wheel
+  * Origem rpy="0 0 0" xyz="0 -0,05 -0,025"
+* joint_left_wheel: Conecta o chassis com o left_wheel
+  * Origem rpy="0 0 0" xyz="0 0,05 -0,025"
+* base_link_joint: Conecta o base_link com o chassis
+  * Origem rpy="0 0 0" xyz="0 0 0"
