@@ -1351,6 +1351,39 @@ E aqueles que o seu script CMakeLists.txt copiou para a pasta de instalação do
 * /home/user/ros2_ws/install/marcos_box_bot_description/share
 * /home/user/ros2_ws/install/marcos_box_bot_gazebo/share/marcos_box_bot_gazebo/models
 
-Se você arrastar e soltar o modelo dentro do caminho /home/user/ros2_ws/install/marcos_box_bot_gazebo/share/marcos_box_bot_gazebo/models que você copiou do git extra_material, você deverá ver uma sala como esta:
+Se você clicar no modelo de dentro do caminho /home/user/ros2_ws/install/marcos_box_bot_gazebo/share/marcos_box_bot_gazebo/models (**box_room**) que você copiou do git extra_material, você deverá ver uma sala como esta:
 
-![dragdropmodel]
+![dragdropmodel](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/dragdropmodel.png)
+
+Isso é importante porque pode causar erros ao usar suas próprias malhas e modelos, mas eles não aparecem no Gazebo. O Gazebo trava porque está aguardando que o banco de dados online verifique se os arquivos não encontrados podem estar nele.
+
+IMPORTANTE: Antes de continuar, certifique-se de ter encerrado o Gazebo pressionando Ctrl + C no console onde o iniciou.
+
+## Adaptando um modelo de robô para uma simulação de gazebo
+Você usará um arquivo URDF como o criado na unidade anterior.
+
+Você deve adicionar a esse URDF os elementos necessários para que um simulador funcione. Esses elementos são:
+
+* Colisões
+* Inércia
+* Propriedades físicas dos diferentes elementos
+
+### Colisões e inércia
+Colisões são os elementos que simulam as propriedades físicas de corpos rígidos. Corpos rígidos são objetos que não mudam de forma, independentemente da força aplicada a eles.
+
+O Gazebo simula SOMENTE corpos rígidos; portanto, todos os links são corpos rígidos.
+
+A inércia simula a massa e a distribuição da massa dentro de um corpo rígido.
+
+### Colisões
+Adicione as colisões aos links que você possui. Você tem dois tipos de links:
+
+* Malhas
+* Geometrias básicas
+
+Por que você faz essa distinção? Porque você pode criar elementos de colisão com base em malhas e usar essa malha para calcular as colisões ou formas geométricas básicas para calcular colisões.
+
+* Formas geométricas básicas exigem menos processamento computacional, mas alguns objetos não podem ser simplificados para uma forma geométrica, como um chassi de carro ou uma mão robótica.
+* Malhas permitem que você tenha as colisões mais precisas, mas exigem mais computação. Normalmente, você adiciona uma malha simplificada, STL, que torna os cálculos físicos mais rápidos, mas permite uma forma mais complexa para as colisões.
+
+No seu caso, como a única malha que você usa é muito semelhante a um cubo, você pode usar uma forma geométrica diretamente. Primeiro, no entanto, você precisa saber as dimensões da caixa delimitadora, neste caso, da malha que você está usando. Você pode descobrir isso usando o **Blender**, por exemplo, selecionando a malha e lendo as dimensões:
