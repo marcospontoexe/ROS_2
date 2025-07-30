@@ -511,3 +511,91 @@ cd ~/ros2_ws/src/
 git clone https://bitbucket.org/theconstructcore/urdf_meshes.git
 cp -r ~/ros2_ws/src/urdf_meshes/meshes ~/ros2_ws/src/urdfbot_description/
 ```
+
+[Veja aqui]() os arquivos meshes.
+
+Lembre de incluir o diretório no arquivo CMakeLists.txt:
+
+```txt
+install(
+  DIRECTORY
+    urdf
+    rviz
+    launch
+    meshes
+  DESTINATION
+    share/${PROJECT_NAME}/
+)
+```
+
+Adicione as modificações no arquivo urdf para adicionar malhas em vez de formas geométricas no elemento **visual**:
+
+```xml
+<?xml version="1.0"?>
+<robot name="marcos_bot">
+        
+    <material name="blue">
+        <color rgba="0.006 0.151 0.581 1"/>
+    </material>
+
+    <material name="white">
+        <color rgba="1.0 0.91 0.827 1"/>
+    </material>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_body.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="head_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_head.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+    <joint name="base_link_to_head_link_joint" type="revolute">
+        <origin xyz="0 0 0.07" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="head_link"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="100" velocity="1.0" lower="-1.57" upper="1.57"/>
+    </joint>    
+
+</robot>
+```
+
+Vamos ver oque foi alterado no arquivo urdf:
+
+```xml
+<geometry>
+    <mesh filename="package://marcos_bot_description/meshes/urdfbot_head.dae" scale="0.1 0.1 0.1"/>
+</geometry>
+```
+
+* Indica onde o pacote onde as malhas estão. Neste caso, urdfbot_description.
+* Indica a escala. Isso é usado para ajustar as malhas ao tamanho desejado. Neste caso, você precisava dimensionar todos os modelos em 10; portanto, 1/10 = 0,1.
+
+```xml
+<link name="head_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://marcos_bot_description/meshes/urdfbot_head.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+```
+
+Observe que a origem agora é '0,0' no deslocamento do eixo Z. O motivo é que a origem da sua malha não está no centro da geometria como a caixa anterior.
+
+Aqui está uma comparação de onde cada uma das origens está:
+
+![headaxis]()
+
+![boxaxis]()
