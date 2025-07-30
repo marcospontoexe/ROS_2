@@ -1139,4 +1139,198 @@ cp -r course_urdf_ros2_material/meshes ./
 rm -rf course_urdf_ros2_material
 ```
 
+# Usando URDF para Gazebo
+Nesta unidade, você aprenderá como integrar seu robô definido pelo URDF com o Gazebo, um poderoso simulador baseado em física para testar e validar modelos robóticos.
 
+Você começará iniciando o simulador Gazebo e, em seguida, explorará como aprimorar a simulação do seu robô definindo parâmetros de inércia, propriedades físicas e colisão. Esses elementos são essenciais para que seu robô se comporte de forma realista no mundo virtual.
+
+Ao final desta unidade, você terá um robô totalmente simulado, pronto para testes no Gazebo.
+
+Crie um novo pacote chamado **marcos_box_bot_gazebo**, este pacote deverá ter como dependencias o pacote criado anteriormente (**marcos_box_bot_description**) que tem um urdf pronto, e **gazebo_ros**: `ros2 pkg create --build-type ament_cmake marcos_box_bot_gazebo --dependencies rclpy gazebo_ros marcos_box_bot_description`.
+
+## Adquira modelos de Gazebo pré-fabricados
+É importante criar uma pasta de modelos separada para manter as coisas organizadas enquanto você trabalha. Os modelos do Gazebo devem ficar dentro do diretório **models** do se pacote criado.
+
+Baixe os modelos pré-fabricados do Gazebo do GitHub para o repositório raiz do pacote:
+
+```shell
+cd my_box_bot_gazebo
+git clone https://bitbucket.org/theconstructcore/course_urdf_ros2_models.git
+```
+
+Depois disso, copie-os para a pasta de **models** recém-criada e exclua a pasta que você baixou, pois não precisa mais dela:
+
+```shell
+cp -rf course_urdf_ros2_models/models ./
+rm -rf course_urdf_ros2_models
+```
+
+Crie um arquivo de inicialização que inicie o simulador Gazebo: 
+
+**start_world.launch.py:**
+
+```python
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+import os
+
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_prefix
+
+def generate_launch_description():
+
+    pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
+    pkg_box_bot_gazebo = get_package_share_directory('marcos_box_bot_gazebo')
+
+    # We get the whole install dir
+    # We do this to avoid having to copy or softlink manually the packages so that gazebo can find them
+    description_package_name = "marcos_box_bot_description"
+    install_dir = get_package_prefix(description_package_name)
+
+    # Set the path to the WORLD model files. Is to find the models inside the models folder in my_box_bot_gazebo package
+    gazebo_models_path = os.path.join(pkg_box_bot_gazebo, 'models')
+    # os.environ["GAZEBO_MODEL_PATH"] = gazebo_models_path
+
+    if 'GAZEBO_MODEL_PATH' in os.environ:
+        os.environ['GAZEBO_MODEL_PATH'] =  os.environ['GAZEBO_MODEL_PATH'] + ':' + install_dir + '/share' + ':' + gazebo_models_path
+    else:
+        os.environ['GAZEBO_MODEL_PATH'] =  install_dir + "/share" + ':' + gazebo_models_path
+
+    if 'GAZEBO_PLUGIN_PATH' in os.environ:
+        os.environ['GAZEBO_PLUGIN_PATH'] = os.environ['GAZEBO_PLUGIN_PATH'] + ':' + install_dir + '/lib'
+    else:
+        os.environ['GAZEBO_PLUGIN_PATH'] = install_dir + '/lib'
+
+    
+
+    print("GAZEBO MODELS PATH=="+str(os.environ["GAZEBO_MODEL_PATH"]))
+    print("GAZEBO PLUGINS PATH=="+str(os.environ["GAZEBO_PLUGIN_PATH"]))
+
+    # Gazebo launch
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
+        )
+    )    
+
+    return LaunchDescription([
+        DeclareLaunchArgument(
+          'world',
+          default_value=[os.path.join(pkg_box_bot_gazebo, 'worlds', 'box_bot_empty.world'), ''],
+          description='SDF world file'),
+        gazebo
+    ])
+```
+
+Revise as linhas de código relevantes:
+
+Você obtém o caminho absoluto para os pacotes indicados aqui. Você precisa dele para encontrar os arquivos de inicialização naquele pacote, como no caso do **gazebo_ros**. Você também pode usá-lo para definir o caminho para esses pacotes do Gazebo.
+
+```python
+pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
+pkg_box_bot_gazebo = get_package_share_directory('my_box_bot_gazebo')
+```
+
+Você obtém o caminho onde o pacote **marcos_box_bot_description** está instalado. Você precisa dele para adicionar esse caminho aos caminhos do modelo do Gazebo. Dessa forma, ele encontrará malhas e outros arquivos úteis para o Gazebo.
+
+```python
+description_package_name = "my_box_bot_description"
+install_dir = get_package_prefix(description_package_name)
+```
+
+Você obtém o caminho para os modelos usados no arquivo do mundo. O Gazebo encontrará todos os modelos que você colocar na pasta desse modelo dentro do pacote marcos_box_bot_gazebo.
+
+```python
+gazebo_models_path = os.path.join(pkg_box_bot_gazebo, 'models')
+```
+
+O Gazebo **SOMENTE funcionará** com arquivos relacionados a modelos, como malhas e texturas, se esses arquivos estiverem dentro da variável de ambiente **GAZEBO_MODEL_PATH**. O mesmo acontece com os arquivos relacionados a plugins, mas em **GAZEBO_PLUGIN_PATH**.
+
+Por padrão, o Gazebo sempre procura dentro de **~/.gazebo/models**. Portanto, a maneira mais rápida e prática de fazer o Gazebo encontrar seus arquivos de modelo é copiar ou criar um link simbólico para os arquivos dentro dessa pasta.
+
+No entanto, geralmente você deseja que seus pacotes funcionem em QUALQUER sistema compatível com ROS2. Para isso, é necessário adicionar os caminhos dos arquivos que você deseja que o Gazebo encontre em **GAZEBO_MODEL_PATH**, conforme mostrado abaixo:
+
+```python
+ if 'GAZEBO_MODEL_PATH' in os.environ:
+    os.environ['GAZEBO_MODEL_PATH'] =  os.environ['GAZEBO_MODEL_PATH'] + ':' + install_dir + '/share' + ':' + gazebo_models_path
+else:
+    os.environ['GAZEBO_MODEL_PATH'] =  install_dir + "/share" + ':' + gazebo_models_path
+
+if 'GAZEBO_PLUGIN_PATH' in os.environ:
+    os.environ['GAZEBO_PLUGIN_PATH'] = os.environ['GAZEBO_PLUGIN_PATH'] + ':' + install_dir + '/lib'
+else:
+    os.environ['GAZEBO_PLUGIN_PATH'] = install_dir + '/lib'
+
+print("GAZEBO MODELS PATH=="+str(os.environ["GAZEBO_MODEL_PATH"]))
+print("GAZEBO PLUGINS PATH=="+str(os.environ["GAZEBO_PLUGIN_PATH"]))
+```
+
+Aqui, você anexa o caminho para os arquivos do seu modelo e o caminho para o diretório de instalação na variável de ambiente GAZEBO_MODEL_PATH, se existir; caso contrário, ele o cria.
+
+## Criando um mundo gazebo
+Agora, crie o arquivo básico do mundo que você usará para gerar os robôs lá dentro (**box_bot_empty.world**), esse arquivo deve ficar no diretório chamado **worlds**, dentro do pacote marcos_box_bot_gazebo.
+
+**box_bot_empty.world:**
+```xml
+<?xml version="1.0" ?>
+
+<sdf version="1.6">
+  <world name="default">
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+  </world>
+</sdf>
+```
+
+Adicione as pastas launch, models e worlds para serem instaladas usando o script **CMakeLists.txt**:
+
+```txt
+cmake_minimum_required(VERSION 3.8)
+project(marcos_box_bot_gazebo)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(gazebo_ros REQUIRED)
+find_package(marcos_box_bot_description REQUIRED)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # the following line skips the linter which checks for copyrights
+  # uncomment the line when a copyright and license is not present in all source files
+  #set(ament_cmake_copyright_FOUND TRUE)
+  # the following line skips cpplint (only works in a git repo)
+  # uncomment the line when this package is not in a git repo
+  #set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+install(
+  DIRECTORY
+    launch
+    worlds
+    models
+  DESTINATION
+    share/${PROJECT_NAME}/
+)
+
+ament_package()
+```
+
+Compile e execute a launch: `ros2 launch marcos_box_bot_gazebo start_world.launch.py`.
+
+![startworld_urdfros2]()
