@@ -1148,6 +1148,8 @@ Ao final desta unidade, você terá um robô totalmente simulado, pronto para te
 
 Crie um novo pacote chamado **marcos_box_bot_gazebo**, este pacote deverá ter como dependencias o pacote criado anteriormente (**marcos_box_bot_description**) que tem um urdf pronto, e **gazebo_ros**: `ros2 pkg create --build-type ament_cmake marcos_box_bot_gazebo --dependencies rclpy gazebo_ros marcos_box_bot_description`.
 
+[Veja aqui]() o pacote criado.
+
 ## Adquira modelos de Gazebo pré-fabricados
 É importante criar uma pasta de modelos separada para manter as coisas organizadas enquanto você trabalha. Os modelos do Gazebo devem ficar dentro do diretório **models** do se pacote criado.
 
@@ -1387,3 +1389,239 @@ Por que você faz essa distinção? Porque você pode criar elementos de colisã
 * Malhas permitem que você tenha as colisões mais precisas, mas exigem mais computação. Normalmente, você adiciona uma malha simplificada, STL, que torna os cálculos físicos mais rápidos, mas permite uma forma mais complexa para as colisões.
 
 No seu caso, como a única malha que você usa é muito semelhante a um cubo, você pode usar uma forma geométrica diretamente. Primeiro, no entanto, você precisa saber as dimensões da caixa delimitadora, neste caso, da malha que você está usando. Você pode descobrir isso usando o **Blender**, por exemplo, selecionando a malha e lendo as dimensões:
+
+![originalmeshdimensions](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/originalmeshdimensions.png)
+
+Aqui, é uma caixa de 1 metro x 1 metro x 1 metro. No entanto, você deve levar em consideração que está dimensionando esta malha em 0,1; portanto, a caixa delimitadora que você usará para as colisões terá que ser uma caixa lateral de 0,1 metro para caber perfeitamente:
+
+```xml
+<mesh filename="package://marcos_box_bot_description/meshes/cute_cube.dae" scale="0.1 0.1 0.1"/>
+```
+
+Então aqui está o link do chassis com a tag de colisão:
+
+```xml
+<link name="chassis">
+  <visual>
+    <geometry>
+      <mesh filename="package://marcos_box_bot_description/meshes/cute_cube.dae" scale="0.1 0.1 0.1"/>
+    </geometry>
+    <material name="box_bot_blue"/>
+  </visual>
+
+  <collision>
+    <geometry>
+      <box size="0.1 0.1 0.1"/>
+    </geometry>
+  </collision>
+
+</link>
+```
+
+Se você quisesse usar o mesmo .dae usado nos visuais para calcular as colisões, seria assim, porém consumirá mais processamento:
+
+```xml
+<link name="chassis">
+    <visual>
+      <geometry>
+        <mesh filename="package://marcos_box_bot_description/meshes/cute_cube.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="box_bot_blue"/>
+    </visual>
+
+    <collision>
+      <geometry>
+        <mesh filename="package://marcos_box_bot_description/meshes/cute_cube.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </collision>
+
+</link>
+```
+
+### Inércia
+Você precisa da inércia para que o Gazebo simule os momentos de inércia do elo. Isso permite que o Gazebo simule o torque necessário para dar aceleração angular ao elo em torno de um eixo específico.
+
+Existem três momentos de inércia principais:
+
+* Ixx: Em torno do eixo X
+* Iyy: Em torno do eixo Y
+* Izz: Em torno do eixo Z
+
+Em seguida, você tem os momentos de inércia cruzados, que são úteis se você quiser simular a inércia de um elo específico. Isso só é necessário se você precisar de uma simulação um-para-um de um corpo rígido e, para extraí-la, realizar a extração dos momentos de inércia com cada uma das peças do robô real. Não entraremos em detalhes sobre como isso é feito.
+
+Neste curso, você calculará a inércia dos elos como se fossem formas geométricas básicas. Você usará a forma básica que imita as formas visuais e de colisão do elo.
+
+Veja um exemplo:
+
+O formato do elo do chassi é uma caixa. É por isso que você usou uma caixa para o formato da colisão e calculará sua inércia usando a fórmula de cálculo da inércia da caixa. Aqui estão as fórmulas para calcular os três formatos básicos de inércia. Com isso, você não precisará de mais nada, a menos que precise de uma simulação exata da inércia:
+
+```xml
+# "box_inertia"
+# params="mass x y z"
+# mass: Mass in Kilograms of the link
+# x,y,z: Are the size of each side of the box in each of the axes in meters
+
+<inertia  ixx="${mass*(y*y+z*z)/12}" ixy = "0" ixz = "0"
+        iyy="${mass*(x*x+z*z)/12}" iyz = "0"
+        izz="${mass*(x*x+z*z)/12}"
+/>
+
+# "cylinder_inertia" 
+# params="mass r l"
+# mass: Mass in Kilograms of the link
+# r: Radius of the cylinder in meters
+# l: height of the cylinder in meters
+
+  <inertia  ixx="${mass*(3*r*r+l*l)/12}" ixy = "0" ixz = "0"
+            iyy="${mass*(3*r*r+l*l)/12}" iyz = "0"
+            izz="${mass*(r*r)/2}" />
+
+# sphere_inertia"
+# params="mass r"
+# mass: Mass in Kilograms of the link
+# r: Radius of the sphere in meters
+<inertia  
+      ixx="${2*mass*r*r/5}" ixy = "0" ixz = "0"
+      iyy="${2*mass*r*r/5}" iyz = "0"
+      izz="${2*mass*r*r/5}"
+/>
+```
+
+Para facilitar o cálculo para cada elo, instalamos um script Python que ajuda a calcular a inércia.
+
+Calcule para o chassi:
+
+* massa = 0,2
+* lado x = 0,1
+* lado y = 0,1
+* lado z = 0,1
+
+### Complete o robô
+
+Acesse o diretório do espaço de trabalho do ROS2.
+
+```shell
+cd ~/ros2_ws
+```
+
+Agora, exclua tudo no diretório de compilação, instalação e log.
+
+```shell
+rm -rf build install log
+```
+
+Execute o seguinte comando. Caso tenha esquecido de fazer isso antes na Unidade 1, certifique-se de fazê-lo para encontrar o pacote spawn_robot_tools_pkg: 
+
+```shell
+source /home/simulations/ros2_sims_ws/install/setup.bash
+colcon build
+source install/setup.bash
+```
+
+Agora você pode compilar normalmente e então executar a calculadora de inércia: `ros2 run spawn_robot_tools_pkg inertia_wizzard`.
+
+Você será direcionado para um menu interativo.
+
+* Digite 1 e pressione Enter para iniciar o cálculo da inércia da caixa.
+* Digite 0.2 para a massa
+* Digite 0.1 para a largura (lado X)
+* Digite 0.1 para a profundidade (lado Y)
+* Digite 0.1 para a altura (lado Z)
+
+```sell
+Inertial Calculator Initialised...
+#############################
+Select Geometry to Calculate:
+[1]Box width(w)*depth(d)*height(h)
+[2]Sphere radius(r)
+[3]Cylinder radius(r)*height(h)
+[Q]END program
+>>1
+mass>>0.2
+width>>0.1
+depth>>0.1
+height>>0.1
+BOX w*d*h, Ixx = 0.0003333333333333334,Iyy = 0.0003333333333333334,Ixx = 0.0003333333333333334
+```
+
+Então você define esses valores na tag inercial assim:
+
+```shell
+Ixx = 0.0003333333333333334
+Iyy = 0.0003333333333333334
+Izz = 0.0003333333333333334
+```
+
+Então você define esses valores na tag inercial assim:
+
+```xml
+<link name="chassis">
+  <visual>
+    <geometry>
+      <box size="0.1 0.1 0.1"/>
+    </geometry>
+    <material name="box_bot_blue"/>
+  </visual>
+
+  <inertial>
+    <mass value="0.2"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <inertia ixx="0.0003333333333333334" ixy="0" ixz="0" iyy="0.0003333333333333334" iyz="0" izz="0.0003333333333333334"/>
+  </inertial>
+
+  <collision>
+    <geometry>
+      <box size="0.1 0.1 0.1"/>
+    </geometry>
+  </collision>
+
+</link>
+```
+
+#### Origin Tag
+Tanto a tag inercial quanto a de colisão têm a mesma tag de origem que você usou na tag visual. Isso permite que você posicione os elementos visuais, de colisão e inerciais em diferentes posições e orientações.
+
+Isso é útil quando você precisa compensar um deslocamento da malha utilizada. Por exemplo, **posicione a inércia mais baixa para obter mais estabilidade**, entre outras coisas.
+
+Aqui está um exemplo para o link **left_wheel**:
+
+```xml
+<link name="left_wheel">      
+      <visual>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.035"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+
+      <collision>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+        <cylinder length="0.001" radius="0.035"/>
+        </geometry>
+    </collision>
+
+    <inertial>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <mass value="0.05"/>
+        <inertia ixx="1.531666666666667e-05" ixy="0" ixz="0" iyy="1.531666666666667e-05" iyz="0" izz="3.0625000000000006e-05"/>
+    </inertial>
+
+  </link>
+  ```
+
+Observe alguns pontos:
+
+* Tanto a colisão quanto o visual têm um nome exclusivo. Normalmente, isso não é necessário, pois o Gazebo atribui a eles um nome padrão, mas ele é mostrado aqui como exemplo. Isso só é necessário para alguns plugins do Gazebo que precisam do nome do elemento de colisão, por exemplo, e se ele não for definido, é difícil saber qual nome foi definido por padrão.
+* Você está definindo a mesma origem para todas as tags. Isso nem sempre acontece e depende das suas necessidades.
+
+## Gerando o modelo de robô no Gazebo
+Como funciona o sistema de geração de Gazebo?
+
+O Gazebo lê o tópico **/robot_description** e gera no mundo o que encontrar dentro dele, com um nome que você define como entrada.
+
+Então, o que você fez na unidade anterior para visualização no RVIZ, o TF publica e é usado de forma semelhante. A única diferença é que agora o Gazebo lê essas informações e gera o robô no mundo.
+
+Outra diferença é que o movimento do robô agora dependerá do controle simulado.
+
