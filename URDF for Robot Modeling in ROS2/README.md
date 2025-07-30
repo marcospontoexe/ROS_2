@@ -1121,3 +1121,20 @@ Exemplo para o FRAME base_link:
   * Origem rpy="0 0 0" xyz="0 0,05 -0,025"
 * base_link_joint: Conecta o base_link com o chassis
   * Origem rpy="0 0 0" xyz="0 0 0"
+
+Esta é a estrutura FRAME para que você tenha uma ideia melhor de qual link é um Pai e qual é um Filho:
+
+![urdf_ros2_tf_geometric_ex12](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/urdf_ros2_tf_geometric_ex12.png)
+
+## MESHES
+Quando o robô estiver trabalhando com todas as formas geométricas básicas, substitua a caixa de geometria visual do link do chassis pela malha marcos_box_bot_description/meshes/cute_cube.dae, em escala="0.1 0.1 0.1".
+As malhas já estão preparadas para você. Copie-as para o seu pacote da seguinte forma:
+
+```shell
+cd ~/ros2_ws/src/marcos_box_bot_description
+git clone https://bitbucket.org/theconstructcore/course_urdf_ros2_material.git
+cp -r course_urdf_ros2_material/meshes ./
+rm -rf course_urdf_ros2_material
+```
+
+
