@@ -1779,3 +1779,20 @@ colcon build
 source install/setup.bash
 ros2 launch marcos_box_bot_gazebo start_world.launch.py
 ```
+
+Agora crie o robô:
+
+Aqui, compile usando **symlink-install**. Você não é obrigado a usar este método. Isto é para mostrar como fazer.
+
+```shell
+cd ~/ros2_ws/
+colcon build --symlink-install --packages-select marcos_box_bot_gazebo marcos_box_bot_description
+source install/setup.bash
+ros2 launch marcos_box_bot_gazebo spawn_robot_ros2.launch.xml
+```
+
+Como você pode ver, há um problema na versão Gazebo do box_bot. As cores dos links visuais não-Dae são todas brancas. O motivo é que a cor definida em <material name="red"/> não é a mesma usada pelo Gazebo. Isso precisa ser definido em outro lugar, e você fará isso na próxima seção, Propriedades Físicas.
+
+No RVIZ2, você vê que NÃO TEM os TFs para nenhum dos links conectados a uma JUNTA NÃO FIXA. Isso ocorre porque agora você não tem a interface gráfica do usuário do **Joint State Publisher**. O motivo é que, no Gazebo, os controladores dos atuadores simulados são responsáveis por publicá-los. Não se preocupe. Você também aprenderá como fazer isso.
+
+## Propriedades físicas
