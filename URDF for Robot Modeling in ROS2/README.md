@@ -1045,3 +1045,27 @@ def generate_launch_description():
         ]
     )
 ```
+
+# Criando um robô de duas rodas
+Para este Micro Projeto, você terá que construir o seguinte robô:
+
+![robot](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/urdf_ros2_nottransparent.png)
+
+Como você pode ver, este robô possui as seguintes partes:
+
+* Corpo: É a caixa que, neste caso, você vê com uma carinha sorridente em forma de malha.
+* Rodas direita e esquerda: São aquelas com motores.
+* rodas giratórias dianteiras/traseiras: Essas rodas são livres e evitam que o corpo colida com o chão durante o movimento.
+
+Revise o funcionamento das diferentes peças, especialmente as rodas giratórias:
+
+* DUAS juntas contínuas, uma para cada roda.
+* Você precisa que elas girem em uma direção mais de 360 graus.
+* Essas juntas devem girar em torno do eixo perpendicular à roda.
+* Defina as rodas giratórias.
+* Essas esferas devem girar sem um limite de 360 graus, portanto, precisam ser contínuas.
+* Além disso, você precisa que as rodas giratórias girem em todos os três eixos, não apenas em um.
+* Em arquivos URDF, não há suporte para juntas ESFÉRICAS (em formatos SDF tem).
+* Isso significa que você deve definir três juntas diferentes que girem em cada eixo.
+* No final, a roda giratória se comportará como uma junta esférica.
+
