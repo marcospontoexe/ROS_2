@@ -1148,7 +1148,7 @@ Ao final desta unidade, você terá um robô totalmente simulado, pronto para te
 
 Crie um novo pacote chamado **marcos_box_bot_gazebo**, este pacote deverá ter como dependencias o pacote criado anteriormente (**marcos_box_bot_description**) que tem um urdf pronto, e **gazebo_ros**: `ros2 pkg create --build-type ament_cmake marcos_box_bot_gazebo --dependencies rclpy gazebo_ros marcos_box_bot_description`.
 
-[Veja aqui]() o pacote criado.
+[Veja aqui](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/exemplos/marcos_box_bot_gazebo) o pacote criado.
 
 ## Adquira modelos de Gazebo pré-fabricados
 É importante criar uma pasta de modelos separada para manter as coisas organizadas enquanto você trabalha. Os modelos do Gazebo devem ficar dentro do diretório **models** do se pacote criado.
