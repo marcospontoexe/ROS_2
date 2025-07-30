@@ -1089,6 +1089,8 @@ Exemplo para o FRAME base_link:
 </link>
 ```
 
+[Veja aqui](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/exemplos/marcos_box_bot_description) o pacote **marcos_box_bot_description** pronto.
+
 ## Links
 
 * base_link, sem nenhum elemento visual.
