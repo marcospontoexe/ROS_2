@@ -2339,3 +2339,8 @@ Observe que agora o robô não se desloca tanto. Isso ocorre porque agora há at
 
 # Exportação de Montagem de Robôs
 
+[acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/Exporta%C3%A7%C3%A3o%20de%20Montagem%20de%20Rob%C3%B4s).
+
+[Acesso Onshape.](https://cad.onshape.com/signin)
+
+Get the Onshape API keys here: [https://dev-portal.onshape.com/keys](https://dev-portal.onshape.com/keys).
