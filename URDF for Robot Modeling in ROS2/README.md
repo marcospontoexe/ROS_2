@@ -2323,10 +2323,16 @@ ros2 launch marcos_box_bot_gazebo spawn_robot_ros2_physical.launch.xml
 Observe que agora o robô não se desloca tanto. Isso ocorre porque agora há atrito. O único movimento que ainda existe é devido à falta de controladores, então corrija isso na próxima unidade.
 
 # Moving the robot
-![acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/Moving%20the%20Robot)
+[acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/Moving%20the%20Robot)
 
 **Observação**: os pacotes **my_box_bot_description** e **my_box_bot_gazebo** citados nos arquivos pdf, foram nomeados como **marcos_box_bot_description** e **marcos_box_bot_gazebo** nos exemplos anteriores.
 
 # Detecção
-![acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/Detec%C3%A7%C3%A3o).
+[acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/Detec%C3%A7%C3%A3o).
 
+[Bitbucket repository with a solution for the URDF ROS2 course](https://bitbucket.org/theconstructcore/course_urdf_ros2_solutions/src/update/)
+
+# XACRO Basics
+[acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/XACRO%20Basics).
+
+[Using XACRO to clean up your code.](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Using-Xacro-to-Clean-Up-a-URDF-File.html)
