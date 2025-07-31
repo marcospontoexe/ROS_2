@@ -1796,3 +1796,525 @@ Como você pode ver, há um problema na versão Gazebo do box_bot. As cores dos 
 No RVIZ2, você vê que NÃO TEM os TFs para nenhum dos links conectados a uma JUNTA NÃO FIXA. Isso ocorre porque agora você não tem a interface gráfica do usuário do **Joint State Publisher**. O motivo é que, no Gazebo, os controladores dos atuadores simulados são responsáveis por publicá-los. Não se preocupe. Você também aprenderá como fazer isso.
 
 ## Propriedades físicas
+Por padrão, o Gazebo definirá as propriedades físicas dos links para corpos rígidos. Ele também definirá um material branco padrão.
+
+Definir propriedades físicas é útil, especialmente para rodas, para controlar o atrito e o comportamento dinâmico. Adicionar cores a formas geométricas básicas, como rodas, também é útil. Você pode definir propriedades físicas usando a seguinte tag:
+
+```xml
+<gazebo reference="NAME_OF_THE_LINK">
+    <material>Gazebo/Red</material>
+    <kp>1000000000000000000000000000.0</kp>
+    <kd>1000000000000000000000000000.0</kd>
+    <mu1>1000</mu1>
+    <mu2>100</mu2>
+</gazebo>
+```
+
+Você pode definir muitas opções dentro da tag **Gazebo**, desde propriedades físicas a sensores, etc. No entanto, você se concentrará nas propriedades físicas fundamentais por enquanto.
+
+Aqui, as principais propriedades físicas do link são definidas:
+
+* mu1: O coeficiente de atrito estático. Em termos simples, é o atrito existente até que o objeto comece a se mover.
+* mu2: O coeficiente de atrito dinâmico. Em termos simples, é o atrito existente quando o objeto se move.
+
+Esses valores são calculados por meio de testes de atrito com elementos com a mesma massa dos elos para os quais você define esses valores. É claro que você também deve se lembrar dos materiais de que eles são feitos, etc. No entanto, na realidade, eles são definidos com os valores que fazem o robô se comportar corretamente, não necessariamente os reais.
+
+* kp: Este coeficiente define a rigidez de contato estática. Isso determina se o material ligado está mais próximo do mármore (rígido, valores maiores) ou mais parecido com borracha (material macio, valores menores).
+* kd: Este coeficiente define a rigidez de contato dinâmica. Isso determina se o material ligado está mais próximo do mármore (rígido, valores maiores) ou mais parecido com borracha (material macio, valores menores). É essencialmente o quanto ele se deforma ao longo de um longo período, exercendo sua pressão.
+
+E então, você tem o material que não é maior do que a cor da forma visual geométrica. Não serve para nada se for um DAE, pois as cores estão incorporadas no arquivo 3D.
+
+* material: Gazebo/Cinza, neste caso.
+
+Para mais detalhes, esta página do Gazebo oferece todas as opções de tags do Gazebo. Por exemplo, acesse a seção [Opções de Tags do Gazebo](http://sdformat.org/spec):
+
+Adicione as tags Gazebo ao seu arquivo URDF anterior. Crie um novo conjunto de arquivos:
+```shell
+cd ~/ros2_ws/src
+touch marcos_box_bot_gazebo/launch/spawn_robot_ros2_physical.launch.xml
+touch marcos_box_bot_description/urdf/box_bot_physical_properties.urdf
+touch marcos_box_bot_description/launch/urdf_visualize_physical.launch.py
+```
+
+**spawn_robot_ros2_physical.launch.xml:**
+
+```xml
+<?xml version='1.0' ?>
+<launch>
+  <!-- Publish URDF file in robot_description topic -->
+  <include file="$(find-pkg-share marcos_box_bot_description)/launch/urdf_visualize_physical.launch.py"/>
+  <!-- Read robot_description and spawn in gazebo running sim -->
+  <include file="$(find-pkg-share marcos_box_bot_gazebo)/launch/spawn_robot_description.launch.py"/>
+</launch>
+```
+
+**urdf_visualize_physical.launch.py:**
+
+```python
+import os
+
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.substitutions import Command
+from launch_ros.actions import Node
+
+# this is the function launch  system will look for
+def generate_launch_description():
+
+    ####### DATA INPUT ##########
+    urdf_file = 'box_bot_physical_properties.urdf'
+    package_description = "marcos_box_bot_description"
+
+    ####### DATA INPUT END ##########
+    print("Fetching URDF ==>")
+    robot_desc_path = os.path.join(get_package_share_directory(package_description), "urdf", urdf_file)
+
+    # Robot State Publisher
+
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher_node',
+        emulate_tty=True,
+        parameters=[{'use_sim_time': True, 'robot_description': Command(['xacro ', robot_desc_path])}],
+        output="screen"
+    )
+
+    # RVIZ Configuration
+    rviz_config_dir = os.path.join(get_package_share_directory(package_description), 'rviz', 'urdf_vis.rviz')
+
+
+    rviz_node = Node(
+            package='rviz2',
+            executable='rviz2',
+            output='screen',
+            name='rviz_node',
+            parameters=[{'use_sim_time': True}],
+            arguments=['-d', rviz_config_dir])
+
+    # create and return launch description object
+    return LaunchDescription(
+        [            
+            robot_state_publisher_node,
+            rviz_node
+        ]
+    )
+```
+
+**box_bot_physical_properties.urdf:**
+
+```xml
+<?xml version="1.0"?>
+<robot name="box_bot">
+        
+  <material name="red">
+      <color rgba="1.0 0.0 0.0 1"/>
+  </material>
+
+  <material name="green_light">
+      <color rgba="0.0 1.0 0.0 1"/>
+  </material>
+
+  <material name="green_dark">
+    <color rgba="0.0 0.5 0.0 1"/>
+  </material>
+
+  <material name="blue">
+      <color rgba="0.0 0.0 1.0 1"/>
+  </material>
+
+  <link name="base_link">
+  </link>
+
+
+  <!-- Body -->
+  <link name="chassis">
+    <visual>
+      <geometry>
+        <mesh filename="package://marcos_box_bot_description/meshes/cute_cube.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <mass value="0.5"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.0008333333333333335" ixy="0" ixz="0" iyy="0.0008333333333333335" iyz="0" izz="0.0008333333333333335"/>
+    </inertial>
+
+  </link>
+
+  <joint name="base_link_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="base_link" />
+    <child link="chassis" />
+  </joint>
+
+  <!-- Wheel Left -->
+  <link name="left_wheel">      
+      <visual>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.035"/>
+        </geometry>
+        <material name="red"/>
+      </visual>
+
+      <collision>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.035"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <mass value="0.05"/>
+        <inertia ixx="1.531666666666667e-05" ixy="0" ixz="0" iyy="1.531666666666667e-05" iyz="0" izz="3.0625000000000006e-05"/>
+      </inertial>
+
+  </link>
+
+  <gazebo reference="left_wheel">
+    <kp>1000000000000000000000000000.0</kp>
+    <kd>1000000000000000000000000000.0</kd>
+    <mu1>10.0</mu1>
+    <mu2>10.0</mu2>
+    <material>Gazebo/Green</material>
+  </gazebo>
+
+
+  <joint name="joint_left_wheel" type="continuous">
+    <origin rpy="0 0 0" xyz="0 0.05 -0.025"/>
+    <child link="left_wheel"/>
+    <parent link="chassis"/>
+    <axis rpy="0 0 0" xyz="0 1 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <joint_properties damping="1.0" friction="1.0"/>
+  </joint>
+
+  <!-- Wheel Right -->
+  <link name="right_wheel">      
+      <visual>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.035"/>
+        </geometry>
+        <material name="green"/>
+      </visual>
+
+      <collision>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.035"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <mass value="0.05"/>
+        <inertia ixx="1.531666666666667e-05" ixy="0" ixz="0" iyy="1.531666666666667e-05" iyz="0" izz="3.0625000000000006e-05"/>
+      </inertial>
+  </link>
+
+  <gazebo reference="right_wheel">
+    <kp>1000000000000000000000000000.0</kp>
+    <kd>1000000000000000000000000000.0</kd>
+    <mu1>10.0</mu1>
+    <mu2>10.0</mu2>
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+  <joint name="joint_right_wheel" type="continuous">  
+    <origin rpy="0 0 0" xyz="0 -0.05 -0.025"/>
+    <child link="right_wheel"/>
+    <parent link="chassis"/>
+    <axis rpy="0 0 0" xyz="0 1 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <joint_properties damping="1.0" friction="1.0"/>
+  </joint>
+
+
+  <!-- Caster Wheel Front -->
+  <link name="front_yaw_link">
+      <visual>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>          
+          <cylinder length="0.001" radius="0.0045000000000000005"/>
+        </geometry>
+        <material name="blue"/>
+      </visual>
+
+      <collision>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.0045000000000000005"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+          <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+          <mass value="0.001"/>
+          <inertia ixx="5.145833333333334e-09" ixy="0" ixz="0" iyy="5.145833333333334e-09" iyz="0" izz="1.0125000000000003e-08"/>
+      </inertial>
+
+  </link>
+
+  <joint name="front_yaw_joint" type="continuous">
+    <origin rpy="0 0 0" xyz="0.04 0 -0.05" />
+    <parent link="chassis" />
+    <child link="front_yaw_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.1"/>
+  </joint>
+
+    <gazebo reference="front_yaw_link">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+
+
+  <link name="front_roll_link">
+      <visual>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.0045000000000000005"/>
+        </geometry>
+        <material name="red"/>
+      </visual>
+
+      <collision>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.0045000000000000005"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+          <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+          <mass value="0.001"/>
+          <inertia ixx="5.145833333333334e-09" ixy="0" ixz="0" iyy="5.145833333333334e-09" iyz="0" izz="1.0125000000000003e-08"/>
+      </inertial>
+  </link>
+
+  <joint name="front_roll_joint" type="continuous">
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="front_yaw_link" />
+    <child link="front_roll_link" />
+    <axis xyz="1 0 0" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.1"/>
+  </joint>
+
+    <gazebo reference="front_roll_link">
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+
+  <link name="front_pitch_link">
+    <visual>
+      <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.010"/>
+      </geometry>
+      <material name="green_dark"/>
+    </visual>
+
+    <collision>
+      <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.010"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="4e-08" ixy="0" ixz="0" iyy="4e-08" iyz="0" izz="4e-08"/>
+    </inertial>
+  </link>
+
+  <gazebo reference="front_pitch_link">
+    <kp>1000000000000000000000000000.0</kp>
+    <kd>1000000000000000000000000000.0</kd>
+    <mu1>0.5</mu1>
+    <mu2>0.5</mu2>
+    <material>Gazebo/Purple</material>
+  </gazebo>
+
+  <joint name="front_pitch_joint" type="continuous">
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="front_roll_link" />
+    <child link="front_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.1"/>
+  </joint>
+
+<!-- Caster Wheel Back -->
+  <link name="back_yaw_link">
+    <visual>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.0045000000000000005"/>
+        </geometry>
+        <material name="blue"/>
+      </visual>
+
+      <collision>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.0045000000000000005"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+          <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+          <mass value="0.001"/>
+          <inertia ixx="5.145833333333334e-09" ixy="0" ixz="0" iyy="5.145833333333334e-09" iyz="0" izz="1.0125000000000003e-08"/>
+      </inertial>
+  </link>
+
+  <joint name="back_yaw_joint" type="continuous">
+    <origin rpy="0 0 0" xyz="-0.04 0 -0.05" />
+    <parent link="chassis" />
+    <child link="back_yaw_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.1"/>
+  </joint>
+
+    <gazebo reference="back_yaw_link">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+
+
+  <link name="back_roll_link">
+      <visual>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.0045000000000000005"/>
+        </geometry>
+        <material name="red"/>
+      </visual>
+
+      <collision>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.001" radius="0.0045000000000000005"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+          <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+          <mass value="0.001"/>
+          <inertia ixx="5.145833333333334e-09" ixy="0" ixz="0" iyy="5.145833333333334e-09" iyz="0" izz="1.0125000000000003e-08"/>
+      </inertial>
+  </link>
+
+  <joint name="back_roll_joint" type="continuous">
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="back_yaw_link" />
+    <child link="back_roll_link" />
+    <axis xyz="1 0 0" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.1"/>
+  </joint>
+
+    <gazebo reference="back_roll_link">
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+
+
+  <link name="back_pitch_link">
+    <visual>
+      <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.010"/>
+      </geometry>
+      <material name="green_light"/>
+    </visual>
+
+    <collision>
+      <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.010"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+        <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="4e-08" ixy="0" ixz="0" iyy="4e-08" iyz="0" izz="4e-08"/>
+    </inertial>
+  </link>
+
+  <gazebo reference="back_pitch_link">
+    <kp>1000000000000000000000000000.0</kp>
+    <kd>1000000000000000000000000000.0</kd>
+    <mu1>0.5</mu1>
+    <mu2>0.5</mu2>
+    <material>Gazebo/Yellow</material>
+  </gazebo>
+
+  <joint name="back_pitch_joint" type="continuous">
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="back_roll_link" />
+    <child link="back_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.1"/>
+  </joint>
+
+
+
+</robot>
+```
+
+Observe que você removeu cores que não são mais usadas, como o box_bot_blue.
+
+Você adicionou o mesmo atrito e **kp** para todos os elementos que deseja controlar e suas interações físicas, que são as rodas esquerda e direita e a roda giratória dianteira/traseira.
+
+Quanto aos outros links relacionados às rodas giratórias, adicione cor para depurar e veja-os no Gazebo. Para vê-los, ative a opção transparente no menu Exibir na janela do Gazebo.
+
+```xml
+<gazebo reference="front_yaw_link">
+    <material>Gazebo/Blue</material>
+</gazebo>
+
+<gazebo reference="front_roll_link">
+    <material>Gazebo/Red</material>
+</gazebo>
+
+<gazebo reference="back_yaw_link">
+    <material>Gazebo/Blue</material>
+</gazebo>
+
+<gazebo reference="back_roll_link">
+    <material>Gazebo/Red</material>
+</gazebo>
+```
+
+Observe que você está adicionando uma nova cor de material a ambas as rodas. Ela não precisa ser a mesma da tag visual dentro do link.
+
+A cor dentro da tag visual no link é para a visualização RVIZ. A cor dentro das tags Gazebo é para a visualização Gazebo.
+
+Embora usar esses materiais seja uma maneira simples de adicionar cor, é sempre melhor usar arquivos .dae para personalizar os visuais da malha a longo prazo.
+
+Se você executar o comando a seguir, deverá ver algo assim:
+
+compile e execute as launchs:
+
+```shell
+ros2 launch marcos_box_bot_gazebo start_world.launch.py
+ros2 launch marcos_box_bot_gazebo spawn_robot_ros2_physical.launch.xml
+```
+
