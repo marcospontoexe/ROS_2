@@ -2327,5 +2327,6 @@ Observe que agora o robô não se desloca tanto. Isso ocorre porque agora há at
 
 **Observação**: os pacotes **my_box_bot_description** e **my_box_bot_gazebo** citados nos arquivos pdf, foram nomeados como **marcos_box_bot_description** e **marcos_box_bot_gazebo** nos exemplos anteriores.
 
-
+# Detecção
+![acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/Detec%C3%A7%C3%A3o).
 
