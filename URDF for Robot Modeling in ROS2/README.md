@@ -2318,3 +2318,14 @@ ros2 launch marcos_box_bot_gazebo start_world.launch.py
 ros2 launch marcos_box_bot_gazebo spawn_robot_ros2_physical.launch.xml
 ```
 
+![newcoloursfixedwheels_urdfros2_update](https://github.com/marcospontoexe/ROS_2/blob/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/imagens/newcoloursfixedwheels_urdfros2_update.png)
+
+Observe que agora o robô não se desloca tanto. Isso ocorre porque agora há atrito. O único movimento que ainda existe é devido à falta de controladores, então corrija isso na próxima unidade.
+
+# Moving the robot
+![acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/Moving%20the%20Robot)
+
+**Observação**: os pacotes **my_box_bot_description** e **my_box_bot_gazebo** citados nos arquivos pdf, foram nomeados como **marcos_box_bot_description** e **marcos_box_bot_gazebo** nos exemplos anteriores.
+
+
+
