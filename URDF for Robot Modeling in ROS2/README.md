@@ -2336,3 +2336,6 @@ Observe que agora o robô não se desloca tanto. Isso ocorre porque agora há at
 [acesse o conteudo nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2/XACRO%20Basics).
 
 [Using XACRO to clean up your code.](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Using-Xacro-to-Clean-Up-a-URDF-File.html)
+
+# Exportação de Montagem de Robôs
+
