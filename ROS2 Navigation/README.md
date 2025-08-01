@@ -33,7 +33,7 @@ O Nav2 inclui ferramentas para:
 
 Abaixo, você encontrará um diagrama ilustrando como esses componentes interagem. Não se preocupe se parecer complexo no início — você entenderá completamente ao final deste curso.
 
-[Nav2 Lifecycle Manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation/imagens/architectural_diagram.png)
+[Nav2 Lifecycle Manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/architectural_diagram.png)
 
 [Repositório oficial do NAV2.](https://github.com/ros-navigation/navigation2)
 
@@ -95,10 +95,10 @@ Estes são os campos que você precisa indicar na inicialização do nó:
 ### occupancy_grid_node
 Estes são os campos que você precisa indicar na inicialização do nó:
 
-* O **occupancy_grid_node** é fornecido pelo pacote **cartographer_ros**
+* O **cartographer_occupancy_grid_node** é fornecido pelo pacote **cartographer_ros**
 * O executável é chamado **cartographer_occupancy_grid_node**
 * Os parâmetros necessários são:
-    * use_sim_time: é um booleano que indica se o nó deve sincronizar seu tempo com a simulação
+    * **use_sim_time**: é um booleano que indica se o nó deve sincronizar seu tempo com a simulação
 * Os argumentos são:
 * **resolution**: número de metros por grade no mapa
 * **publish_period_sec**: com que frequência (em segundos) o mapa é publicado no tópico /map
@@ -142,12 +142,15 @@ Você precisa incluir duas chamadas **Node()** dentro do arquivo de inicializaç
 ### EXEMPLO
 a) Crie um novo pacote no ambiente de trabalho ros2_ws chamado **cartographer_slam** dentro do diretório **src/**: 
 ```shell
-
+ros2 pkg create --build-type ament_python cartographer_slam --dependencies rclpy
 ```
 
 b) Crie os diretórios de inicialização (**launch**) e configuração (**config**) em ros2_ws/src/cartographer_slam.
-
 c) Escreva um arquivo de inicialização para iniciar o Cartographer com o nome **cartographer.launch.py**, onde os dois nós são iniciados.
+
+```python
+
+```
 
 d) Crie um arquivo LUA chamado **cartographer.lua** no diretório config com os seguintes parâmetros de configuração:
 
@@ -199,6 +202,7 @@ POSE_GRAPH.constraint_builder.global_localization_min_score = 0.7
 return options
 ```
 
+e)
 f) Execute o arquivo de inicialização recém-criado: `ros2 launch cartographer_slam cartographer.launch.py`
 
 g) Inicie o **RVIZ** para ver o mapa sendo criado. Você configurará o RVIZ para exibir os dados que deseja controlar.
@@ -210,7 +214,7 @@ h) Adicione a exibição do mapa no RVIZ e configure-o para visualizar o mapa qu
 
 Se você não conseguir visualizar o mapa, verifique se os parâmetros de qualidade de serviço (**QoS**) do tópico /map estão corretos (como na figura). S
 
-![map_qos_config](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation/imagens/map_qos_config.png)
+![map_qos_config](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/map_qos_config.png)
 
 3. Adicione mais algumas exibições:
 
