@@ -59,5 +59,5 @@ ROS 2 usa o padrão **DDS (Data Distribution Service)** para comunicação entre
 * [Veja nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Basics%20in%205%20Days%20(Python)) veja o básico de Ros2 usando Python.
 * [Veja nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/tf) como usar TF no Ros2.
 * [Veja nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/URDF%20for%20Robot%20Modeling%20in%20ROS2) como usar URDF no Ros2.
-* [Veja nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation) Navigation para Ros2.
+* [Veja nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)) Navigation para Ros2 usando Python.
 
