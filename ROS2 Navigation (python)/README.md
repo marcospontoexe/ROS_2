@@ -140,12 +140,12 @@ Você precisa incluir duas chamadas **Node()** dentro do arquivo de inicializaç
 ```
 
 ### EXEMPLO
-a) Crie um novo pacote no ambiente de trabalho ros2_ws chamado **cartographer_slam** dentro do diretório **src/**: 
+a) Crie um novo pacote no ambiente de trabalho ros2_ws chamado **cartographer_slam_test** dentro do diretório **src/**: 
 ```shell
 
 ```
 
-b) Crie os diretórios de inicialização (**launch**) e configuração (**config**) em ros2_ws/src/cartographer_slam.
+b) Crie os diretórios de inicialização (**launch**) e configuração (**config**) em ros2_ws/src/cartographer_slam_test.
 
 c) Escreva um arquivo de inicialização para iniciar o Cartographer com o nome **cartographer.launch.py**, onde os dois nós são iniciados.
 
@@ -199,7 +199,7 @@ POSE_GRAPH.constraint_builder.global_localization_min_score = 0.7
 return options
 ```
 
-f) Execute o arquivo de inicialização recém-criado: `ros2 launch cartographer_slam cartographer.launch.py`
+f) Execute o arquivo de inicialização recém-criado: `ros2 launch cartographer_slam_test cartographer.launch.py`
 
 g) Inicie o **RVIZ** para ver o mapa sendo criado. Você configurará o RVIZ para exibir os dados que deseja controlar.
 
