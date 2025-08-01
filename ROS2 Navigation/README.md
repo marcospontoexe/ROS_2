@@ -33,7 +33,7 @@ O Nav2 inclui ferramentas para:
 
 Abaixo, você encontrará um diagrama ilustrando como esses componentes interagem. Não se preocupe se parecer complexo no início — você entenderá completamente ao final deste curso.
 
-1[Nav2 Lifecycle Manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation/imagens/architectural_diagram.png)
+[Nav2 Lifecycle Manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation/imagens/architectural_diagram.png)
 
 [Repositório oficial do NAV2.](https://github.com/ros-navigation/navigation2)
 
