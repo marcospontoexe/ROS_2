@@ -295,4 +295,32 @@ Se você não conseguir visualizar o mapa, verifique se os parâmetros de qualid
 
 h) Mova o robô pelo mundo do Gazebo usando o teclado teleop para criar um mapa completo do ambiente.
 
-[Veja aqui]() o pacote criado nesse exemplo.
+[Veja aqui](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/cartographer_slam) o pacote criado nesse exemplo.
+
+### Salvando o map
+Para salvar o mapa criado, você precisa executar o executável **map_saver**, que executa um nó map_saver do **nav2_map_server**.
+
+IMPORTANTE: chame o nó dentro do diretório onde deseja salvar o mapa.
+
+O comando é o seguinte: `ros2 run nav2_map_server map_saver_cli -f map_name`.
+
+O comando de salvamento gerará dois arquivos:
+
+* O arquivo de imagem map_name.pgm contém o mapa como uma imagem de grade de ocupação.
+* O arquivo map_name.yaml contém detalhes sobre a resolução do mapa.
+
+#### O arquivo YAML
+O arquivo YAML gerado conterá os 7 campos a seguir:
+* **Image**: Nome do arquivo que contém a imagem do Mapa gerado.
+* **mode**: 
+* **Resolution**: Resolução do mapa (em metros/pixel). 
+* **origin**: Coordenadas do pixel inferior esquerdo no mapa. Essas coordenadas são fornecidas em 2D (x,y). O terceiro valor indica a rotação. Se não houver rotação, o valor será 0.
+* **negate**: Inverte as cores do Mapa. Por padrão, branco significa completamente livre e preto significa completamente ocupado.
+* **occupied_thresh**: Os pixels que possuírem um valor superior a este valor serão considerados como uma zona completamente ocupada.
+* **free_thresh**: Pixels que tenham um valor menor que este valor serão considerados como uma zona completamente livre.
+
+#### O arquivo de imagem (PGM - Portable Gray Map) 
+Para visualizar o arquivo PGM você pode fazer o seguinte:
+* Abra-o através do IDE. Para poder fazer isso, o arquivo deve estar no diretório catkin_ws/src.
+* Abra-o através do Web Shell. Você pode usar, por exemplo, o editor **vi** digitando o comando `vi nome_do_mapa.pgm`.
+* Baixe o arquivo e visualize-o no seu computador local com o seu próprio editor de texto.
