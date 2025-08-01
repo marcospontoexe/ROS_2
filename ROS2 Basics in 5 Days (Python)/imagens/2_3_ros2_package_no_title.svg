@@ -1,0 +1,100 @@
+<svg viewBox="0 0 900 660" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="packageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="pythonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="folderPattern" patternUnits="userSpaceOnUse" width="4" height="4">
+      <rect width="4" height="4" fill="#f3f4f6"/>
+      <rect width="2" height="2" fill="#e5e7eb"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="900" height="660" fill="#f8fafc"/>
+  
+  <!-- Package Definition Box -->
+  <rect x="70" y="20" width="760" height="80" rx="8" fill="url(#packageGradient)" opacity="0.1" stroke="#10b981" stroke-width="2"/>
+  <text x="450" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#065f46">Package Definition</text>
+  <text x="450" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">A collection of all files related to a specific ROS 2 program</text>
+  <text x="450" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">CPP files • Python files • Configuration files • Launch files • Parameters files</text>
+  
+  <!-- Package Types -->
+  <text x="450" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1f2937">Package Types</text>
+  
+  <!-- Python Package -->
+  <rect x="100" y="150" width="250" height="60" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="225" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#92400e">Python Packages</text>
+  <text x="225" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#374151">Contains Python executables</text>
+  <text x="225" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#d97706">← Focus of this course</text>
+  
+  <!-- CMake Package -->
+  <rect x="550" y="150" width="250" height="60" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+  <text x="675" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#4338ca">CMake (C++) Packages</text>
+  <text x="675" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#374151">Contains C++ executables</text>
+  
+  <!-- Python Package Structure -->
+  <rect x="80" y="250" width="740" height="280" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+  <text x="450" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#92400e">Python Package File Structure</text>
+  
+  <!-- Package Folder -->
+  <rect x="120" y="300" width="660" height="220" rx="6" fill="url(#folderPattern)" stroke="#6b7280" stroke-width="1"/>
+  <text x="140" y="320" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1f2937">📁 my_robot_package/</text>
+  
+  <!-- Files in package -->
+  <!-- package.xml -->
+  <rect x="160" y="335" width="180" height="30" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+  <text x="170" y="345" font-family="Arial, sans-serif" font-size="10" fill="#1e40af">📄 package.xml</text>
+  <text x="170" y="360" font-family="Arial, sans-serif" font-size="8" fill="#374151">Meta-information, dependencies</text>
+  
+  <!-- setup.py -->
+  <rect x="360" y="335" width="180" height="30" rx="4" fill="#dcfce7" stroke="#22c55e" stroke-width="1"/>
+  <text x="370" y="345" font-family="Arial, sans-serif" font-size="10" fill="#166534">📄 setup.py</text>
+  <text x="370" y="360" font-family="Arial, sans-serif" font-size="8" fill="#374151">Compilation instructions</text>
+  
+  <!-- setup.cfg -->
+  <rect x="560" y="335" width="180" height="30" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+  <text x="570" y="345" font-family="Arial, sans-serif" font-size="10" fill="#92400e">📄 setup.cfg</text>
+  <text x="570" y="360" font-family="Arial, sans-serif" font-size="8" fill="#374151">Installation instructions</text>
+  
+  <!-- src folder -->
+  <rect x="160" y="380" width="280" height="80" rx="4" fill="#f3e8ff" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="170" y="395" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#6b21a8">📁 src/my_robot_package/</text>
+  <text x="170" y="410" font-family="Arial, sans-serif" font-size="9" fill="#374151">Python scripts go here</text>
+  <rect x="180" y="420" width="120" height="20" rx="2" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="185" y="435" font-family="Arial, sans-serif" font-size="8" fill="#4338ca">📄 __init__.py</text>
+  <rect x="180" y="445" width="120" height="20" rx="2" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="185" y="460" font-family="Arial, sans-serif" font-size="8" fill="#4338ca">📄 my_script.py</text>
+  
+  <!-- launch folder (optional) -->
+  <rect x="460" y="380" width="180" height="50" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="1" stroke-dasharray="5,5"/>
+  <text x="470" y="395" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#dc2626">📁 launch/ (optional)</text>
+  <text x="470" y="410" font-family="Arial, sans-serif" font-size="9" fill="#374151">Launch files</text>
+  <text x="470" y="425" font-family="Arial, sans-serif" font-size="8" fill="#6b7280" font-style="italic">Extra folders possible</text>
+  
+  <!-- Key Points Box - ENLARGED -->
+  <rect x="80" y="550" width="740" height="90" rx="8" fill="#1f2937" stroke="#4f46e5" stroke-width="2"/>
+  <text x="450" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Key Points to Remember</text>
+  <text x="100" y="595" font-family="Arial, sans-serif" font-size="11" fill="#e5e7eb">• Every ROS2 program that you want to execute is organized into a package</text>
+  <text x="100" y="615" font-family="Arial, sans-serif" font-size="11" fill="#e5e7eb">• Every ROS2 program you create must be organized in a package</text>
+  <text x="100" y="635" font-family="Arial, sans-serif" font-size="11" fill="#60a5fa" font-weight="bold">• Packages are the primary way to organize ROS2 programs</text>
+  
+  <!-- Benefits callout -->
+  <ellipse cx="750" cy="60" rx="80" ry="30" fill="#ecfccb" stroke="#65a30d" stroke-width="2"/>
+  <text x="750" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#365314">Benefits:</text>
+  <text x="750" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#374151">Easy sharing</text>
+  
+  <!-- Arrow from benefits to main box -->
+  <path d="M 670 60 L 730 60" stroke="#65a30d" stroke-width="2" fill="none" marker-end="url(#greenArrow)"/>
+  
+  <defs>
+    <marker id="greenArrow" markerWidth="8" markerHeight="6" 
+     refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#65a30d" />
+    </marker>
+  </defs>
+</svg>
