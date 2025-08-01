@@ -140,9 +140,12 @@ Você precisa incluir duas chamadas **Node()** dentro do arquivo de inicializaç
 ```
 
 ### EXEMPLO
-a) Crie um novo pacote no ambiente de trabalho ros2_ws chamado **cartographer_slam** dentro do diretório **src/**.
+a) Crie um novo pacote no ambiente de trabalho ros2_ws chamado **cartographer_slam_test** dentro do diretório **src/**: 
+```shell
 
-b) Crie os diretórios de inicialização (**launch**) e configuração (**config**) em ros2_ws/src/cartographer_slam.
+```
+
+b) Crie os diretórios de inicialização (**launch**) e configuração (**config**) em ros2_ws/src/cartographer_slam_test.
 
 c) Escreva um arquivo de inicialização para iniciar o Cartographer com o nome **cartographer.launch.py**, onde os dois nós são iniciados.
 
@@ -196,6 +199,23 @@ POSE_GRAPH.constraint_builder.global_localization_min_score = 0.7
 return options
 ```
 
-f) Execute o arquivo de inicialização recém-criado: `ros2 launch cartographer_slam cartographer.launch.py`
+f) Execute o arquivo de inicialização recém-criado: `ros2 launch cartographer_slam_test cartographer.launch.py`
 
 g) Inicie o **RVIZ** para ver o mapa sendo criado. Você configurará o RVIZ para exibir os dados que deseja controlar.
+
+h) Adicione a exibição do mapa no RVIZ e configure-o para visualizar o mapa que você está gerando.
+
+1. Clique no botão **Add** em Exibições e escolha a exibição do Mapa.
+2. Nas propriedades de exibição do mapa, defina o tópico como **/map**.
+
+Se você não conseguir visualizar o mapa, verifique se os parâmetros de qualidade de serviço (**QoS**) do tópico /map estão corretos (como na figura). S
+
+![map_qos_config](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation/imagens/map_qos_config.png)
+
+3. Adicione mais algumas exibições:
+
+    * TF para ver os frames do robô
+    * LaserScan para ver o laser colidindo com os objetos no mapa. Você também pode adicioná-lo facilmente acessando a aba "By topic" após clicar em "Add". Lembre-se de definir os parâmetros de QoS adequados para o laser. Especificamente, você precisa alterar LaserScan -> Topic -> Reliability Policy de "Reliable" para "Best Effort'" para que os dados do escaneamento a laser sejam exibidos.
+
+h) Mova o robô pelo mundo do Gazebo usando o teclado teleop para criar um mapa completo do ambiente.
+
