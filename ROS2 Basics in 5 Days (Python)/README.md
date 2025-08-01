@@ -316,7 +316,7 @@ setup(
 
 Compile:
 ```shell
-cd ~/ros2_wsv
+cd ~/ros2_ws
 colcon build
 source ~/ros2_ws/install/setup.bash
 ```
@@ -336,3 +336,109 @@ Nesta exemplo, você aprenderá a usar arquivos launch para iniciar várias inst
 
 1. Crie uma pasta dentro do pacote **mars_rover_systems** chamada **launch**.
 2. Dentro da pasta de launch, crie um novo arquivo chamado **two_rover_heartbeat.launch.py**
+
+**two_rover_heartbeat.launch.py:**
+
+```python
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='mars_rover_systems',
+            executable='heartbeat_executable',
+            output='screen'),
+        Node(
+            package='mars_rover_systems',
+            executable='heartbeat_executable2',
+            output='screen')
+    ])
+```
+
+Dentro do objeto **LaunchDescription**, crie um nó e especifique os seguintes parâmetros:
+
+* package: O nome do pacote que contém o programa ROS2 a ser executado.
+* executable: O nome do ponto de entrada Python definido em setup.py.
+* output: O tipo de canal de saída para imprimir a saída do programa.
+
+#### Modifique o **setup.py** para encontar a launch criada
+Precisamos configurar o arquivo setup.py para garantir que o ROS2 possa encontrar e acessar os arquivos **.launch.py** na pasta **launch**.
+
+Para isso, precisamos modificar a entrada **data_files**. Esta entrada especifica os locais onde o ROS2 pode encontrar todos os arquivos em nosso pacote:
+
+```python
+data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+    ],
+```
+
+Para isto:
+
+```python
+import os
+from glob import glob
+...
+
+data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name), glob('launch/*.launch.py'))
+    ],
+```
+
+Adicionamos UM NOVO CAMINHO:
+* **os.path.join**('share', package_name), glob('launch/*.launch.py'): que especifica o caminho para nossos arquivos launch.py.
+
+Essa abordagem pode ser usada para qualquer arquivo ou pasta que você queira que seus pacotes ROS2 incluam.
+
+No final, seu setup.py deverá ficar assim:
+
+**setup.py:**
+
+```python
+from setuptools import find_packages, setup
+import os
+from glob import glob
+
+package_name = 'mars_rover_systems'
+
+setup(
+    name=package_name,
+    version='0.0.0',
+    packages=find_packages(exclude=['test']),
+    data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name), glob('launch/*.launch.py'))
+    ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    maintainer='user',
+    maintainer_email='user@todo.todo',
+    description='TODO: Package description',
+    license='TODO: License declaration',
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [            
+            'heartbeat_executable = mars_rover_systems.heartbeat:main',
+            'heartbeat_executable2 = mars_rover_systems.heartbeat:main2',
+            'heartbeat_executable_shutdown = mars_rover_systems.heartbeat:main_shutdown'
+        ],
+    },
+)
+```
+
+Compile:
+
+```shell
+cd ~/ros2_ws
+colcon build
+source ~/ros2_ws/install/setup.bash
+```
+
+Execute os dois nó a partir de um unico teminal: `ros2 launch mars_rover_systems two_rover_heartbeat.launch.py`
