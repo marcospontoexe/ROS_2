@@ -77,8 +77,10 @@ Estes são os campos que você precisa indicar na inicialização do nó:
 * Os parâmetros necessários são:
     * **use_sim_time**: é um booleano que indica se o nó deve sincronizar seu horário com a simulação
 * Os argumentos são:
-    *   **configuration_directory**: o diretório onde encontrar os arquivos de configuração
-    *   **configuration_basename**: o nome do arquivo de configuração
+    * **configuration_directory**: o diretório onde encontrar os arquivos de configuração
+    * **configuration_basename**: o nome do arquivo de configuração
+
+**launch:**
 
 ```python
     package='cartographer_ros', 
@@ -89,3 +91,111 @@ Estes são os campos que você precisa indicar na inicialização do nó:
     arguments=['-configuration_directory', cartographer_config_dir,
                 '-configuration_basename', configuration_basename]
 ```
+
+### occupancy_grid_node
+Estes são os campos que você precisa indicar na inicialização do nó:
+
+* O **occupancy_grid_node** é fornecido pelo pacote **cartographer_ros**
+* O executável é chamado **cartographer_occupancy_grid_node**
+* Os parâmetros necessários são:
+    * use_sim_time: é um booleano que indica se o nó deve sincronizar seu tempo com a simulação
+* Os argumentos são:
+* **resolution**: número de metros por grade no mapa
+* **publish_period_sec**: com que frequência (em segundos) o mapa é publicado no tópico /map
+
+**launch:**
+
+```python
+    package='cartographer_ros',
+    executable='cartographer_occupancy_grid_node',
+    output='screen',
+    name='occupancy_grid_node',
+    parameters=[{'use_sim_time': True}],
+    arguments=['-resolution', '0.05', '-publish_period_sec', '1.0']
+```
+
+### **NOTA1**
+Use a seguinte linha para obter o diretório de configuração dentro do seu arquivo de inicialização:
+
+```python
+cartographer_config_dir = os.path.join(get_package_share_directory('cartographer_slam'), 'config')
+```
+
+Essa linha tem duas funções interessantes:
+
+* **os.path.join** faz a concatenação de dois caminhos para gerar o caminho final. Essa função é fornecida por os (que você deve importar).
+* **get_package_share_directory** é uma função para encontrar o caminho completo no disco rígido de um determinado pacote ROS. Essa função é fornecida por **ament_index_python.packages** (que você deve importar).
+
+### **NOTA2**
+Você precisa incluir duas chamadas **Node()** dentro do arquivo de inicialização. Para isso, adicione uma após a outra, separadas por vírgulas.
+
+```python
+    Node(
+        ...
+    ),
+    
+    Node(
+        ...
+    ),
+```
+
+### EXEMPLO
+a) Crie um novo pacote no ambiente de trabalho ros2_ws chamado **cartographer_slam** dentro do diretório **src/**.
+
+b) Crie os diretórios de inicialização (**launch**) e configuração (**config**) em ros2_ws/src/cartographer_slam.
+
+c) Escreva um arquivo de inicialização para iniciar o Cartographer com o nome **cartographer.launch.py**, onde os dois nós são iniciados.
+
+d) Crie um arquivo LUA chamado **cartographer.lua** no diretório config com os seguintes parâmetros de configuração:
+
+```cartographer.lua
+include "map_builder.lua"
+include "trajectory_builder.lua"
+
+options = {
+  map_builder = MAP_BUILDER,
+  trajectory_builder = TRAJECTORY_BUILDER,
+  map_frame = "map",
+  tracking_frame = "base_footprint",
+  published_frame = "odom",
+  odom_frame = "odom",
+  provide_odom_frame = false,
+  publish_frame_projected_to_2d = true,
+  use_odometry = true,
+  use_nav_sat = false,
+  use_landmarks = false,
+  num_laser_scans = 1,
+  num_multi_echo_laser_scans = 0,
+  num_subdivisions_per_laser_scan = 1,
+  num_point_clouds = 0,
+  lookup_transform_timeout_sec = 0.2,
+  submap_publish_period_sec = 0.3,
+  pose_publish_period_sec = 5e-3,
+  trajectory_publish_period_sec = 30e-3,
+  rangefinder_sampling_ratio = 1.,
+  odometry_sampling_ratio = 1.,
+  fixed_frame_pose_sampling_ratio = 1.,
+  imu_sampling_ratio = 1.,
+  landmarks_sampling_ratio = 1.,
+}
+
+MAP_BUILDER.use_trajectory_builder_2d = true
+
+TRAJECTORY_BUILDER_2D.min_range = 0.12
+TRAJECTORY_BUILDER_2D.max_range = 3.5
+TRAJECTORY_BUILDER_2D.missing_data_ray_length = 3.0
+TRAJECTORY_BUILDER_2D.use_imu_data = false
+TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true 
+TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = math.rad(0.1)
+
+POSE_GRAPH.constraint_builder.min_score = 0.65
+POSE_GRAPH.constraint_builder.global_localization_min_score = 0.7
+
+-- POSE_GRAPH.optimize_every_n_nodes = 0
+
+return options
+```
+
+f) Execute o arquivo de inicialização recém-criado: `ros2 launch cartographer_slam cartographer.launch.py`
+
+g) Inicie o **RVIZ** para ver o mapa sendo criado. Você configurará o RVIZ para exibir os dados que deseja controlar.
