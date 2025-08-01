@@ -80,7 +80,7 @@ Estes são os campos que você precisa indicar na inicialização do nó:
     *   **configuration_directory**: o diretório onde encontrar os arquivos de configuração
     *   **configuration_basename**: o nome do arquivo de configuração
 
-```yaml
+```python
     package='cartographer_ros', 
     executable='cartographer_node', 
     name='cartographer_node',
