@@ -33,7 +33,7 @@ O Nav2 inclui ferramentas para:
 
 Abaixo, você encontrará um diagrama ilustrando como esses componentes interagem. Não se preocupe se parecer complexo no início — você entenderá completamente ao final deste curso.
 
-1[Nav2 Lifecycle Manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation/imagens/architectural_diagram.png)
+[Nav2 Lifecycle Manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/architectural_diagram.png)
 
 [Repositório oficial do NAV2.](https://github.com/ros-navigation/navigation2)
 
@@ -92,13 +92,32 @@ Estes são os campos que você precisa indicar na inicialização do nó:
                 '-configuration_basename', configuration_basename]
 ```
 
+**NOTA1**
+Use a seguinte linha para obter o diretório de configuração dentro do seu arquivo de inicialização:
+
+```python
+cartographer_config_dir = os.path.join(get_package_share_directory('cartographer_slam'), 'config')
+```
+
+Essa linha tem duas funções interessantes:
+
+* **os.path.join** faz a concatenação de dois caminhos para gerar o caminho final. Essa função é fornecida por **os** (que você deve importar).
+* **get_package_share_directory** é uma função para encontrar o caminho completo no disco rígido de um determinado pacote ROS. Essa função é fornecida por **ament_index_python.packages** (que você deve importar).
+
+Portanto, você precisa importar alguns elementos no seu arquivo de inicialização do Python:
+
+```python
+import os
+from ament_index_python.packages import get_package_share_directory
+```
+
 ### occupancy_grid_node
 Estes são os campos que você precisa indicar na inicialização do nó:
 
-* O **occupancy_grid_node** é fornecido pelo pacote **cartographer_ros**
+* O **cartographer_occupancy_grid_node** é fornecido pelo pacote **cartographer_ros**
 * O executável é chamado **cartographer_occupancy_grid_node**
 * Os parâmetros necessários são:
-    * use_sim_time: é um booleano que indica se o nó deve sincronizar seu tempo com a simulação
+    * **use_sim_time**: é um booleano que indica se o nó deve sincronizar seu tempo com a simulação
 * Os argumentos são:
 * **resolution**: número de metros por grade no mapa
 * **publish_period_sec**: com que frequência (em segundos) o mapa é publicado no tópico /map
@@ -114,19 +133,7 @@ Estes são os campos que você precisa indicar na inicialização do nó:
     arguments=['-resolution', '0.05', '-publish_period_sec', '1.0']
 ```
 
-### **NOTA1**
-Use a seguinte linha para obter o diretório de configuração dentro do seu arquivo de inicialização:
-
-```python
-cartographer_config_dir = os.path.join(get_package_share_directory('cartographer_slam'), 'config')
-```
-
-Essa linha tem duas funções interessantes:
-
-* **os.path.join** faz a concatenação de dois caminhos para gerar o caminho final. Essa função é fornecida por os (que você deve importar).
-* **get_package_share_directory** é uma função para encontrar o caminho completo no disco rígido de um determinado pacote ROS. Essa função é fornecida por **ament_index_python.packages** (que você deve importar).
-
-### **NOTA2**
+**NOTA2**
 Você precisa incluir duas chamadas **Node()** dentro do arquivo de inicialização. Para isso, adicione uma após a outra, separadas por vírgulas.
 
 ```python
@@ -140,14 +147,46 @@ Você precisa incluir duas chamadas **Node()** dentro do arquivo de inicializaç
 ```
 
 ### EXEMPLO
-a) Crie um novo pacote no ambiente de trabalho ros2_ws chamado **cartographer_slam_test** dentro do diretório **src/**: 
+a) Crie um novo pacote no ambiente de trabalho ros2_ws chamado **cartographer_slam** dentro do diretório **src/**: 
 ```shell
-
+ros2 pkg create --build-type ament_python cartographer_slam --dependencies rclpy
 ```
 
-b) Crie os diretórios de inicialização (**launch**) e configuração (**config**) em ros2_ws/src/cartographer_slam_test.
-
+b) Crie os diretórios de inicialização (**launch**) e configuração (**config**) em ros2_ws/src/cartographer_slam.
 c) Escreva um arquivo de inicialização para iniciar o Cartographer com o nome **cartographer.launch.py**, onde os dois nós são iniciados.
+
+```python
+import os
+from launch import LaunchDescription
+from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import Node
+
+def generate_launch_description():
+
+    cartographer_config_dir = os.path.join(get_package_share_directory('cartographer_slam'), 'config')
+    configuration_basename = 'cartographer.lua'
+
+    return LaunchDescription([
+        
+        Node(
+            package='cartographer_ros', 
+            executable='cartographer_node', 
+            name='cartographer_node',
+            output='screen',
+            parameters=[{'use_sim_time': True}],
+            arguments=['-configuration_directory', cartographer_config_dir,
+                       '-configuration_basename', configuration_basename]),
+
+        Node(
+            package='cartographer_ros',
+            executable='cartographer_occupancy_grid_node',
+            output='screen',
+            name='occupancy_grid_node',
+            parameters=[{'use_sim_time': True}],
+            arguments=['-resolution', '0.05', '-publish_period_sec', '1.0']
+        ),
+    ]) 
+```
 
 d) Crie um arquivo LUA chamado **cartographer.lua** no diretório config com os seguintes parâmetros de configuração:
 
@@ -199,23 +238,61 @@ POSE_GRAPH.constraint_builder.global_localization_min_score = 0.7
 return options
 ```
 
-f) Execute o arquivo de inicialização recém-criado: `ros2 launch cartographer_slam_test cartographer.launch.py`
+e) Altere o arquivo **setup.py** para reconhecer o arquivo **cartographer.launch.py**.
 
-g) Inicie o **RVIZ** para ver o mapa sendo criado. Você configurará o RVIZ para exibir os dados que deseja controlar.
+```python
+from setuptools import find_packages, setup
+import os
+from glob import glob
+
+
+package_name = 'cartographer_slam'
+
+setup(
+    name=package_name,
+    version='0.0.0',
+    packages=find_packages(exclude=['test']),
+    data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
+        (os.path.join('share', package_name, 'config'), glob('config/*'))
+    ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    maintainer='user',
+    maintainer_email='user@todo.todo',
+    description='TODO: Package description',
+    license='TODO: License declaration',
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+        ],
+    },
+)
+```
+
+f) Compile, e execute o arquivo de inicialização recém-criado: `ros2 launch cartographer_slam cartographer.launch.py`
+
+g) Inicie o **RVIZ2** para ver o mapa sendo criado. Você configurará o RVIZ para exibir os dados que deseja controlar.
 
 h) Adicione a exibição do mapa no RVIZ e configure-o para visualizar o mapa que você está gerando.
 
-1. Clique no botão **Add** em Exibições e escolha a exibição do Mapa.
+1. Clique no botão **Add** em Exibições e escolha a exibição do **Map**.
 2. Nas propriedades de exibição do mapa, defina o tópico como **/map**.
 
-Se você não conseguir visualizar o mapa, verifique se os parâmetros de qualidade de serviço (**QoS**) do tópico /map estão corretos (como na figura). S
+Se você não conseguir visualizar o mapa, verifique se os parâmetros de qualidade de serviço (**QoS**) do tópico /map estão corretos (como na figura). 
 
-![map_qos_config](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation/imagens/map_qos_config.png)
+![map_qos_config](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/map_qos_config.png)
 
 3. Adicione mais algumas exibições:
 
     * TF para ver os frames do robô
     * LaserScan para ver o laser colidindo com os objetos no mapa. Você também pode adicioná-lo facilmente acessando a aba "By topic" após clicar em "Add". Lembre-se de definir os parâmetros de QoS adequados para o laser. Especificamente, você precisa alterar LaserScan -> Topic -> Reliability Policy de "Reliable" para "Best Effort'" para que os dados do escaneamento a laser sejam exibidos.
 
+![rviz2](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/rviz2_QoS.png)
+
 h) Mova o robô pelo mundo do Gazebo usando o teclado teleop para criar um mapa completo do ambiente.
 
+[Veja aqui]() o pacote criado nesse exemplo.
