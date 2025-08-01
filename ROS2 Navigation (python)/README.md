@@ -324,3 +324,36 @@ Para visualizar o arquivo PGM você pode fazer o seguinte:
 * Abra-o através do IDE. Para poder fazer isso, o arquivo deve estar no diretório catkin_ws/src.
 * Abra-o através do Web Shell. Você pode usar, por exemplo, o editor **vi** digitando o comando `vi nome_do_mapa.pgm`.
 * Baixe o arquivo e visualize-o no seu computador local com o seu próprio editor de texto.
+
+## Fornecendo o mapa para outros nodes
+Após criar o mapa com o **Cartographer** e salvá-lo com o **map_saver**, você pode fechar todos os programas anteriores. Você não precisará usar o Cartographer novamente (a menos que queira criar outros mapas).
+
+O mapa criado precisa ser fornecido a outros aplicativos de navegação, como o **sistema de localização** ou o **planejador de rotas**. Para isso, inicie o map_server.
+
+Você iniciará os seguintes nós para carregar o mapa e visualizá-lo no RVIZ:
+
+* map_server
+* nav2_lifecycle_manager
+
+### map_server node
+Estes são os campos que você precisa indicar na inicialização do nó:
+
+* O **map_server** é fornecido pelo pacote **nav2_map_server**
+* O executável é chamado **map_server**
+* Os parâmetros necessários são:
+    * **use_sim_time**: é um booleano que indica se o map_server deve sincronizar seu horário com a simulação.
+    * **yaml_filename**: é o caminho completo para o arquivo yaml do mapa.
+
+### lifecycle_manager node
+Este nó gerencia o **ciclo de vida dos nós** envolvidos na navegação. Você aprenderá mais sobre ele posteriormente.
+
+* O gerenciador de ciclo de vida é fornecido pelo pacote **nav2_lifecycle_manager**.
+* O executável é chamado de **lifecycle_manager**.
+* Parâmetros necessários:
+    * use_sim_time: é um booleano que indica se o map_server deve sincronizar seu horário com a simulação.
+    * autostart: é um booleano que indica se o gerenciador de ciclo de vida deve iniciar ao ser iniciado.
+    * node_names: é uma lista com os nomes dos nós que o gerenciador de ciclo de vida deve cuidar. Até o momento, apenas o map_server.
+
+[Veja nesse pacote](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/map_server) chamado **map_server** como fornecer um mapa criado.
+
+# Lifecycle Nodes
