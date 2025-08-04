@@ -472,3 +472,35 @@ E se você verificar o terminal onde você iniciou o map_server, você deverá v
 ```
 
 Agora **você não pode enviar metas de navegação** para o robô porque o sistema de navegação, mesmo em execução, está pausado. Se quiser retomar a navegação, chame o serviço novamente com o seguinte comando: `ros2 service call /lifecycle_manager_mapper/manage_nodes nav2_msgs/srv/ManageLifecycleNodes command:\ 2\`
+
+O objetivo deste serviço é simplificar o gerenciamento do status de todo o sistema de navegação. Você pode adicionar funcionalidades para iniciar, pausar, parar e reconfigurar o sistema de navegação adicionando uma chamada de cliente de serviço, em vez de gerenciar todos os nós de uma só vez.
+
+# Como localizar um robô em um ambiente
+Após a criação do mapa, a próxima etapa essencial da navegação é a localização — determinar a posição e a orientação do robô nesse mapa. Sem uma localização precisa, o robô não consegue navegar com eficácia nem planejar caminhos de forma confiável.
+
+## AMCL
+O ROS possui um algoritmo muito robusto para localização, o **AMCL** (Adaptive Monte-Carlo Localization). É um sistema de localização probabilística para um robô se movendo em 2D.
+
+Ele implementa a abordagem de localização adaptativa (ou amostragem KLD) de Monte Carlo (conforme descrito por Dieter Fox), que utiliza um filtro de partículas para rastrear a pose de um robô em relação a um mapa conhecido.
+
+Um robô ROS é localizado quando alguém publica uma **transformação entre o quadro /map e o quadro /odom**.
+Isso significa que o quadro /odom do robô conhece sua posição relativa ao quadro /map. Portanto, o robô conhece sua posição no mapa, pois seu quadro /base_link está diretamente conectado ao quadro /odom.
+
+Quando tudo estiver correto, o **AMCL é quem publica essa transformação**.
+
+## Iniciando o AMCL com um arquivo launch
+Você precisa iniciar três nós:
+
+* O map_server fornece o mapa para o algoritmo de localização.
+* O algoritmo de localização (localization).
+* O gerenciador de ciclo de vida (life cycle manager).
+
+### Inicialização do nó map_server
+Estes são os campos que você precisa indicar na inicialização do nó:
+
+* O map_server é fornecido pelo pacote **nav2_map_server**
+* O executável é chamado **map_server**
+* Os parâmetros necessários são:
+    * **use_sim_time**: é um booleano que indica se o map_server deve sincronizar seu horário com a simulação.
+    * **yaml_filename**: é o caminho completo para o arquivo yaml do mapa.
+
