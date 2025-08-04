@@ -33,7 +33,7 @@ O Nav2 inclui ferramentas para:
 
 Abaixo, você encontrará um diagrama ilustrando como esses componentes interagem. Não se preocupe se parecer complexo no início — você entenderá completamente ao final deste curso.
 
-[Nav2 Lifecycle Manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/architectural_diagram.png)
+![Nav2 Lifecycle Manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/architectural_diagram.png)
 
 [Repositório oficial do NAV2.](https://github.com/ros-navigation/navigation2)
 
@@ -357,3 +357,15 @@ Este nó gerencia o **ciclo de vida dos nós** envolvidos na navegação. Você 
 [Veja nesse pacote](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/map_server) chamado **map_server** como fornecer um mapa criado.
 
 # Lifecycle Nodes
+
+É possível controlar o status de um nó de navegação e modificar seu status de execução.
+
+Nós de navegação são o que chamamos de nós gerenciados (ou nós de ciclo de vida). Nós gerenciados podem ser facilmente controlados para serem reiniciados, pausados ou em execução. Os nós gerenciados controlam isso estando em qualquer um dos seguintes estados:
+
+Não configurado
+Inativo
+Ativo
+Finalizado
+O diagrama a seguir indica como os nós transitam de um estado para outro.
+
+
