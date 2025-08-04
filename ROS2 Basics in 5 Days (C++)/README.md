@@ -1470,107 +1470,6 @@ ament_target_dependencies(action_server_node rclcpp rclcpp_action t3_action_msg 
 <depend>marcos_custom_interfaces</depend>
 ```
 
-# Ferramentas de Debugging (Depuração)
-Depuração e visualização são habilidades essenciais para qualquer desenvolvedor de robótica. 
-
-## ROS2 Debugging Messages
-Os logs podem ser exibidos na tela, mas também podem ser salvos no quadro ROS para classificação, filtragem e outros usos. Existem níveis de log nos sistemas, como visto na imagem abaixo. No caso dos logs ROS2, existem cinco níveis. Cada nível possui uma série de subníveis. Por exemplo, se você usar o nível **Erro**, o log exibirá as mensagens Erro e Fatal. Se o seu nível for **Warning**, você verá todas as mensagens dos níveis Warning, Erro e Fatal.
-
-![níveis de log](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/log.png)
-
-[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_logs_test/src/logger_example.cpp) um nó criado para ficar imprimendo diferentes menssagens de logs.
-
-## RVIZ2
-RVIZ é uma ferramenta de visualização que permite visualizar imagens, nuvens de pontos, lasers, transformações cinemáticas, modelos de robôs e muito mais. A lista é infinita. É até possível criar seus próprios marcadores. É um dos motivos pelos quais o ROS foi tão bem recebido. Não era fácil descobrir o que o robô estava vendo antes do RVIZ. Esta é a ideia principal:
-
-* RVIZ NÃO é uma simulação. Repito: NÃO é uma simulação.
-* RVIZ representa o que está sendo publicado nos tópicos pela simulação ou pelo robô real.
-* RVIZ é uma ferramenta complexa e levaria um curso inteiro para dominá-la. Aqui, você terá uma ideia do que ela pode lhe oferecer.
-
-**Painel Central**: Aqui é onde toda a mágica acontece. É aqui que os dados serão exibidos. É um espaço 3D que você pode rotacionar (MANTENDO O BOTÃO ESQUERDO DO MOUSE PRESSIONADO), transladar (MANTENDO O BOTÃO CENTRAL DO MOUSE PRESSIONADO) e dar zoom in/out (MANTENDO O BOTÃO DIREITO DO MOUSE PRESSIONADO).
-
-**Painel de Exibição à Esquerda**: Aqui você gerencia/configura todos os elementos que deseja visualizar no painel central. Você só precisa usar dois elementos:
-* Em Opções Globais, você deve selecionar o Quadro Fixo (Fixed Frame) que se adequa à visualização dos dados. É o quadro de referência a partir do qual todos os dados serão referenciados.
-* O botão Adicionar (Add). Clicando aqui, você obtém todos os tipos de elementos que podem ser representados no RVIZ.
-
-## Vizualizar os frames do robo
-Outra ferramenta útil é o programa **view_frames**. Este programa permite visualizar um diagrama de árvore mostrando a relação entre os diferentes quadros do seu robô.
-
-Para gerar um pdf com o diagrama: `ros2 run tf2_tools view_frames`.
-
-O arquivo será gerado no diretório atual do terminal.
-
-Esta ferramenta é útil porque permite ver a conexão entre cada quadro e determinar se uma transformação não foi bem executada. Por exemplo, pode não haver relação entre um mapa gerado e o robô que deseja navegar, ou um sensor e sua base, etc.
-
-## ROS2 Doctor
-O ROS 2 Doctor (ou ros2 doctor) é uma ferramenta de diagnóstico incluída no ROS 2 que verifica se o seu ambiente está corretamente configurado para usar o ROS 2.
-
-Esta poderosa ferramenta analisa toda a configuração do ROS2, incluindo plataforma, versões, rede, ambiente, etc., além de fornecer um diagnóstico preciso com precauções, erros e possíveis causas dos problemas.
-
-Não se esqueça de que o ros2doctor pertence ao pacote **ros2cli**, portanto, você precisará instalá-lo para usá-lo.
-
-### O que o `ros2 doctor` faz?
-
-Ele **realiza uma série de testes automáticos** para detectar problemas comuns no ambiente de desenvolvimento ROS 2, como:
-
-* Variáveis de ambiente (`ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, etc.)
-* Conectividade entre nodes
-* Comunicação via DDS
-* Instalações faltando
-* Conflitos entre workspaces
-* Status da rede
-* Detecção de múltiplas fontes de ROS (mistura de versões)
-
-* Se `ROS_DISTRO` está definido corretamente
-* Se o `rmw` (middleware DDS) está compatível
-* Se o `ros2` está instalado corretamente
-* Se há conflitos entre múltiplos workspaces
-* Se há problemas de DNS que podem afetar a descoberta de nodes
-* Se há pacotes ausentes
-
-### Quando usar o `ros2 doctor`?
-
-Use sempre que:
-
-* O ROS 2 não estiver se comportando como esperado
-* Nodes não estiverem se comunicando
-* Você configurar um novo ambiente
-* Houver dúvidas sobre configuração de rede, DDS ou variáveis de ambiente
-
-
-### Verifique toda a sua configuração
-Este é o primeiro e mais significativo nível de verificação da ferramenta ros2doctor. Você só precisa executar o ros2 doctor: `ros2 doctor`.
-
-Se a configuração do ROS2 estiver em perfeitas condições, ela passará em todas as verificações, apresentando **All 5 checks passed** no terminal.
-
-Se algo estiver errado, como será a saída? Bem, depende do que está errado. Você pode receber uma saída semelhante a essa: 
-
-```bash
-1/4 checks failed
-
-Failed modules:  network
-```
-
-### Obtenha um relatório completo com o ROS2 Doctor
-Se você quiser saber mais detalhes para analisar problemas, --report é a melhor opção: `ros2 doctor --report`.
-
-Você verá que o relatório está categorizado em 7 seções:
-
-* NETWORK CONFIGURATION: Você pode ver todas as informações relacionadas à configuração de rede do sistema.
-* PACKAGE VERSION: Esses são pacotes que podem ser atualizados para a última versão.
-* PLATFORM CONFIGURATION: Estas são informações sobre a plataforma que você está usando.
-* QOS COMPATIBILITY LIST: Estas são informações sobre a configuração de QoS do seu sistema.
-* RMW MIDDLEWARE: Estas são informações sobre o MIDDLEWARE RMW, que define uma interface de primitivas de middleware usadas pelas APIs ROS de nível superior.
-* ROS 2 INFORMATION: Estas são informações sobre o ROS2 que você está usando.
-* TOPIC LIST: Estas são informações sobre os tópicos que estão sendo trabalhados com assinantes e editores.
-
-Você também pode usar `ros2 doctor --help` para ver todas as opções disponíveis e realizar diagnósticos específicos, como:
-
-```bash
-ros2 doctor --report --report-network
-ros2 doctor --report --report-rmw
-```
-
 # Node Composition
 Ao desenvolver programas (nós) em ROS 2, você normalmente os compila em executáveis que podem ser executados diretamente (ros2 run) ou usando um arquivo de inicialização (ros2 launch). No entanto, há uma limitação nessa abordagem: cada executável é executado em um processo separado, o que significa que não é possível executar vários nós ROS em um único processo.
 
@@ -1817,3 +1716,105 @@ Não esqueça de incluir a launch no arquivo **CMakeLists.txt**.
 Ao usar um arquivo de inicialização (launch) para carregar componentes, não é necessário descarregá-los usando o comando ros2 component unload. Ao interromper a execução do arquivo de inicialização (pressionando Ctr+C), todos os componentes são descarregados automaticamente, juntamente com o contêiner de componentes.
 
 ## Composição em tempo de compilação
+Não foi dado continuidade por causa a plataforma the construct estava com os códigos de exemplos incompletos, não funcionava.
+
+# Ferramentas de Debugging (Depuração)
+Depuração e visualização são habilidades essenciais para qualquer desenvolvedor de robótica. 
+
+## ROS2 Debugging Messages
+Os logs podem ser exibidos na tela, mas também podem ser salvos no quadro ROS para classificação, filtragem e outros usos. Existem níveis de log nos sistemas, como visto na imagem abaixo. No caso dos logs ROS2, existem cinco níveis. Cada nível possui uma série de subníveis. Por exemplo, se você usar o nível **Erro**, o log exibirá as mensagens Erro e Fatal. Se o seu nível for **Warning**, você verá todas as mensagens dos níveis Warning, Erro e Fatal.
+
+![níveis de log](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/imagens/log.png)
+
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Basics%20in%205%20Days%20(C%2B%2B)/exemplos/marcos_logs_test/src/logger_example.cpp) um nó criado para ficar imprimendo diferentes menssagens de logs.
+
+## RVIZ2
+RVIZ é uma ferramenta de visualização que permite visualizar imagens, nuvens de pontos, lasers, transformações cinemáticas, modelos de robôs e muito mais. A lista é infinita. É até possível criar seus próprios marcadores. É um dos motivos pelos quais o ROS foi tão bem recebido. Não era fácil descobrir o que o robô estava vendo antes do RVIZ. Esta é a ideia principal:
+
+* RVIZ NÃO é uma simulação. Repito: NÃO é uma simulação.
+* RVIZ representa o que está sendo publicado nos tópicos pela simulação ou pelo robô real.
+* RVIZ é uma ferramenta complexa e levaria um curso inteiro para dominá-la. Aqui, você terá uma ideia do que ela pode lhe oferecer.
+
+**Painel Central**: Aqui é onde toda a mágica acontece. É aqui que os dados serão exibidos. É um espaço 3D que você pode rotacionar (MANTENDO O BOTÃO ESQUERDO DO MOUSE PRESSIONADO), transladar (MANTENDO O BOTÃO CENTRAL DO MOUSE PRESSIONADO) e dar zoom in/out (MANTENDO O BOTÃO DIREITO DO MOUSE PRESSIONADO).
+
+**Painel de Exibição à Esquerda**: Aqui você gerencia/configura todos os elementos que deseja visualizar no painel central. Você só precisa usar dois elementos:
+* Em Opções Globais, você deve selecionar o Quadro Fixo (Fixed Frame) que se adequa à visualização dos dados. É o quadro de referência a partir do qual todos os dados serão referenciados.
+* O botão Adicionar (Add). Clicando aqui, você obtém todos os tipos de elementos que podem ser representados no RVIZ.
+
+## Vizualizar os frames do robo
+Outra ferramenta útil é o programa **view_frames**. Este programa permite visualizar um diagrama de árvore mostrando a relação entre os diferentes quadros do seu robô.
+
+Para gerar um pdf com o diagrama: `ros2 run tf2_tools view_frames`.
+
+O arquivo será gerado no diretório atual do terminal.
+
+Esta ferramenta é útil porque permite ver a conexão entre cada quadro e determinar se uma transformação não foi bem executada. Por exemplo, pode não haver relação entre um mapa gerado e o robô que deseja navegar, ou um sensor e sua base, etc.
+
+## ROS2 Doctor
+O ROS 2 Doctor (ou ros2 doctor) é uma ferramenta de diagnóstico incluída no ROS 2 que verifica se o seu ambiente está corretamente configurado para usar o ROS 2.
+
+Esta poderosa ferramenta analisa toda a configuração do ROS2, incluindo plataforma, versões, rede, ambiente, etc., além de fornecer um diagnóstico preciso com precauções, erros e possíveis causas dos problemas.
+
+Não se esqueça de que o ros2doctor pertence ao pacote **ros2cli**, portanto, você precisará instalá-lo para usá-lo.
+
+### O que o `ros2 doctor` faz?
+
+Ele **realiza uma série de testes automáticos** para detectar problemas comuns no ambiente de desenvolvimento ROS 2, como:
+
+* Variáveis de ambiente (`ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, etc.)
+* Conectividade entre nodes
+* Comunicação via DDS
+* Instalações faltando
+* Conflitos entre workspaces
+* Status da rede
+* Detecção de múltiplas fontes de ROS (mistura de versões)
+
+* Se `ROS_DISTRO` está definido corretamente
+* Se o `rmw` (middleware DDS) está compatível
+* Se o `ros2` está instalado corretamente
+* Se há conflitos entre múltiplos workspaces
+* Se há problemas de DNS que podem afetar a descoberta de nodes
+* Se há pacotes ausentes
+
+### Quando usar o `ros2 doctor`?
+
+Use sempre que:
+
+* O ROS 2 não estiver se comportando como esperado
+* Nodes não estiverem se comunicando
+* Você configurar um novo ambiente
+* Houver dúvidas sobre configuração de rede, DDS ou variáveis de ambiente
+
+
+### Verifique toda a sua configuração
+Este é o primeiro e mais significativo nível de verificação da ferramenta ros2doctor. Você só precisa executar o ros2 doctor: `ros2 doctor`.
+
+Se a configuração do ROS2 estiver em perfeitas condições, ela passará em todas as verificações, apresentando **All 5 checks passed** no terminal.
+
+Se algo estiver errado, como será a saída? Bem, depende do que está errado. Você pode receber uma saída semelhante a essa: 
+
+```bash
+1/4 checks failed
+
+Failed modules:  network
+```
+
+### Obtenha um relatório completo com o ROS2 Doctor
+Se você quiser saber mais detalhes para analisar problemas, --report é a melhor opção: `ros2 doctor --report`.
+
+Você verá que o relatório está categorizado em 7 seções:
+
+* NETWORK CONFIGURATION: Você pode ver todas as informações relacionadas à configuração de rede do sistema.
+* PACKAGE VERSION: Esses são pacotes que podem ser atualizados para a última versão.
+* PLATFORM CONFIGURATION: Estas são informações sobre a plataforma que você está usando.
+* QOS COMPATIBILITY LIST: Estas são informações sobre a configuração de QoS do seu sistema.
+* RMW MIDDLEWARE: Estas são informações sobre o MIDDLEWARE RMW, que define uma interface de primitivas de middleware usadas pelas APIs ROS de nível superior.
+* ROS 2 INFORMATION: Estas são informações sobre o ROS2 que você está usando.
+* TOPIC LIST: Estas são informações sobre os tópicos que estão sendo trabalhados com assinantes e editores.
+
+Você também pode usar `ros2 doctor --help` para ver todas as opções disponíveis e realizar diagnósticos específicos, como:
+
+```bash
+ros2 doctor --report --report-network
+ros2 doctor --report --report-rmw
+```
