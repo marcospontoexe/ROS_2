@@ -662,6 +662,12 @@ output='screen',
 parameters=[controller_yaml])
 ```
 
+### Progress Checker
+Verifica se o robô está preso ou progrediu em direção à conclusão da meta.
+
+### Goal Checker
+Verifica se o robô atingiu a pose desejada.
+
 ## Iniciando o bt_navigator
 Você já viu o nó que calcula o planejamento do caminho e o nó que gera os comandos de roda para seguir esse caminho.
 
@@ -686,7 +692,7 @@ parameters=[bt_navigator_yaml])
 
 Você pode encontrar um exemplo abaixo. 
 
-# Iniciando recoveries_server
+## Iniciando recoveries_server
 O que acontece se o robô não conseguir encontrar um caminho válido para o objetivo fornecido? E se o robô ficar preso no meio do processo e não conseguir descobrir o que fazer?
 
 Nessas situações, o robô usa **comportamentos de recuperação**. Esses movimentos simples e predefinidos geralmente resolvem a situação, chamados por meio de **árvores de comportamento**.
@@ -715,6 +721,22 @@ Atualmente, existem três comportamentos de recuperação disponíveis no Nav2:
 * **backup** - executa uma translação linear em uma determinada distância
 * **wait** - leva o robô a um estado estacionário
 
-[Neste pacote criado (**path_planner_server**)]() é carregado o mapa e o amcl usando o lifecicle_mananger nomeado como **lifecycle_manager_localization**, e carregado os nós necessários para o planning_path usando o lifecicle_mananger nomeado como **lifecycle_manager_pathplanner**.
+[Neste pacote criado (**path_planner_server**)](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server) é carregado o mapa e o amcl usando o lifecicle_mananger nomeado como **lifecycle_manager_localization**, e carregado os nós necessários para o planning_path usando o lifecicle_mananger nomeado como **lifecycle_manager_pathplanner**.
 
-Lembre-se de que você precisa incluir o lançamento de um nav2_lifecycle_manager, que precisa incluir todos os nós do planejador de caminho. Este gerenciador de ciclo de vida deve ter um nome diferente daquele lançado na localização.
+Agora que tudo está funcionando, tente definir uma meta de navegação para o robô:
+
+1. Execute a launch do pacote: `ros2 launch path_planner_server pathplanner.launch.py`.
+2. Abra o arquivo **default.rviz** encontrado no pacote path_planner_server, e clique no botão RVIZ **2d Goal Pose** e, em seguida, clique em qualquer ponto do mapa para direcionar seu robô. Você deverá ver uma linha verde indicando o caminho que o robô seguirá, da sua localização atual até o objetivo.
+
+## Enviando um meta de navegação por linha de comando
+Há duas maneiras de enviar uma meta de navegação pela linha de comando: usando o **servidor de ações** ou o **tópico**. Ambos os métodos são semelhantes e podem ser usados quando você precisar de feedback sobre o resultado.
+
+### Com um servidor de ações
+Como o sistema de navegação usa um servidor de ações chamado **/navigate_to_pose** para receber metas do RVIZ, você pode usar a linha de comando para chamar o servidor de ações e fornecer uma meta ao robô. Use o seguinte comando: `ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose "pose: {header: {frame_id: map}, pose: {position: {x: -0.0483484, y: 3.77634, z: 0}, orientation:{x: 0.0, y: 0.0, z: 0.554863, w: 0.831942}}}"`.
+
+Você precisa alterar os valores de posição e orientação da mensagem para o local no mapa para onde deseja enviar o robô (lembre-se de que a orientação requer um quatérnio). Você pode usar o RVIZ para identificar os valores de pose do local.
+
+### Com um tópico
+Use o **ros2 topic pub** para publicar essas coordenadas no tópico **/goal_pose**: `ros2 topic pub -1 /goal_pose geometry_msgs/PoseStamped "{header: {stamp: {sec: 0}, frame_id: 'map'}, pose: {position: {x: -0.0483484, y: 3.77634, z: 0}, orientation: {w: 0.831942}}}"`.
+
+## Enviando um meta de navegação por programação
