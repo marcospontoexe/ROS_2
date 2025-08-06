@@ -4,7 +4,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
-    map_file = os.path.join(get_package_share_directory('map_server'), 'config', 'turtlebot_area.yaml')
+    map_file = os.path.join(get_package_share_directory('localization_server'), 'config', 'turtlebot_area.yaml')
     nav2_yaml = os.path.join(get_package_share_directory('localization_server'), 'config', 'amcl_config.yaml')
     
     return LaunchDescription([

@@ -548,4 +548,24 @@ parameters=[{'use_sim_time': True},
             {'node_names': ['map_server','amcl']}])
 ```
 
-[Nesse exemplo]() foi um arquivo de inicialização que inicie o sistema de localização para o robô simulado usando o mapa que você criou na sessão **mapa**.
+[Nesse exemplo, do pacote **localization_server**](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/localization_server) foi um arquivo de inicialização (localization.launch.py) que inicie o sistema de localização para o robô simulado usando o mapa que você criou na sessão **mapa**.
+
+Compile e execute o exemplo: `ros2 launch localization_server localization.launch.py`. Se o sistema de localização tiver sido iniciado corretamente, você deverá ver na tela uma mensagem como esta:
+
+```shell
+[amcl-2] [WARN] [1632242660.692356589] [amcl]: ACML cannot publish a pose or update the transform. Please set the initial pose...
+```
+
+Essa mensagem está correta. O sistema de localização está aguardando a posição inicial do robô. Isso significa que, uma vez iniciado o sistema de localização, o algoritmo não sabe onde posicionar o robô inicialmente no mapa. Ele precisa que alguém indique isso para que o algoritmo possa começar a rastrear o robô enquanto ele se move.
+
+#### **Manually provide the initial localization**
+Para fornecer a localização inicial manualmente, siga os próximos passos:
+
+1. Inicie o RVIZ para visualizar e definir a localização: `rviz2`. Use o arquivo **default.rviz** salvo no pacote localization_server.
+2. Defina a pose inicial do robô no mapa. Clique em **2D pose estimate** para localizar o robô no ambiente e, em seguida, clique no ponto do mapa que corresponde à posição real do robô na simulação.
+
+Ao definir a Estimativa de Pose, todo o sistema AMCL começará a localizar o robô. Isso significa que ele começará a publicar a **transformação entre o mapa e o odom**. Todo o sistema estará ativo!
+
+Você deverá ver a seta do centro do robô até o quadro do mapa. Essa é a transformação de odom para quadros do mapa que a AMCL publica.
+
+Em seguida, mova o robô com o teclado e observe como a localização se adapta à nova localização do robô. Você deverá ver as **partículas** se concentrarem na localização mais provável do robô.
