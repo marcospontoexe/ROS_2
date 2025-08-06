@@ -374,9 +374,7 @@ O estado normal de um nó gerenciado deve ser **ativo**, que é quando o nó est
 
 Os nós gerenciados começam em um estado **não configurado**. Para fazer a transição do estado não configurado para o **ativo**, os nós precisam de um agente externo que os mova para o novo estado.
 
-Vários nós no Nav2, como map_server, amcl, planner_server e controller_server, são habilitados para ciclo de vida, o que significa que **são nós gerenciados**.
-
-Esses nós fornecem as substituições necessárias das funções de ciclo de vida: **on_configure(), on_activate(), on_deactivate(), on_cleanup(), on_shutdown() e on_error()**.
+Vários nós no Nav2, como map_server, amcl, planner_server e controller_server, são habilitados para ciclo de vida, o que significa que **são nós gerenciados**. Esses nós fornecem as substituições necessárias das funções de ciclo de vida: **on_configure(), on_activate(), on_deactivate(), on_cleanup(), on_shutdown() e on_error()**.
 
 ## Gerenciador do Nav2 Lifecycle
 No Nav2, o nó que ativa todos os nós de navegação é chamado de **nav2_lifecycle_manager**. O nav2_lifecycle_manager altera os estados dos nós gerenciados para realizar **inicialização, desligamento, reinicialização, pausa ou retomada controlada da pilha de navegação**.
@@ -491,9 +489,9 @@ Quando tudo estiver correto, o **AMCL é quem publica essa transformação**.
 ## Iniciando o AMCL com um arquivo launch
 Você precisa iniciar três nós:
 
-* O map_server fornece o mapa para o algoritmo de localização.
-* O algoritmo de localização (localization).
-* O gerenciador de ciclo de vida (life cycle manager).
+* O **map_server** fornece o mapa para o algoritmo de localização.
+* O algoritmo de localização (**amcl**).
+* O gerenciador de ciclo de vida (**life cycle manager**).
 
 ### Inicialização do nó map_server
 Estes são os campos que você precisa indicar na inicialização do nó:
@@ -504,3 +502,50 @@ Estes são os campos que você precisa indicar na inicialização do nó:
     * **use_sim_time**: é um booleano que indica se o map_server deve sincronizar seu horário com a simulação.
     * **yaml_filename**: é o caminho completo para o arquivo yaml do mapa.
 
+```python
+package='nav2_map_server',
+executable='map_server',
+name='map_server',
+output='screen',
+parameters=[{'use_sim_time': True}, 
+            {'yaml_filename':map_file} 
+            ]),
+```
+
+### Inicialização do nó amcl
+Estes são os campos que você precisa indicar na inicialização do nó:
+
+* O amcl é fornecido pelo pacote **nav2_amcl**
+* O executável é chamado **amcl**
+* O parâmetro necessário é:
+    * o arquivo **yaml** que contém todos os parâmetros de configuração do nó
+
+```python
+package='nav2_amcl',
+executable='amcl',
+name='amcl',
+output='screen',
+parameters=[nav2_yaml]
+```
+
+### Inicialização do nó lifecycle_manager
+Este nó gerencia o ciclo de vida dos nós envolvidos na navegação.
+
+* O gerenciador de ciclo de vida é fornecido pelo pacote **nav2_lifecycle_manager**.
+* O executável é chamado de **lifecycle_manager**.
+* Parâmetros necessários:
+    * **use_sim_time**: é um booleano que indica se o map_server deve sincronizar seu horário com a simulação.
+    * **autostart**: é um booleano que indica se o gerenciador de ciclo de vida deve iniciar ao ser iniciado.
+    * **node_names**: é uma lista com os nomes dos nós que o gerenciador de ciclo de vida deve gerenciar.
+
+```python
+package='nav2_lifecycle_manager',
+executable='lifecycle_manager',
+name='lifecycle_manager_localization',
+output='screen',
+parameters=[{'use_sim_time': True},
+            {'autostart': True},
+            {'node_names': ['map_server','amcl']}])
+```
+
+[Nesse exemplo]() foi um arquivo de inicialização que inicie o sistema de localização para o robô simulado usando o mapa que você criou na sessão **mapa**.
