@@ -581,4 +581,4 @@ O nó AMCL fornece um tópico no qual você pode publicar a pose inicial desejad
 Publique essas coordenadas no tópico /initialpose com o seguinte comando: `ros2 topic pub -1 /initialpose geometry_msgs/msg/PoseWithCovarianceStamped "{header: {stamp: {sec: 0}, frame_id: 'map'}, pose: {pose: {position: {x: 0.2, y: 0.0, z: 0.0}, orientation: {w: 1.0}}}}"`
 
 #### **Como definir a localização inicial do robô programaticamente**
-Este exercício é um exemplo de como fornecer a pose inicial ao sistema amcl a partir de uma tela interativa. Você pode adaptá-lo a outras interfaces, mas a estrutura será a mesma.
+[Nessa launch **init_robot.launch.py**] é carregado os parametros **amcl_config.yaml** (sem definição de pose inicial) e executado o programa **initial_pose_pub.py**, que ao receber a posição pelo tópico **/clicked_point** define a **posição inicial** do robo
