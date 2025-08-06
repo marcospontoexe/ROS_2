@@ -569,3 +569,16 @@ Ao definir a Estimativa de Pose, todo o sistema AMCL começará a localizar o ro
 Você deverá ver a seta do centro do robô até o quadro do mapa. Essa é a transformação de odom para quadros do mapa que a AMCL publica.
 
 Em seguida, mova o robô com o teclado e observe como a localização se adapta à nova localização do robô. Você deverá ver as **partículas** se concentrarem na localização mais provável do robô.
+
+#### **Como definir a localização inicial do robô a partir do arquivo de configuração**
+Toda vez que seu robô começar a trabalhar, você deve indicar sua localização inicial.
+
+[Nesta launch (**localization_and_initial_pose.launch.py**)](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/localization_server/launch/localization_and_initial_pose.launch.py), é carregado um arquivo (**amcl_config_initialized.yaml**) com as definições da pose inicial do robô durante a inicialização.
+
+#### **Como definir a localização inicial do robô a partir da linha de comando**
+O nó AMCL fornece um tópico no qual você pode publicar a pose inicial desejada para o robô. O tópico é chamado **/initialpose**.
+
+Publique essas coordenadas no tópico /initialpose com o seguinte comando: `ros2 topic pub -1 /initialpose geometry_msgs/msg/PoseWithCovarianceStamped "{header: {stamp: {sec: 0}, frame_id: 'map'}, pose: {pose: {position: {x: 0.2, y: 0.0, z: 0.0}, orientation: {w: 1.0}}}}"`
+
+#### **Como definir a localização inicial do robô programaticamente**
+Este exercício é um exemplo de como fornecer a pose inicial ao sistema amcl a partir de uma tela interativa. Você pode adaptá-lo a outras interfaces, mas a estrutura será a mesma.
