@@ -581,4 +581,140 @@ O nó AMCL fornece um tópico no qual você pode publicar a pose inicial desejad
 Publique essas coordenadas no tópico /initialpose com o seguinte comando: `ros2 topic pub -1 /initialpose geometry_msgs/msg/PoseWithCovarianceStamped "{header: {stamp: {sec: 0}, frame_id: 'map'}, pose: {pose: {position: {x: 0.2, y: 0.0, z: 0.0}, orientation: {w: 1.0}}}}"`
 
 #### **Como definir a localização inicial do robô programaticamente**
-[Nessa launch **init_robot.launch.py**] é carregado os parametros **amcl_config.yaml** (sem definição de pose inicial) e executado o programa **initial_pose_pub.py**, que ao receber a posição pelo tópico **/clicked_point** define a **posição inicial** do robo
+[Nessa launch **init_robot.launch.py**](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/localization_server/launch/init_robot.launch.py) é carregado os parametros **amcl_config.yaml** (sem definição de pose inicial) e executado o programa **initial_pose_pub.py**, que ao receber a posição pelo tópico **/clicked_point** define a **posição inicial** do robo.
+
+Para enviar uma posição para o tópico **/clicked_point**: `ros2 topic pub --once /clicked_point geometry_msgs/msg/PointStamped "{header: {frame_id: 'map'}, point: {x: -0.05768, y: -0.0388262, z: 0.0}}"`
+
+## Localização global
+A localização global é usada quando nem a pessoa nem o robô sabem onde o robô está localizado no mapa. O robô deve então tentar se localizar. Com a localização global, o robô tentará identificar sua localização no mapa.
+
+Para usar a localização global, são necessárias duas etapas:
+
+1. Distribuir todas as partículas do filtro pelo mapa. Esta etapa é realizada chamando o serviço **/reinitialize_global_localization**: `ros2 service call /reinitialize_global_localization std_srvs/srv/Empty`.
+2. Movimentar o robô até que ele detecte sua localização. Esta etapa pode ser realizada movendo o robô aleatoriamente, evitando obstáculos. Se o ambiente for simples, isso também pode ser feito girando o robô em sua posição (solução segura).
+
+# Planejamento de trajetórias (Path Planning)
+O Planejamento de Trajetória é o processo de calcular uma trajetória de um ponto (Ponto A) a outro (Ponto B), evitando obstáculos e garantindo que o robô chegue ao seu destino com segurança. É um componente essencial da navegação autônoma e permite que o robô se mova de um lugar para outro com precisão.
+
+# Iniciando (launh) Path Planning
+Para iniciar o sistema de Planejamento de Caminhos no ROS 2, vários nós devem ser iniciados. Além disso, certos nós pré-requisitos são necessários para o funcionamento adequado.
+
+Antes de iniciar o sistema de Planejamento de Caminhos, certifique-se de que os seguintes nós estejam em execução:
+
+* **map_server** – Fornece o mapa para navegação.
+* **amcl** – Lida com a localização adaptativa de Monte Carlo.
+
+Para habilitar o planejamento de caminho, inicie os seguintes nós:
+
+* **planner_server** – Calcula o caminho ideal (planejador de rotas globais).
+* **controller_server** – Gera comandos de movimento para seguir o caminho planejado (planejador de rotas locais).
+* **behaviour_server** – Gerencia ações de recuperação em caso de falhas de navegação.
+* **bt_navigator** – Executa lógica de navegação de alto nível usando árvores de comportamento.
+* **nav2_lifecycle_manager** – Gerencia o ciclo de vida dos nós de navegação.
+
+## Iniciando o planejador de rotas globais (planner_server)
+O **Nav2 planner** é equivalente ao Global Planner do ROS1. Sua tarefa é encontrar um caminho para o robô do Ponto A ao Ponto B.
+
+Ele calcula o caminho evitando os obstáculos conhecidos incluídos no mapa. O cálculo do caminho é iniciado assim que o robô recebe uma **2d_Goal_Pose**.
+
+O planejador também tem acesso a uma representação ambiental global (Mapa de Custo Global) e dados de sensores.
+
+Atualmente (Galactic), apenas um algoritmo do Planner está disponível no ROS2, o **Nav2Fn_Planner**.
+
+Os campos que você precisa indicar na inicialização do nó são:
+
+1. O pacote **nav2_planner** fornece o controlador (controller_server).
+2. O executável é chamado **planner_server**.
+3. Os parâmetros necessários são:
+    * O arquivo **yaml** que contém todos os parâmetros de configuração do nó.
+
+```python
+package='nav2_planner',
+executable='planner_server',
+name='planner_server',
+output='screen',
+parameters=[nav2_yaml])
+
+```
+
+## Iniciando o controlador (controller_server)
+O controlador ROS Nav2 é equivalente ao Planejador Local do ROS1. Sua principal tarefa é realizar o planejamento reativo da trajetória a partir da posição atual até alguns metros à frente (até o alcance dos sensores). Em seguida, ele constrói uma trajetória para evitar os obstáculos dinâmicos (que não aparecem no mapaglobal, mas podem ser detectados com a ajuda dos dados dos sensores), enquanto tenta seguir o plano global.
+
+Ele também é responsável por gerar os comandos do volante, para fazer o robô seguir a trajetória.
+
+Atualmente, existem apenas dois planejadores locais disponíveis no ROS2:
+
+* **dwb_controller**: geralmente usado com robôs com acionamento diferencial
+* **Controlador TEB**: geralmente usado com robôs do tipo carro (este ainda não funciona corretamente no Galactic)
+
+Os campos que você precisa indicar na inicialização do nó são:
+
+* O pacote **nav2_controller** fornece o controlador
+* O executável é chamado **controller_server**
+* Os parâmetros necessários são:
+    * O arquivo **yaml** que contém todos os parâmetros de configuração do nó
+
+```python
+name='controller_server',
+package='nav2_controller',
+executable='controller_server',
+output='screen',
+parameters=[controller_yaml])
+```
+
+## Iniciando o bt_navigator
+Você já viu o nó que calcula o planejamento do caminho e o nó que gera os comandos de roda para seguir esse caminho.
+
+Em seguida, temos o nó que coordena o nó que chama o nó planejador de caminho, solicitando um caminho e, em seguida, chama o controlador para mover o robô ao longo dele. Esse nó é o **bt_navigator**.
+
+Estes são os campos que você precisa indicar na inicialização do nó:
+
+* O **bt_navigator** é fornecido pelo pacote **nav2_bt_navigator**
+* O executável é chamado **bt_navigator**
+* Os parâmetros necessários são: 
+    * O arquivo yaml que contém todos os parâmetros de configuração do bt_navigator
+
+```python
+package='nav2_bt_navigator',
+executable='bt_navigator',
+name='bt_navigator',
+output='screen',
+parameters=[bt_navigator_yaml])
+```
+
+**IMPORTANTE**: O comportamento do bt_navigator é definido por um arquivo XML que contém a árvore de comportamento correspondente a esse comportamento. Essa árvore de comportamento inclui quando chamar o planejador de caminho, quando chamar o controlador e quando ativar um comportamento de recuperação.
+
+Você pode encontrar um exemplo abaixo. 
+
+# Iniciando recoveries_server
+O que acontece se o robô não conseguir encontrar um caminho válido para o objetivo fornecido? E se o robô ficar preso no meio do processo e não conseguir descobrir o que fazer?
+
+Nessas situações, o robô usa **comportamentos de recuperação**. Esses movimentos simples e predefinidos geralmente resolvem a situação, chamados por meio de **árvores de comportamento**.
+
+O **recoveries_server** é o nó responsável por executar os comportamentos de recuperação. Por exemplo, o **bt_navigator** chamará o recoveries_server quando acreditar que o robô está preso.
+
+Os campos que você precisa indicar na inicialização do nó são:
+
+* O pacote **nav2_behaviors** fornece o controlador
+* O executável é chamado **behavior_server**
+* Os parâmetros necessários são: 
+    * o arquivo **yaml** que contém todos os parâmetros de configuração do behavior_server
+
+
+```python
+package='nav2_behaviors',
+executable='behavior_server',
+name='recoveries_server',
+parameters=[recovery_yaml],
+output='screen'),
+```
+
+Atualmente, existem três comportamentos de recuperação disponíveis no Nav2:
+
+* **spin** - executa uma rotação no local em um determinado ângulo
+* **backup** - executa uma translação linear em uma determinada distância
+* **wait** - leva o robô a um estado estacionário
+
+[Neste pacote criado (**path_planner_server**)]() é carregado o mapa e o amcl usando o lifecicle_mananger nomeado como **lifecycle_manager_localization**, e carregado os nós necessários para o planning_path usando o lifecicle_mananger nomeado como **lifecycle_manager_pathplanner**.
+
+Lembre-se de que você precisa incluir o lançamento de um nav2_lifecycle_manager, que precisa incluir todos os nós do planejador de caminho. Este gerenciador de ciclo de vida deve ter um nome diferente daquele lançado na localização.
