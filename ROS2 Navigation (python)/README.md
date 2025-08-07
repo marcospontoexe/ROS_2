@@ -1000,3 +1000,6 @@ O procedimento que você usará é o seguinte:
 1. Um único robô será responsável por criar o mapa.
 2. Após a criação do mapa, um único map_server será iniciado usando esse mapa.
 3. Todos os sistemas de navegação de cada robô usarão o mesmo mapa, solicitando o mesmo map_server.
+
+
+ros2 run nav2_map_server map_saver_cli -f turtlebot_area_two_robots
