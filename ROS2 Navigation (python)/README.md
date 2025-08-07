@@ -1063,8 +1063,6 @@ O parâmetro **map_topic** deve ser forçado para **/map**. Se você não o for�
 
 [Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/localization_server/config/tb3_1_amcl_config.yaml) os parametros do arquivo de configuração do amcl do tb3_1
 
-Ao compilar e executar a launch **multi_localization.launch.py**, você deverá receber uma mensagem indicando que ambos os nós amcl aguardam a posição inicial. Você usará o RVIZ para inicializar os robôs.
-
 ### Configurando o rviz para multiplos robos
 * Modifique o tópico do **LaserScan** para apontar para o tópico **tb3_0/scan**. Indique o **Color Transformer** como **FlatColor** e atribua a ele uma cor vermelha.
 * Adicione outro display **LaserScan** e faça-o apontar para o tópico **tb3_1/scan**. Indique o **Color Transformer** como **FlatColor** e atribua a ele uma cor azul.
@@ -1103,10 +1101,38 @@ Agora, inicie um sistema de planejamento de caminho para cada robô. Isso signif
 
 Cada um deve ser configurado adequadamente para o robô que deve operar.
 
-### Adicionando o nameSpace 
+### PASSO 1 - Adicionando o nameSpace 
 * Inicie os dois nós planner_server, controller_server, recoveries_server e bt_navigator, um para cada robô.
 * Para cada inicialização de nó, adicione um argumento namespace com o namespace do robô ao qual o nó corresponde.
 
 **IMPORTANTE**: Ao adicionar um namespace, o nó iniciado modificará todos os seus tópicos, nome do nó e serviços, anexando o namespace ao início dos nomes.
 
 **IMPORTANTE 2**: Adicionar um namespace no arquivo de inicialização **não modificará automaticamente os quadros** indicados no arquivo de configuração. Estes precisam ser modificados manualmente no próprio arquivo de configuração.
+
+[Veja nessa launch (**multi_pathplanner.launch.py**)]() como iniciar DOIS nós **planner_server, controller_server, recoveries_server e bt_navigator**, cada um com um namespace diferente, de acordo com o robô ao qual será aplicado. Alem de iniciar também o amcl para cada robo.
+
+No arquivo de inicialização, lembre-se de informar ao **lifecycle_manager** para iniciar os DOIS nós de cada elemento do planejador de caminho. Você precisa fornecer os nomes completos dos nós com seus respectivos namespaces.
+
+**IMPORTANTE**: Observe que você está adicionando um novo parâmetro no lifecycle_manager **{'bond_timeout':0.0}**, necessário para evitar erros de inicialização.
+
+### PASSO 2 - Crie um arquivo de configuração específico para cada robô
+Cada robo deverá ter seu pŕoprio arquivo de configurações dos nós responsáveis pela navegação (path planning)
+
+Todos os frames da configuração devem ser modificados para incluir o namespace. O único que não precisa ser alterado é o **global_frame_id**, pois há um único frame global para todos os robôs naquele mapa.
+
+Os tópicos não precisam ser modificados porque são modificados automaticamente pelo argumento namespace do arquivo de inicialização (launch). 
+
+O parâmetro **map_topic** deve ser forçado para **/map**. Se você não o forçar com `/`, ele se conectará automaticamente a **tb3_0/map**, que não é o tópico publicado pelo servidor de mapas.
+
+#### Modificando o bt_navigator.yaml
+Você precisa remover a publicação do status de comportamento do Groot; caso contrário, a porta de introspecção do Groot para um bt-navigator colidirá com a porta do outro ([conforme relatado e resolvido aqui](https://github.com/ros-navigation/navigation2/issues/2386)).
+
+Para desconectar a introspecção do Groot, adicione a cada um dos arquivos de configuração do bt-navigator o seguinte parâmetro (que não aparece na documentação oficial):
+
+```yaml
+enable_groot_monitoring: false
+```
+
+[Veja]() os parametros do arquivo de configuração do amcl do tb3_0
+
+[Veja]() os parametros do arquivo de configuração do amcl do tb3_1
