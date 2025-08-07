@@ -1060,6 +1060,7 @@ Os **tópicos não precisam ser modificados** porque o argumento namespace do ar
 O parâmetro **map_topic** deve ser forçado para **/map**. Se você não o forçar com `/`, ele se conectará automaticamente a tb3_0/map, que não é o tópico publicado pelo servidor de mapas.
 
 [Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/localization_server/config/tb3_0_amcl_config.yaml) os parametros do arquivo de configuração do amcl do tb3_0
+
 [Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/localization_server/config/tb3_1_amcl_config.yaml) os parametros do arquivo de configuração do amcl do tb3_1
 
 Ao compilar e executar a launch **multi_localization.launch.py**, você deverá receber uma mensagem indicando que ambos os nós amcl aguardam a posição inicial. Você usará o RVIZ para inicializar os robôs.
@@ -1090,4 +1091,22 @@ O TF agora deve mostrar a conexão entre os dois ramos do robô. Cada nó amcl p
 
 ![global_tf_localized](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/global_tf_localized.png)
 
-[Acesse aqui]() O arquivo do rviz **multi_robot.rviz** com as configurações realizadas.
+[Acesse aqui](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/localization_server) O arquivo do rviz **multi_robot.rviz** com as configurações realizadas.
+
+## Pathing Planning
+Agora, inicie um sistema de planejamento de caminho para cada robô. Isso significa iniciar o seguinte:
+
+* dois nós controller_server
+* dois nós planner_server
+* dois recoveryies_server
+* dois bt_navigator
+
+Cada um deve ser configurado adequadamente para o robô que deve operar.
+
+### Adicionando o nameSpace 
+* Inicie os dois nós planner_server, controller_server, recoveries_server e bt_navigator, um para cada robô.
+* Para cada inicialização de nó, adicione um argumento namespace com o namespace do robô ao qual o nó corresponde.
+
+**IMPORTANTE**: Ao adicionar um namespace, o nó iniciado modificará todos os seus tópicos, nome do nó e serviços, anexando o namespace ao início dos nomes.
+
+**IMPORTANTE 2**: Adicionar um namespace no arquivo de inicialização **não modificará automaticamente os quadros** indicados no arquivo de configuração. Estes precisam ser modificados manualmente no próprio arquivo de configuração.
