@@ -1001,5 +1001,65 @@ O procedimento que você usará é o seguinte:
 2. Após a criação do mapa, um único map_server será iniciado usando esse mapa.
 3. Todos os sistemas de navegação de cada robô usarão o mesmo mapa, solicitando o mesmo map_server.
 
+Por exemplo, para criar um mapa usando o cartographer, modifique o arquivo de configuração para que ele agora use os dados do laser, os dados de odometria, o tracking_frame, o published_frame e o odom_frame do robô **tb3_0**.
 
-ros2 run nav2_map_server map_saver_cli -f turtlebot_area_two_robots
+```lua
+tracking_frame = "tb3_0/base_footprint",
+published_frame = "tb3_0/odom",
+odom_frame = "tb3_0/odom",
+```
+
+Pode ser necessário remapear os tópicos no **cartographer_node**:
+
+```python
+remappings=[
+            ('/cmd_vel', '/tb3_0/cmd_vel'),
+            ('/odom', '/tb3_0/odom'),
+            ('/scan', '/tb3_0/scan'),],
+```
+
+Para mover o robo tb3_0 e realizar o mapeamento, use o teleop com o tópico **cmd_vel** remapeado para **tb3_0/cmd_vel**: `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=/tb3_0/cmd_vel`
+
+[Veja nessa launch (**multi_cartographer.launch.py**)](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/cartographer_slam/launch/multi_cartographer.launch.py) como deve ser remapeado os tópicos no cartographer_node, e como carregar as configurações do arquivo .lua do cartographer para um robo com nameSpace configurado.
+
+## Localizando
+Agora, inicie um sistema de localização para cada robô. Isso significa iniciar dois nós amcl, cada um configurado apropriadamente para o robô que deve operar.
+
+### PASSO 1 - Adicionar uma variável de namespace aos launch de nós amcl
+* Você precisa iniciar dois nós amcl.
+* Para cada inicialização de nó, adicione um argumento namespace com o namespace do robô ao qual esse nó amcl corresponde.
+* Um namespace é um identificador único sob o qual todos os tópicos, quadros TF e dados de sensores serão encontrados.
+* É amplamente utilizado em robótica, especialmente em enxames de robôs do mesmo modelo.
+
+**IMPORTANTE**: Ao adicionar um namespace, o nó iniciado modificará todos os seus tópicos, nome do nó e serviços, anexando o namespace ao início dos nomes.
+
+**IMPORTANTE 2**: Adicionar um namespace no arquivo de inicialização não modificará automaticamente os **quadros** indicados no arquivo de configuração. Estes devem ser modificados manualmente no próprio arquivo de configuração.
+
+Exemplo de launch para o robô tb3_0:
+
+```python
+Node(
+    namespace='tb3_0',
+    package='nav2_amcl',
+    executable='amcl',
+    name='amcl',
+    output='screen',
+    parameters=[tb3_0_config]
+),
+```
+
+O nó iniciado com esse código não será chamado de amcl. Em vez disso, será chamado de ***tb3_0/amcl*** e o outro de ***tb3_1/amcl***. O mesmo acontecerá com seus tópicos e serviços.
+
+[Veja nessa launch (**multi_localization.launch.py**)]() como configurar o nameSpace para o amcl de cada robo, e como fornecer esses nós criados para o lifecycle_manager. **IMPORTANTE**, Observe que você está adicionando um novo parâmetro **{'bond_timeout':0.0}**, necessário para evitar erros de inicialização. Para evitar erros, especifique o **topic_name** e o **frame_id** do **map_server**.
+
+### PASSO 2 - Crie um arquivo de configuração específico para cada robô
+Cada robo deverá ter seu pŕoprio arquivo de configurações do sistema de localização. Por tanto todos os quadros devem ser modificados para incluir o namespace. O único quadro que não precisa ser alterado é o **global_frame_id**, pois existe um único quadro global para todos os robôs (aquele no mapa).
+
+Os **tópicos não precisam ser modificados** porque o argumento namespace do arquivo de inicialização os modifica automaticamente. **Isso não se aplica a quadros**.
+
+O parâmetro **map_topic** deve ser forçado para **/map**. Se você não o forçar com `/`, ele se conectará automaticamente a tb3_0/map, que não é o tópico publicado pelo servidor de mapas.
+
+[Veja]() os parametros do arquivo de configuração do amcl do tb3_0
+[Veja]() os parametros do arquivo de configuração do amcl do tb3_1
+
+Ao compilar e executar a launch **multi_localization.launch.py**, você deverá receber uma mensagem indicando que ambos os nós amcl aguardam a posição inicial. Você usará o RVIZ para inicializar os robôs.
