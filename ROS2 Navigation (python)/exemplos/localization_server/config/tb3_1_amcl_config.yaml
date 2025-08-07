@@ -42,5 +42,5 @@ tb3_1/amcl:
     set_initial_pose: true
     initial_pose: 
         x: 0.0
-        y:  0.0
+        y:  -0.5
         yaw: 0.0

@@ -1083,3 +1083,11 @@ Ao compilar e executar a launch **multi_localization.launch.py**, você deverá 
 
 * IMPORTANTE: Os robôs simulados se deslocam. Isso significa que, se a simulação for executada por tempo suficiente, a posição inicial dos robôs mudará.
 * Para corrigir isso, REINICIE a simulação antes de executar a Estimativa de Pose 2D.
+
+Verifique como a localização de ambos os robôs modificou o TF: `ros2 run tf2_tools view_frames`.
+
+O TF agora deve mostrar a conexão entre os dois ramos do robô. Cada nó amcl publicou uma transformação entre o mapa e o odomframe (tb3_0/odom e tb3_1/odom).
+
+![global_tf_localized](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/global_tf_localized.png)
+
+[Acesse aqui]() O arquivo do rviz **multi_robot.rviz** com as configurações realizadas.
