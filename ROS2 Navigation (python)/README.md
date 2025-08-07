@@ -739,4 +739,178 @@ Você precisa alterar os valores de posição e orientação da mensagem para o 
 ### Com um tópico
 Use o **ros2 topic pub** para publicar essas coordenadas no tópico **/goal_pose**: `ros2 topic pub -1 /goal_pose geometry_msgs/PoseStamped "{header: {stamp: {sec: 0}, frame_id: 'map'}, pose: {position: {x: -0.0483484, y: 3.77634, z: 0}, orientation: {w: 0.831942}}}"`.
 
-## Enviando um meta de navegação por programação
+# Desviando de obstáculos
+Na navegação autônoma, evitar obstáculos é crucial para garantir que um robô possa navegar com segurança pelo ambiente.
+
+## Mapa de custo (Costmap)
+Um Mapa de Custo é uma representação 2D de obstáculos detectados por robôs em um mapa de grade.
+
+![nav2_world_local_costmap](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/nav2_world_local_costmap.png)
+
+* Cada célula da grade contém informações sobre os obstáculos detectados pelos sensores.
+* O custo da célula pode ser desconhecido, livre, ocupado ou inflado.
+* Cores diferentes indicam a probabilidade de colisão com um obstáculo.
+* Essas informações são então usadas pelos controladores, planejadores e equipes de recuperação para calcular suas tarefas com segurança e eficiência.
+
+Existem dois tipos de Mapas de Custo:
+
+* Um Mapa de Custo **Global** é gerado a partir dos obstáculos no mapa estático. É o mapa usado pelo planejador global (**planner_server**) para gerar o caminho de longo prazo.
+
+* Um Mapa de Custo **Local** é criado a partir de novos obstáculos detectados pelo robô em uma pequena área ao redor do robô. O controlador (**controller_server**) o utiliza para gerar o caminho de curto prazo e evitar obstáculos dinâmicos.
+
+Diferenças entre Mapas de Custo Global e Local:
+
+* O Mapa de Custo Global ajuda a evitar obstáculos conhecidos no mapa, enquanto o Mapa de Custo Local é usado para evitar obstáculos dinâmicos, que não estão presentes no mapa global.
+* O Mapa de Custo Global cobre todo o mapa, enquanto o Mapa de Custo Local cobre uma pequena área ao redor do robô.
+* O Mapa de Custo Global é estático sobre o mapa, enquanto o Mapa de Custo Local rola sobre o Mapa de Custo Global conforme o robô se move pelo espaço.
+
+## Adicionando um mapa de custo global na navegação
+Para adicionar um mapa de custos global, adicione a seguinte série de parâmetros ao arquivo de configuração do planner:
+
+```yaml
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      use_sim_time: True
+      robot_radius: 0.15
+      resolution: 0.05
+      track_unknown_space: true
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.35
+      always_send_full_costmap: True
+```
+
+No rviz, adicione uma exibição de **map** para o tópico **/global_costmap/costmap**.
+
+### obstacle layers (camadas)
+O mapa de custo global é gerado como a superposição de diferentes camadas de obstáculos. Cada camada adiciona um conjunto de obstáculos ao mapa de custo global com base em como a camada os calcula.
+
+Camadas de mapa de custo disponíveis:
+
+* Camada estática (Static Layer) - Adiciona como obstáculos ao mapa de custo global qualquer ponto preto existente no mapa estático
+* Camada de inflação (Inflation Layer) - Adiciona uma inflação a qualquer obstáculo no mapa de custo global, como uma distância segura a ser mantida
+* Camada de obstáculo (Obstacle Layer) - Adiciona ao mapa de custo global qualquer objeto detectado por um sensor 2D
+* Camada de voxel (Voxel Layer) - Adiciona ao mapa de custo global obstáculos 3D a partir de dados da nuvem de pontos
+
+Você pode especificar uma ou todas as camadas anteriores para aplicar ao mapa de custo global. No entanto, para incluí-las, você precisa adicioná-las à lista de plugins e, em seguida, incluir os parâmetros de configuração de cada uma.
+
+```txt
+    plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+```
+
+**MUITO IMPORTANTE**: Inclua o "**obstacle_layer**" na lista de plugins antes do "**inflation_layer**". Caso contrário, os obstáculos recém-detectados não serão inflados pelo plugin "inflation_layer".
+
+#### Static Layer
+A camada do mapa estático representa uma parte praticamente inalterada do Costmap global, como aquelas geradas pelo SLAM.
+
+#### Inflation Layer
+A camada de inflação é uma otimização que adiciona novos valores em torno de obstáculos letais (ou seja, infla os obstáculos) para fazer com que o Mapa de Custo represente o espaço de configuração do robô.
+
+#### Obstacle Layer
+O **ObstacleCostmapPlugin** marca e traça raios em obstáculos em duas dimensões, enquanto o **VoxelCostmapPlugin** faz isso em três dimensões.
+
+#### Voxel layer
+A camada de voxel inclui obstáculos detectados em 3D nos Costmaps 2D.
+
+```yaml
+    voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        footprint_clearing_enabled: true
+        max_obstacle_height: 2.0
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        unknown_threshold: 15
+        mark_threshold: 0
+        observation_sources: pointcloud
+        combination_method: 1
+        pointcloud:  # no frame set, uses frame from message
+          topic: /intel_realsense_r200_depth/points
+          max_obstacle_height: 2.0
+          min_obstacle_height: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          clearing: True
+          marking: True
+          data_type: "PointCloud2"
+```
+
+## Adicionando um mapa de custo local na navegação
+Para adicionar um mapa de custos local, você deve adicionar uma série de parâmetros ao arquivo de configuração do controller_server:
+
+```yaml
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom
+      robot_base_frame: base_link
+      use_sim_time: True
+      rolling_window: true
+      width: 1
+      height: 1
+      resolution: 0.05
+      robot_radius: 0.15
+      plugins: ["voxel_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.35
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+      static_layer:
+        map_subscribe_transient_local: True
+      always_send_full_costmap: True
+```
+
+Como você pode ver, o mapa de custos local contém a mesma estrutura e conjunto de parâmetros do mapa de custos global. Isso faz todo o sentido, visto que este mapa de custos é apenas uma versão reduzida e mais dinâmica do global.
+
+No rviz, adicione uma exibição de **map** para o tópico **/local_costmap/costmap**. Selecione o Color Scheme como Costmap.
