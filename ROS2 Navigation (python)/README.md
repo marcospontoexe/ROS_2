@@ -914,3 +914,89 @@ local_costmap:
 Como você pode ver, o mapa de custos local contém a mesma estrutura e conjunto de parâmetros do mapa de custos global. Isso faz todo o sentido, visto que este mapa de custos é apenas uma versão reduzida e mais dinâmica do global.
 
 No rviz, adicione uma exibição de **map** para o tópico **/local_costmap/costmap**. Selecione o Color Scheme como Costmap.
+
+# Navegação multi robo
+À medida que você avança na navegação do robô, você pode encontrar cenários em que vários robôs operam no mesmo ambiente.
+
+Se você tiver um ambiente multi-robô, cada robô provavelmente terá o mesmo nome de tópico /cmd_vel, o mesmo nome de quadro base_footprint e até mesmo o mesmo nome de nó de controle. Isso é incorreto para ambientes multi-robô, pois o algoritmo de navegação não consegue identificar com qual robô está se comunicando.
+
+Primeiro, configure corretamente seus robôs e separe tópicos, frames e nomes de nós em namespaces. Portanto, no restante desta unidade, você assumirá que os namespaces separam seus robôs corretamente.
+
+O namespace é o rótulo que você atribuirá a cada robô (por exemplo, tb3_0, tb3_1, etc.). Portanto, cada robô pode ter os mesmos tópicos, quadros e nomes de nós, mas todos eles começarão com um namespace exclusivo que o identifica.
+
+A configuração dos robôs para o uso adequado dos namespaces é feita em:
+
+1. Em robôs simulados: no arquivo de descrição URDF e nos plugins Gazebo
+2. Em robôs reais: na rotina de inicialização fornecida pelo fornecedor
+
+Se a URDF ou os plugins não forem criados corretamente para permitir namespaces, ou se a inicialização não for criada corretamente, você poderá ter dificuldades para inicializar seus robôs no modo de namespaces.
+
+IMPORTANTE: É obrigatório que seus robôs já trabalhem separados por namespaces. Neste curso, fizemos isso para você. No entanto, se você quiser aplicar esta unidade ao seu próprio robô, pode fazer isso sozinho.
+
+Certifique-se de que cada um dos seus robôs tenha um nome específico para:
+
+* Tópicos
+* Quadros
+* Nós
+
+Pode ser necessário alterar o modelo URDF do seu robô e a configuração dos seus drivers (para sensores e atuadores) para incluir os namespaces neles.
+
+Por exemplo, se existir dois nameSpace **tb3_0** e **tb3_1**, ao listar os nós existentes com o comando `ros2 node list` verá o seguinte:
+
+```shell
+/gazebo
+/tb3_0/robot_state_publisher
+/tb3_0/turtlebot3_diff_drive
+/tb3_0/turtlebot3_imu
+/tb3_0/turtlebot3_joint_state
+/tb3_0/turtlebot3_laserscan
+/tb3_1/robot_state_publisher
+/tb3_1/turtlebot3_diff_drive
+/tb3_1/turtlebot3_imu
+/tb3_1/turtlebot3_joint_state
+/tb3_1/turtlebot3_laserscan
+```
+
+Como você pode ver, cada nó relacionado a um robô começa com o namespace desse robô.
+
+Se listar os tópicos (`ros2 topic list`):
+
+```shell
+/clock
+/parameter_events
+/performance_metrics
+/rosout
+/tb3_0/cmd_vel
+/tb3_0/imu
+/tb3_0/joint_states
+/tb3_0/odom
+/tb3_0/robot_description
+/tb3_0/scan
+/tb3_1/cmd_vel
+/tb3_1/imu
+/tb3_1/joint_states
+/tb3_1/odom
+/tb3_1/robot_description
+/tb3_1/scan
+/tf
+/tf_static
+```
+
+Como você pode ver, cada robô tem uma IMU diferente, odom, scan, cmd_vel, robot_description e um tópico de joint_states, separados pelo namespace do robô
+
+Imprima o TF completo para este sistema ROS2 com dois robôs (`cd ~/ros2_ws/src; ros2 run tf2_tools view_frames`):
+
+![two_robots_tf_v2](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/two_robots_tf_v2.png)
+
+## Mapeamento do ambiente
+Para que todos os robôs se movam, configurem e iniciem de forma autônoma um sistema de navegação completo PARA CADA ROBÔ. Isso significa um sistema de localização, um controller_server, um planner_server, um navigator, etc., para cada robô.
+
+O único sistema comum a todos os robôs é o map_server. Haverá um único map_server para todos os robôs, pois todos usarão o mesmo mapa. Portanto, comece iniciando-o.
+
+Mesmo que seja possível fazer com que vários robôs colaborem para criar um único mapa para todos eles, esta seção não abordará este tópico, por se tratar de um assunto mais complexo.
+
+O procedimento que você usará é o seguinte:
+
+1. Um único robô será responsável por criar o mapa.
+2. Após a criação do mapa, um único map_server será iniciado usando esse mapa.
+3. Todos os sistemas de navegação de cada robô usarão o mesmo mapa, solicitando o mesmo map_server.
