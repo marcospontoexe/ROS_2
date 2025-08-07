@@ -1109,7 +1109,7 @@ Cada um deve ser configurado adequadamente para o robô que deve operar.
 
 **IMPORTANTE 2**: Adicionar um namespace no arquivo de inicialização **não modificará automaticamente os quadros** indicados no arquivo de configuração. Estes precisam ser modificados manualmente no próprio arquivo de configuração.
 
-[Veja nessa launch (**multi_pathplanner.launch.py**)]() como iniciar DOIS nós **planner_server, controller_server, recoveries_server e bt_navigator**, cada um com um namespace diferente, de acordo com o robô ao qual será aplicado. Alem de iniciar também o amcl para cada robo.
+[Veja nessa launch (**multi_pathplanner.launch.py**)](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/launch/multi_pathplanner.launch.py) como iniciar DOIS nós **planner_server, controller_server, recoveries_server e bt_navigator**, cada um com um namespace diferente, de acordo com o robô ao qual será aplicado. Alem de iniciar também o amcl para cada robo.
 
 No arquivo de inicialização, lembre-se de informar ao **lifecycle_manager** para iniciar os DOIS nós de cada elemento do planejador de caminho. Você precisa fornecer os nomes completos dos nós com seus respectivos namespaces.
 
@@ -1133,6 +1133,31 @@ Para desconectar a introspecção do Groot, adicione a cada um dos arquivos de c
 enable_groot_monitoring: false
 ```
 
-[Veja]() os parametros do arquivo de configuração do amcl do tb3_0
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_0_amcl_config.yaml) os parametros do arquivo de configuração do amcl do tb3_0
 
-[Veja]() os parametros do arquivo de configuração do amcl do tb3_1
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_0_planner_server.yaml) os parametros do arquivo de configuração do planner_server do tb3_0
+
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_0_controller.yaml) os parametros do arquivo de configuração do controller do tb3_0
+
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_0_bt_navigator.yaml) os parametros do arquivo de configuração do bt_navigator do tb3_0
+
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_0_recovery.yaml) os parametros do arquivo de configuração do recovery do tb3_0
+
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_1_amcl_config.yaml) os parametros do arquivo de configuração do amcl do tb3_1
+
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_1_planner_server.yaml) os parametros do arquivo de configuração do planner_server do tb3_1
+
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_1_controller.yaml) os parametros do arquivo de configuração do controller do tb3_1
+
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_1_bt_navigator.yaml) os parametros do arquivo de configuração do bt_navigator do tb3_1
+
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_1_recovery.yaml) os parametros do arquivo de configuração do recovery do tb3_1
+
+### Configurando o rviz para multiplos robos
+* Adicione uma **Path** configurada para o tópico **/tb3_0/plan**. Selecione **Line Style** como **Outdoors** e, em seguida, selecione a cor VERMELHA na seção Color.
+* Adicione outra **Path** configurada para o tópico **/tb3_1/plan**. Selecione **Line Style** como **Outdoors** e, em seguida, selecione a cor VERDE na seção Color.
+* Adicione uma exibição de Mapa e configure seu tópico para o mapa de custos global do tópico /tb3_0/global_costmap/costmap.
+Adicione uma exibição de Mapa e configure seu tópico para o mapa de custos global do tópico /tb3_1/global_costmap/costmap.
+Adicione outra exibição de Mapa e configure seu tópico para o mapa de custos local do tópico /tb3_0/local_costmap/costmap.
+Adicione uma terceira exibição de Mapa e configure seu tópico para o mapa de custos local do tópico /tb3_1/local_costmap/costmap.
+Todos os mapas de custos mudam o esquema de cores de map para cost_map para ver essas cores bonitas.
