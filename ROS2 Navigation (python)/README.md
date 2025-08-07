@@ -1154,12 +1154,12 @@ enable_groot_monitoring: false
 [Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/config/tb3_1_recovery.yaml) os parametros do arquivo de configuração do recovery do tb3_1
 
 ### Configurando o rviz para multiplos robos
-* Adicione uma **Path** configurada para o tópico **/tb3_0/plan**. Selecione **Line Style** como **Outdoors** e, em seguida, selecione a cor VERMELHA na seção Color.
-* Adicione outra **Path** configurada para o tópico **/tb3_1/plan**. Selecione **Line Style** como **Outdoors** e, em seguida, selecione a cor VERDE na seção Color.
+* Adicione uma **Path** configurada para o tópico **/tb3_0/plan**. Selecione **Line Style** como **Lines** e, em seguida, selecione a cor VERMELHA na seção Color.
+* Adicione outra **Path** configurada para o tópico **/tb3_1/plan**. Selecione **Line Style** como **Lines** e, em seguida, selecione a cor VERDE na seção Color.
 * Adicione **Map** e configure como mapa de custos global usando o tópico **/tb3_0/global_costmap/costmap**.
 * Adicione **Map** e configure como mapa de custos global usando o tópico **/tb3_1/global_costmap/costmap**.
 * Adicione **Map** e configure como mapa de custos local usando o tópico **/tb3_0/local_costmap/costmap**.
 * Adicione **Map** e configure como mapa de custos local usando o tópico **/tb3_1/local_costmap/costmap**.
 * Todos os mapas de custos mudam o esquema de cores de map para cost_map para ver essas cores bonitas.
 
-[Acesse aqui]() O arquivo do rviz **path_planning.rviz** com as configurações do localização e também de path planning realizadas.
+[Acesse aqui](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server) O arquivo do rviz **path_planning.rviz** com as configurações do localização e também de path planning realizadas.
