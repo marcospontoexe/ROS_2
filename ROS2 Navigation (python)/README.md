@@ -1072,5 +1072,14 @@ Ao compilar e executar a launch **multi_localization.launch.py**, você deverá 
     * Em "**Description Topic**", indique o tópico **/tb3_0/robot_description**. Este é o tópico que está publicando o modelo do robô.
     * No prefixo **TF**, indique o namespace do robô como **tb3_0**.
 * Adicione outro RobotModel e configure-o da mesma forma para o robô tb3_1.
-* Adicione o Painel de Propriedades da Ferramenta. Você modificará os tópicos que enviam a Estimativa de Pose 2D e a Pose Objetivo 2D para os diferentes robôs.
-Nas Propriedades da Ferramenta, selecione o tópico Estimativa de Pose 2D e escreva aquele para o robô tb3_1 /tb3_1/initialpose.
+* Na aba **Panels** habilite a opção **Tool Properties**. Você modificará os tópicos que enviam **2D Pose Estimate** e **2D Goal Pose** para os diferentes robôs.
+* Nas Propriedades da Ferramenta, selecione o tópico **2D Pose Estimate** e escreva **/tb3_1/initialpose**.
+
+![init_pose_topic](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/init_pose_topic.png)
+
+* Em seguida, clique no botão **2D Pose Estimate** e forneça uma posição inicial para o robô tb3_1.
+* Repita o processo de Estimativa de Pose 2D para o tb3_0.
+* Agora, ambos os robôs devem ser localizados.
+
+* IMPORTANTE: Os robôs simulados se deslocam. Isso significa que, se a simulação for executada por tempo suficiente, a posição inicial dos robôs mudará.
+* Para corrigir isso, REINICIE a simulação antes de executar a Estimativa de Pose 2D.
