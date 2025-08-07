@@ -1050,7 +1050,7 @@ Node(
 
 O nó iniciado com esse código não será chamado de amcl. Em vez disso, será chamado de ***tb3_0/amcl*** e o outro de ***tb3_1/amcl***. O mesmo acontecerá com seus tópicos e serviços.
 
-[Veja nessa launch (**multi_localization.launch.py**)]() como configurar o nameSpace para o amcl de cada robo, e como fornecer esses nós criados para o lifecycle_manager. **IMPORTANTE**, Observe que você está adicionando um novo parâmetro **{'bond_timeout':0.0}**, necessário para evitar erros de inicialização. Para evitar erros, especifique o **topic_name** e o **frame_id** do **map_server**.
+[Veja nessa launch (**multi_localization.launch.py**)](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/localization_server/launch/multi_localization.launch.py) como configurar o nameSpace para o amcl de cada robo, e como fornecer esses nós criados para o lifecycle_manager. **IMPORTANTE**, Observe que você está adicionando um novo parâmetro **{'bond_timeout':0.0}**, necessário para evitar erros de inicialização. Para evitar erros, especifique o **topic_name** e o **frame_id** do **map_server**.
 
 ### PASSO 2 - Crie um arquivo de configuração específico para cada robô
 Cada robo deverá ter seu pŕoprio arquivo de configurações do sistema de localização. Por tanto todos os quadros devem ser modificados para incluir o namespace. O único quadro que não precisa ser alterado é o **global_frame_id**, pois existe um único quadro global para todos os robôs (aquele no mapa).
@@ -1059,7 +1059,18 @@ Os **tópicos não precisam ser modificados** porque o argumento namespace do ar
 
 O parâmetro **map_topic** deve ser forçado para **/map**. Se você não o forçar com `/`, ele se conectará automaticamente a tb3_0/map, que não é o tópico publicado pelo servidor de mapas.
 
-[Veja]() os parametros do arquivo de configuração do amcl do tb3_0
-[Veja]() os parametros do arquivo de configuração do amcl do tb3_1
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/localization_server/config/tb3_0_amcl_config.yaml) os parametros do arquivo de configuração do amcl do tb3_0
+[Veja](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/localization_server/config/tb3_1_amcl_config.yaml) os parametros do arquivo de configuração do amcl do tb3_1
 
 Ao compilar e executar a launch **multi_localization.launch.py**, você deverá receber uma mensagem indicando que ambos os nós amcl aguardam a posição inicial. Você usará o RVIZ para inicializar os robôs.
+
+### Configurando o rviz para multiplos robos
+* Modifique o tópico do **LaserScan** para apontar para o tópico **tb3_0/scan**. Indique o **Color Transformer** como **FlatColor** e atribua a ele uma cor vermelha.
+* Adicione outro display **LaserScan** e faça-o apontar para o tópico **tb3_1/scan**. Indique o **Color Transformer** como **FlatColor** e atribua a ele uma cor azul.
+* Modifique o display do RobotModel da seguinte forma:
+    * Em "**Description Source**", selecione "**Topic**".
+    * Em "**Description Topic**", indique o tópico **/tb3_0/robot_description**. Este é o tópico que está publicando o modelo do robô.
+    * No prefixo **TF**, indique o namespace do robô como **tb3_0**.
+* Adicione outro RobotModel e configure-o da mesma forma para o robô tb3_1.
+* Adicione o Painel de Propriedades da Ferramenta. Você modificará os tópicos que enviam a Estimativa de Pose 2D e a Pose Objetivo 2D para os diferentes robôs.
+Nas Propriedades da Ferramenta, selecione o tópico Estimativa de Pose 2D e escreva aquele para o robô tb3_1 /tb3_1/initialpose.
