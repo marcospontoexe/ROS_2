@@ -1163,3 +1163,5 @@ enable_groot_monitoring: false
 * Todos os mapas de custos mudam o esquema de cores de map para cost_map para ver essas cores bonitas.
 
 [Acesse aqui](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server) O arquivo do rviz **path_planning.rviz** com as configurações do localização e também de path planning realizadas.
+
+## Executando com apenas uma launch
