@@ -1156,8 +1156,10 @@ enable_groot_monitoring: false
 ### Configurando o rviz para multiplos robos
 * Adicione uma **Path** configurada para o tópico **/tb3_0/plan**. Selecione **Line Style** como **Outdoors** e, em seguida, selecione a cor VERMELHA na seção Color.
 * Adicione outra **Path** configurada para o tópico **/tb3_1/plan**. Selecione **Line Style** como **Outdoors** e, em seguida, selecione a cor VERDE na seção Color.
-* Adicione uma exibição de Mapa e configure seu tópico para o mapa de custos global do tópico /tb3_0/global_costmap/costmap.
-Adicione uma exibição de Mapa e configure seu tópico para o mapa de custos global do tópico /tb3_1/global_costmap/costmap.
-Adicione outra exibição de Mapa e configure seu tópico para o mapa de custos local do tópico /tb3_0/local_costmap/costmap.
-Adicione uma terceira exibição de Mapa e configure seu tópico para o mapa de custos local do tópico /tb3_1/local_costmap/costmap.
-Todos os mapas de custos mudam o esquema de cores de map para cost_map para ver essas cores bonitas.
+* Adicione **Map** e configure como mapa de custos global usando o tópico **/tb3_0/global_costmap/costmap**.
+* Adicione **Map** e configure como mapa de custos global usando o tópico **/tb3_1/global_costmap/costmap**.
+* Adicione **Map** e configure como mapa de custos local usando o tópico **/tb3_0/local_costmap/costmap**.
+* Adicione **Map** e configure como mapa de custos local usando o tópico **/tb3_1/local_costmap/costmap**.
+* Todos os mapas de custos mudam o esquema de cores de map para cost_map para ver essas cores bonitas.
+
+[Acesse aqui]() O arquivo do rviz **path_planning.rviz** com as configurações do localização e também de path planning realizadas.
