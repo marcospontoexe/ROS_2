@@ -1162,9 +1162,11 @@ enable_groot_monitoring: false
 * Adicione **Map** e configure como mapa de custos local usando o tópico **/tb3_1/local_costmap/costmap**.
 * Todos os mapas de custos mudam o esquema de cores de map para cost_map para ver essas cores bonitas.
 
-[Acesse aqui](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server) O arquivo do rviz **path_planning.rviz** com as configurações do localização e também de path planning realizadas.
+[Acesse aqui](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/rviz) O arquivo do rviz **path_planning.rviz** com as configurações do localização e também de path planning realizadas.
 
 ## Executando com apenas uma launch
 Para tornar essa navegação mais limpa, você poderá iniciar várias launch usando uma única launch.
+
+[Veja aqui](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server/launch/multi_main.launch.xml) uma launch chamada **multi_main.launch.xml** que excuta outras duas launchs, a **multi_pathplanner.launch.py** e a **start_rviz.launch.py**.
 
 **IMPORTANTE**: Não esqueça de incluir o diretório **rviz** no arquivo **setup.py**.
