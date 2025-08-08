@@ -1165,3 +1165,6 @@ enable_groot_monitoring: false
 [Acesse aqui](https://github.com/marcospontoexe/ROS_2/tree/main/ROS2%20Navigation%20(python)/exemplos/path_planner_server) O arquivo do rviz **path_planning.rviz** com as configurações do localização e também de path planning realizadas.
 
 ## Executando com apenas uma launch
+Para tornar essa navegação mais limpa, você poderá iniciar várias launch usando uma única launch.
+
+**IMPORTANTE**: Não esqueça de incluir o diretório **rviz** no arquivo **setup.py**.

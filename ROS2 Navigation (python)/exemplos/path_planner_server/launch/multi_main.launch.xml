@@ -1,0 +1,11 @@
+<?xml version='1.0' ?>
+
+<launch>
+    <include file="$(find-pkg-share path_planner_server)/launch/multi_pathplanner.launch.py"/>
+
+    <include file="$(find-pkg-share path_planner_server)/launch/start_rviz.launch.py">
+        <arg name="use_sim_time" value="true"/>
+        <arg name="rviz_config_dir" value="$(find-pkg-share path_planner_server)/rviz/path_planning.rviz" />
+    </include>
+
+</launch>
