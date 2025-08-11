@@ -214,13 +214,17 @@ Derivando essa filosofia da BT, você pode descrever o funcionamento da BT consi
 ## Notação de nó BT
 Você retornará ao exemplo no curso, mas para completar a discussão sobre o conceito de BT, defina **nós "auxiliares"**:
 
-Um comando é executado por um nó de ação sempre que recebe um tick. Se a ação for executada com sucesso, ele retorna Sucesso; caso contrário, retorna Falha. Por fim, a **ação retorna Em Execução enquanto ainda está em andamento**.
+Um comando é executado por um **nó de ação (action node)** sempre que recebe um tick. Se a ação for executada com sucesso, ele retorna Sucesso; caso contrário, retorna Falha. Por fim, a **ação retorna Em Execução enquanto ainda está em andamento**.
 
 Um **nó de Condição (condition node)** avalia uma proposição sempre que recebe um tick. Então, dependendo se a proposição é verdadeira, ele retorna Sucesso ou Falha. Lembre-se de que **um nó de Condição nunca retorna o status Em execução**.
 
 ![u1_10](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_10.png)
 
-O **nó Decorador** é um nó de **fluxo de controle** com um único filho que marca o filho seletivamente de acordo com algumas regras estabelecidas e modifica o status de retorno do filho de acordo com uma regra definida pelo usuário. Por exemplo, um **decorador invertido** inverte o status Sucesso/Falha do filho. Um **decorador com máximo de N tentativas** permite que o filho falhe apenas N vezes antes de retornar Falha sem marcar o filho, e um **decorador com máximo de T segundos** permite que o filho seja executado por T segundos antes de retornar Falha sem marcar o filho.
+O **nó Decorador** é um nó de **fluxo de controle** com um único filho que marca o filho seletivamente de acordo com algumas regras estabelecidas e modifica o status de retorno do filho de acordo com uma regra definida pelo usuário. Por exemplo:
+
+* um **decorador invertido** inverte o status Sucesso/Falha do filho. 
+* Um **decorador com máximo de N tentativas** permite que o filho falhe apenas N vezes antes de retornar Falha sem marcar o filho.
+* um **decorador com máximo de T segundos** permite que o filho seja executado por T segundos antes de retornar Falha sem marcar o filho.
 
 A tabela a seguir condensa e define o raciocínio lógico dos nós BT.
 
