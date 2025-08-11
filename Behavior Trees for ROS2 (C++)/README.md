@@ -1,5 +1,28 @@
 # Behavior Trees
-Nesta unidade, você entenderá o conceito de BT e a arquitetura de software simplificada que pode ser acomodada no framework ROS2. 
+Nesta unidade, você entenderá o conceito de BT e a arquitetura de software simplificada que pode ser acomodada no framework ROS2. As Árvores de Comportamento são usadas para criar uma lógica para decidir o que **fazer** e **quando**.
+
+Agora é hora de executar a Árvore de Comportamento! Aqui, o comportamento do robô (o robô gira, analisa o sinal do laser, detecta os obstáculos, move-se para o objetivo, etc.) é modelado em um BT (fluxo lógico de ação do robô):
+
+![bt-t3-sim](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/bt-t3-sim.png)
+
+* Você pode imaginar que o robô gostaria de ir para a "sala" contígua.
+* O robô, usando o laser, escaneia os obstáculos (neste caso, procura a porta aberta).
+* Você tem a "chave para abrir a porta". Você pode fazer isso removendo a parede na simulação.
+* O robô detecta o caminho desobstruído e se move para a outra sala.
+
+A BT para esse exemplo pode ser representada da seguinte forma.
+
+Usamos o Groot para representar graficamente os detalhes da BT implantados na simulação. Leia a BT de cima para baixo e da esquerda para a direita.
+
+* Na simulação a seguir, analisando a BT de cima para baixo, você pode ver a Root conectada à Sequência Reativa. Posteriormente, a primeira Sequência Reativa é conectada a:
+    1. BlackBoard (detalhes posteriormente)
+    2. Segunda Sequência Reativa
+    3. Mover o robô
+* Ignore o BlackBoard e considere o segundo bloco (nó) da Sequência Reativa. A Sequência Reativa funciona como uma porta lógica AND. Se todas as entradas forem VERDADEIRAS, a saída da porta AND também será VERDADEIRA.
+* Aqui, o robô gira. Isso é VERDADEIRO e, em seguida, o robô usa o laser para escanear o caminho sem obstáculos. Isso será VERDADEIRO se você remover o obstáculo manualmente.
+* Após a remoção, a segunda Sequência Reativa se torna VERDADEIRA para que o robô possa executar a última ação “anexada” à primeira Sequência Reativa.
+
+![u0_sim](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u0_sim.png)
 
 # Arquitetura de Software. Árvores de Comportamento (Behavior Trees) - ROS2
 Ao projetar um agente autônomo (um robô), considere um baixo nível de abstração.
@@ -52,3 +75,8 @@ O mapeamento das tarefas do robô na árvore hierárquica de tarefas (BT) oferec
 
 Para arquitetar a BT da aplicação do robô, primeiro especifique o contexto lógico da aplicação e modele conexões consistentes entre ações e comportamentos específicos do robô (detalhes posteriormente). O **contexto lógico** é expresso no arquivo **XML**. A definição de nós, **classes e funções** é definida no framework **BehaviourTree.CPP**. Veja como definir a lógica da BT em XML.
 
+
+
+
+
+source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
