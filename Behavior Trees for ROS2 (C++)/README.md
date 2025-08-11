@@ -267,7 +267,42 @@ As figuras abaixo mostram como o mesmo exemplo pode ser mais facilmente utilizad
 
 Os nós onde a Detecção de Obstáculos é implementada podem ser um **Decorator Node**, que executará seu nó filho somente se a condição interna for satisfeita, ou um **Condition Node**, que é uma folha da árvore que pode retornar SUCCESS ou FAILURE.
 
+![u1_9](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_9.png)
 
+## Principais vantagens do BT
+Conforme discutido anteriormente, inúmeros benefícios resultam do fato de os BTs serem **modulares e reativos**. Listamos alguns benefícios dos BTs abaixo.
+
+1. **Modular**: Um sistema modular refere-se à facilidade com que suas partes podem ser desmontadas em unidades menores e, em seguida, remontadas.
+
+Um sistema modular pode ser criado, implementado, testado e reutilizado, um módulo de cada vez. As vantagens da modularidade, portanto, aumentam com a complexidade do sistema, permitindo uma estratégia de dividir para conquistar durante o projeto, a implementação e os testes.
+
+Como cada subárvore de um BT pode ser percebida como um módulo, os BTs são modulares em todos os tamanhos, desde as subárvores mais altas até as folhas da árvore.
+
+2. **Organização hierárquica**: Uma arquitetura de controle é hierárquica se tiver muitas camadas de tomada de decisão (seguindo a estrutura da árvore).
+
+3. **Código reutilizável**: Ter código reutilizável é muito importante em qualquer projeto grande, complexo e de longo prazo. A capacidade de reutilizar projetos depende da construção de coisas maiores a partir de partes menores e da independência da entrada e saída dessas partes. Para permitir a reutilização de código, cada módulo deve interagir com a arquitetura de controle de forma clara e bem definida.
+
+Os BTs permitem código reutilizável, pois, dada a implementação adequada, qualquer subárvore pode ser reutilizada em vários locais de um BT. Além disso, ao escrever o código de um nó folha, o desenvolvedor precisa retornar o status de retorno correto, que é universalmente predefinido como **Em Execução, Sucesso ou Falha**.
+
+4. **Reatividade**: Por reatividade, entendemos a capacidade de responder a mudanças de forma oportuna e eficaz. Planos que foram gerados offline e posteriormente executados em um loop aberto são frequentemente propensos a falhas em ambientes não estruturados, onde os resultados das ações são incertos e atores externos modificam continuamente o estado do mundo. Os BTs são reativos porque um loop fechado é executado devido à criação contínua de ticks e à travessia da árvore. De acordo com a travessia dos ticks, que se baseia nos status de retorno dos nós-folha, as ações são executadas e canceladas. O ambiente está intimamente ligado aos nós-folha (por exemplo, os **nós de condição** avaliam as **qualidades gerais do sistema** (sensores completos). Em contraste, os **nós de ação** relatam **Falha/Sucesso** se a ação foi bem-sucedida ou não). BTs são, portanto, muito sensíveis a mudanças no ambiente.
+
+5. **Legível por humanos**: Quando um job é criado por humanos, é essencial ter uma estrutura legível para reduzir o custo de desenvolvimento e solução de problemas. A estrutura precisa continuar sendo compreensível, mesmo para sistemas grandes. A legibilidade humana requer uma estrutura coerente e compacta.
+
+Devido à sua modularidade e estrutura em árvore, os BTs são legíveis por humanos.
+
+## EXEMPLO
+Agora, execute a simulação no framework ROS2. O BT para a simulação pode ser representado da seguinte forma:
+
+![u1_sim](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_sim.png)
+
+* Agora, imagine que o robô parou e sua missão é virar à esquerda.
+* O robô está equipado com um laser que varre o ambiente e detecta obstáculos.
+* Primeiramente, o robô recebe a informação para virar 45 graus. O robô pode continuar sua viagem nessa direção se houver um caminho sem colisões. Caso contrário, o robô gira 90 graus e verifica novamente o obstáculo.
+* Se houver uma colisão (detectada pelo laser), o robô gira para os 135 graus finais e se move nessa direção, já que não há colisão.
+
+Esta simulação exibe o comportamento do nó **Fallback**. O robô continua verificando as opções de movimento se o retorno for **FAILURE**. Uma vez que for SUCCESS, todo o nó será SUCCESS.
+
+Conforme descrito acima, o comportamento do robô é o padrão. Se você remover um obstáculo (por exemplo, na direção de 90 graus), o robô se moverá nessa direção.
 
 
 source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
