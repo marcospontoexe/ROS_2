@@ -24,7 +24,7 @@ Usamos o Groot para representar graficamente os detalhes da BT implantados na si
 
 ![u0_sim](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u0_sim.png)
 
-# Arquitetura de Software. Árvores de Comportamento (Behavior Trees) - ROS2
+## Arquitetura de Software. Árvores de Comportamento (Behavior Trees) - ROS2
 Ao projetar um agente autônomo (um robô), considere um baixo nível de abstração.
 
 Pense em motores, acionamentos, sensores, controladores de robô e software. Por fim, seu robô executa com excelência a tarefa programada. Por exemplo, seu manipulador pode pegar algo da mesa e colocá-lo em outro lugar, ou um robô de limpeza pode limpar o chão.
@@ -75,7 +75,7 @@ O mapeamento das tarefas do robô na árvore hierárquica de tarefas (BT) oferec
 
 Para arquitetar a BT da aplicação do robô, primeiro especifique o contexto lógico da aplicação e modele conexões consistentes entre ações e comportamentos específicos do robô (detalhes posteriormente). O **contexto lógico** é expresso no arquivo **XML**. A definição de nós, **classes e funções** é definida no framework **BehaviourTree.CPP**. Veja como definir a lógica da BT em XML.
 
-# Conceito de Árvores de Comportamento
+## Conceito de Árvores de Comportamento
 Introduzimos um conceito de alto nível de abstração no domínio do software robótico. Portanto, é razoável elaborar sobre a localização dessa abstração. Você pode considerar a seguinte pilha de abstração e retomar suas premissas anteriores.
 
 * Seres humanos permanecem no topo dessa pilha. Os requisitos para a aplicação do robô fluem para baixo. Usando um conjunto herdado de habilidades e conceitos de BT, humanos podem arquitetar o raciocínio lógico da aplicação do robô necessária.
@@ -118,7 +118,7 @@ O XML: descrevendo o comportamento do robô (nó Sequência) pode ser formulado.
 Para obter sucesso na Sequência, todos os nós devem retornar SUCESSO.
 
 * Uma BT começa com o nó Raiz, que fornece sinais que permitem a execução de um nó chamado ticks com uma frequência específica, que é enviada aos seus filhos. Se, e somente se, um nó receber ticks, ele será executado. Se a execução estiver em andamento, o nó filho retornará instantaneamente Running para o pai, Success se o objetivo for atingido e Failure, caso contrário.
-* Existem quatro nós de fluxo de controle na formulação clássica (Sequência, Fallback, Paralelo e Decorador) e dois tipos de nós de execução (Ação e Condição).
+* Existem quatro nós de fluxo de controle na formulação clássica (**Sequência, Fallback, Paralelo e Decorador**) e dois tipos de nós de execução (Ação e Condição).
 * O nó Sequência executa um algoritmo equivalente ao roteamento de ticks para seus filhos da esquerda até encontrar um filho que retorne Failure ou Running, e então retorna Failure ou Running para seu pai. Ele retorna Success somente se todos os seus filhos também retornarem Success. Deve-se observar que, quando um filho retorna Running ou Failure, o nó Sequência não encaminha os ticks para o próximo filho (se houver). Para simplificar, o nó Sequência pode ser considerado uma função lógica AND.
 
 ```python
@@ -140,6 +140,7 @@ BT::NodeStatus RobotTask3::tick()
 {
     std::cout << "RobotTask3: " << this->name() << std::endl;
     return BT::NodeStatus::SUCCESS;
+}
 ```
 
 Abaixo, veja uma definição do próximo bloco BT: **Fallback**.
@@ -174,6 +175,60 @@ O XML que descreve o comportamento do robô (nó de fallback) pode ser formulado
 * Aqui, apenas uma tarefa precisa ser SUCESSO para retornar SUCESSO do nó de fallback (esta é uma função lógica OU).
 * Neste exemplo, o primeiro nó retorna FALHA e imprime RobotTask1: task1.
 * Se task2 for SUCESSO, o nó imprime RobotTask2: task2, e o fallback é SUCESSO. (O robô não executa task3).
+
+## BT em Ação
+Aqui, considere uma BT simples e entenda o **fluxo de sinais**. Como você deve se lembrar, um sinal de "**tick**" é transmitido da **raiz da árvore e percorre a árvore até atingir um nó folha**.
+
+O **retorno** de chamada de um **TreeNode** é executado quando recebe um sinal de tick. Esse retorno de chamada tem três resultados possíveis: a **atividade (Activity)** é **SUCESSO (SUCCESS)**, **FALHA (FAILURE)** ou **AINDA EM EXECUÇÃO (still RUNNING)**.
+
+O exemplo a seguir exibe um "recurso" da BT ainda não discutido neste curso. O **framework** BehaviourTree.CPP será amplamente discutido na próxima unidade. Primeiramente, porém, é importante mencionar que a ação "comer banana" retorna um retorno de chamada: EM EXECUÇÃO, que, neste caso, reflete o processo de comer banana e requer tempo. Portanto, chamamos essa ação de **Ação Assíncrona**. Geralmente, essa funcionalidade da BT é alcançada implementando um **nó assíncrono em execução em uma thread separada**.
+
+![u1_2](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_2.png)
+
+O XML que descreve a lógica do BT descrito acima pode ser formulado.
+
+```xml
+ <root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <ReactiveFallback name="root">
+            <EatSandwich name="eat_sandwich"/>
+            <EatApple name="eat_apple"/>
+            <Sequence>
+                <OpenBanana name="open_banana"/>
+                <EatBanana       goal="1;2;3"/>
+                <SaySomething   message="banan is gone!" />
+            </Sequence>
+        </ReactiveFallback>
+     </BehaviorTree>
+ </root>
+```
+
+Derivando essa filosofia da BT, você pode descrever o funcionamento da BT considerando o seguinte exemplo:
+
+* A BT consiste em quatro ações, Fallback e Sequência.
+* Comece com uma Raiz que envia o tick para esse Fallback. Siga a regra do lado esquerdo. O Fallback envia um tick para "sanduíche" - você tem um sanduíche para comer?. Não. Portanto, o callback retorna Falha.
+* Seguindo a lógica do Fallback, o próximo tick é enviado para maçã. Você tem uma maçã para comer? Não. Como anteriormente, o callback retorna Falha. O Fallback não pode enviar o callback positivo para a Raiz, então ele continua.
+* Agora, o tick é enviado para a Sequência. A Sequência envia um tick para abrir uma banana e recebe Sucesso (a banana está aberta), mas a Sequência é uma operação lógica AND, então você continua.
+* Em seguida, o tick é enviado para comer uma banana. Como o processo leva tempo, o callback para a Raiz é **Executando**.
+
+## Notação (Notation) de nó BT
+Você retornará ao exemplo no curso, mas para completar a discussão sobre o conceito de BT, defina **nós "auxiliares"**:
+
+Um comando é executado por um nó de ação sempre que recebe um tick. Se a ação for executada com sucesso, ele retorna Sucesso; caso contrário, retorna Falha. Por fim, a **ação retorna Em Execução enquanto ainda está em andamento**.
+
+Um **nó de Condição** avalia uma proposição sempre que recebe um tick. Então, dependendo se a proposição é verdadeira, ele retorna Sucesso ou Falha. Lembre-se de que **um nó de Condição nunca retorna o status Em execução**.
+
+![u1_10](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_10.png)
+
+O **nó Decorador** é um nó de **fluxo de controle** com um único filho que marca o filho seletivamente de acordo com algumas regras estabelecidas e modifica o status de retorno do filho de acordo com uma regra definida pelo usuário. Por exemplo, um **decorador invertido** inverte o status Sucesso/Falha do filho. Um **decorador com máximo de N tentativas** permite que o filho falhe apenas N vezes antes de retornar Falha sem marcar o filho, e um **decorador com máximo de T segundos** permite que o filho seja executado por T segundos antes de retornar Falha sem marcar o filho.
+
+A tabela a seguir condensa e define o raciocínio lógico dos nós BT.
+
+![u1_11](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_11.png)
+
+## Abordagem para BT
+
+
 
 
 source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
