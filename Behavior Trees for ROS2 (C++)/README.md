@@ -304,5 +304,55 @@ Esta simulação exibe o comportamento do nó **Fallback**. O robô continua ver
 
 Conforme descrito acima, o comportamento do robô é o padrão. Se você remover um obstáculo (por exemplo, na direção de 90 graus), o robô se moverá nessa direção.
 
+## Arquitetura de Árvores de Comportamento
+Na unidade anterior, introduzimos o conceito de BT e definimos primitivas lógicas para arquitetar o comportamento de agentes autônomos (um robô). Agora você entende a pilha de abstração e pode localizar BT nela.
+
+Embora as BTs sejam razoavelmente simples de compreender e usar, é benéfico conhecer os princípios e métodos de design que podem ser usados em diversos contextos para atingir seu potencial máximo. Vários exemplos serão usados para ilustrar essas ideias na unidade seguinte.
+
+Especificamos a interpretação lógica de como o robô se comporta durante a execução da tarefa, conforme refletido no arquivo XML.
+
+Neste curso, você utilizará o framework BehaviourTree.CPP, que habilita e protege as tarefas do robô que serão executadas de acordo com as definições lógicas (escritas em XML). Isso significa que o robô percorre a BT adequadamente.
+
+A pilha a seguir ilustra as relações e ações a serem executadas usando a BT para modelar a tarefa do robô. O diagrama fornece uma visão geral do fluxo de dados durante a execução da aplicação do robô incorporada à BT.
+
+![u2_1](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_1.png)
+
+Imagine que seu robô precisa executar uma tarefa (por exemplo, limpar o chão). A tarefa consiste em diversas ações, frequentemente relacionadas à interação com o ambiente do robô. A aplicação do robô frequentemente inclui mecanismos de supervisão de segurança e outras "verificações" (verificação da bateria). As ações do robô e os mecanismos auxiliares são modelados em BT, onde as relações lógicas são expostas no arquivo XML.
+
+Usando o framework BehaviourTree.CPP;
+1. você cria a declaração dos nós (seguindo a arquitetura XML; BT) e as definições. 
+2. Em seguida, criando as definições dos nós, você expressa as ações executadas neste nó BT.
+
+Um conjunto de ações definido por um nó BT é considerado um retorno de chamada (BT chama outras funções/ações). Neste curso, você define um conjunto de ações executadas no nó ROS. Além disso, o nó ROS se comunica com um robô ou simulação. Os nós ROS recebem o feedback e enviam o estado (feedback) para o nó BT. A análise de feedback afeta o nó BT e envia o retorno para a Raiz (SUCESSO, FALHA ou EXECUÇÃO).
+
+Tendo em mente a pilha de abstração definida anteriormente, você pode avaliar novamente o BT, que define o fluxo lógico. O projeto detalhado dos nós ROS é desvinculado do conceito de BT.
+
+Você não considera em detalhes como o nó executa a tarefa (por exemplo, calcula a cinemática inversa). No entanto, você considera apenas o comportamento do nó, ou seja, a funcionalidade do nó (como uma "caixa de blocos"). Ao arquitetar o BT, você sabe o que o nó ROS está fazendo, mas os detalhes da implementação não são obrigatórios nesse raciocínio abstrato.
+
+Nas próximas seções, discutiremos as vantagens de utilizar a estrutura de arquivo XML explícita e a abordagem para modelar a estrutura lógica do BT. Além disso, você experimentará o mapeamento do XML no framework BehaviourTree.CPP e no ROS2.
+
+Você terá uma visão mais aprofundada do BT e dos mecanismos que orquestram as definições lógicas das tarefas do robô. Referindo-se às suas premissas anteriores, ao arquitetar o BT, considere apenas o nível mais alto de abstração, evitando uma compreensão mais profunda dos mecanismos relacionados à implementação do nó ROS. O nó, como mencionado, é considerado uma "caixa preta" - executando uma função no sistema robótico que você constrói.
+
+Considere o diagrama abaixo representando as conexões lógicas no BT. Comece pela função primária, que lê o arquivo XML.
+
+A função primária e a estrutura do BT incluem a declaração dos nós. A estrutura BehaviourTree.CPP gerencia o fluxo lógico (marque o nó BT) de acordo com uma especificação XML (invoca um retorno de chamada).
+
+Os nós BT executam seu retorno de chamada (conjunto de ações). O retorno de chamada retorna SUCESSO, FALHA ou EXECUÇÃO. A ação de retorno de chamada pode se comunicar com os nós ROS. Os nós ROS executam ações relacionadas ao robô.
+
+![u2_2](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_2.png)
+
+## Tipos e Comportamento de Nós. O Modelo de Fluxo Lógico BT em Formato XML
+Enfrente os desafios do design conceitual da BT, que por natureza deve ser legível por humanos, introduzindo o conceito XML. O BehaviorTree.CPP oferece uma linguagem de script XML que permite que humanos especifiquem árvores específicas e nós únicos.
+
+Para arquitetar a BT de cada tarefa do robô, você definiu brevemente as primitivas (nós) da BT na unidade anterior. Os nós Sequência, FallBack e Decoradores foram descritos. Isso ajudou você a entender a BT em geral. No entanto, você deve adicionar mecanismos e abstrações lógicas para ser mais consistente e aderir ao conceito do framework BehaviorTree.CPP.
+
+Para fornecer uma compreensão completa da arquitetura da BT, veja abaixo uma variedade de técnicas e abstrações de framework na seção seguinte. O curso seguirá os princípios orientadores da abordagem de design XML. No entanto, você se concentrará principalmente em uma abordagem prática (usando exemplos em C++).
+
+Por favor, esteja familiarizado com a hierarquia de tipos de nós representada no diagrama abaixo.
+
+![u2_3](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_3.png)
+
+
+
 
 source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
