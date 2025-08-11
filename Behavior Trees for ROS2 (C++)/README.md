@@ -110,6 +110,11 @@ O XML: descrevendo o comportamento do robô (nó Sequência) pode ser formulado.
 </root>
 ```
 
+* Imagine que o robô executa três tarefas: encontrar a bola, pegar a bola e colocar a bola – chamadas task1, task2 e task3, respectivamente.
+* Aqui, as tarefas devem concluir com sucesso a tarefa "principal".
+* Neste exemplo, apenas a primeira tarefa é BEM-SUCEDIDA e imprime RobotTask1: task1.
+* A segunda tarefa é FALHA (não imprime texto) e a Sequência é FALHA.
+
 Para obter sucesso na Sequência, todos os nós devem retornar SUCESSO.
 
 * Uma BT começa com o nó Raiz, que fornece sinais que permitem a execução de um nó chamado ticks com uma frequência específica, que é enviada aos seus filhos. Se, e somente se, um nó receber ticks, ele será executado. Se a execução estiver em andamento, o nó filho retornará instantaneamente Running para o pai, Success se o objetivo for atingido e Failure, caso contrário.
@@ -165,7 +170,10 @@ O XML que descreve o comportamento do robô (nó de fallback) pode ser formulado
  </root>
 ```
 
-
+* Neste exemplo, imagine que o robô precisa executar três tarefas: task1, task2 e task3.
+* Aqui, apenas uma tarefa precisa ser SUCESSO para retornar SUCESSO do nó de fallback (esta é uma função lógica OU).
+* Neste exemplo, o primeiro nó retorna FALHA e imprime RobotTask1: task1.
+* Se task2 for SUCESSO, o nó imprime RobotTask2: task2, e o fallback é SUCESSO. (O robô não executa task3).
 
 
 source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
