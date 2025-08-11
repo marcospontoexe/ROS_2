@@ -75,7 +75,22 @@ O mapeamento das tarefas do robô na árvore hierárquica de tarefas (BT) oferec
 
 Para arquitetar a BT da aplicação do robô, primeiro especifique o contexto lógico da aplicação e modele conexões consistentes entre ações e comportamentos específicos do robô (detalhes posteriormente). O **contexto lógico** é expresso no arquivo **XML**. A definição de nós, **classes e funções** é definida no framework **BehaviourTree.CPP**. Veja como definir a lógica da BT em XML.
 
+# Conceito de Árvores de Comportamento
+Introduzimos um conceito de alto nível de abstração no domínio do software robótico. Portanto, é razoável elaborar sobre a localização dessa abstração. Você pode considerar a seguinte pilha de abstração e retomar suas premissas anteriores.
 
+* Seres humanos permanecem no topo dessa pilha. Os requisitos para a aplicação do robô fluem para baixo. Usando um conjunto herdado de habilidades e conceitos de BT, humanos podem arquitetar o raciocínio lógico da aplicação do robô necessária.
+* Humanos usam Árvores de Comportamento para modelar a conexão lógica entre as tarefas do robô. Posteriormente, você aprenderá que o modelo é executado em um arquivo XML. Abaixo da abstração lógica, você se depara com a implementação de BTs.
+* Na próxima unidade, você investigará profundamente essa camada e frameworks C++ específicos (BehaviourTree.CPP), permitindo a construção de BTs. A definição das tarefas do robô (função do programa em C++) completa a pilha a seguir.
+
+![u1_5](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_5.png)
+
+Após a configuração e as transições do programa do robô, você pode especificar que o BT organize as transições de agentes autônomos (robôs) entre tarefas (componentes simples).
+
+O BT é formalmente definido como uma árvore raiz direcionada com nós centrais chamados **nós de fluxo de controle** e **nós folhas** chamados **nós de execução**. Você emprega a linguagem usual de pai e filho para cada nó conectado. O nó raiz é o único sem pais; os outros nós têm um pai. **Há pelo menos um filho em cada nó de fluxo de controle**. Os filhos de um nó são mostrados graficamente abaixo.
+
+Agora, defina o primeiro bloco BT: **Sequência**.
+
+![](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_0.png)
 
 
 
