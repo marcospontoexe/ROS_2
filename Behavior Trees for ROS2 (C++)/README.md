@@ -118,7 +118,7 @@ O XML: descrevendo o comportamento do robô (nó Sequência) pode ser formulado.
 Para obter sucesso na Sequência, todos os nós devem retornar SUCESSO.
 
 * Uma BT começa com o nó Raiz, que fornece sinais que permitem a execução de um nó chamado ticks com uma frequência específica, que é enviada aos seus filhos. Se, e somente se, um nó receber ticks, ele será executado. Se a execução estiver em andamento, o nó filho retornará instantaneamente Running para o pai, Success se o objetivo for atingido e Failure, caso contrário.
-* Existem quatro nós de fluxo de controle na formulação clássica (**Sequência, Fallback, Paralelo e Decorador**) e dois tipos de nós de execução (Ação e Condição).
+* Existem quatro nós de fluxo de controle na formulação clássica (**Sequência, Fallback, Paralelo e Decorador (Decorator)**) e dois tipos de nós de execução (Ação e Condição).
 * O nó Sequência executa um algoritmo equivalente ao roteamento de ticks para seus filhos da esquerda até encontrar um filho que retorne Failure ou Running, e então retorna Failure ou Running para seu pai. Ele retorna Success somente se todos os seus filhos também retornarem Success. Deve-se observar que, quando um filho retorna Running ou Failure, o nó Sequência não encaminha os ticks para o próximo filho (se houver). Para simplificar, o nó Sequência pode ser considerado uma função lógica AND.
 
 ```python
@@ -211,12 +211,12 @@ Derivando essa filosofia da BT, você pode descrever o funcionamento da BT consi
 * Agora, o tick é enviado para a Sequência. A Sequência envia um tick para abrir uma banana e recebe Sucesso (a banana está aberta), mas a Sequência é uma operação lógica AND, então você continua.
 * Em seguida, o tick é enviado para comer uma banana. Como o processo leva tempo, o callback para a Raiz é **Executando**.
 
-## Notação (Notation) de nó BT
+## Notação de nó BT
 Você retornará ao exemplo no curso, mas para completar a discussão sobre o conceito de BT, defina **nós "auxiliares"**:
 
 Um comando é executado por um nó de ação sempre que recebe um tick. Se a ação for executada com sucesso, ele retorna Sucesso; caso contrário, retorna Falha. Por fim, a **ação retorna Em Execução enquanto ainda está em andamento**.
 
-Um **nó de Condição** avalia uma proposição sempre que recebe um tick. Então, dependendo se a proposição é verdadeira, ele retorna Sucesso ou Falha. Lembre-se de que **um nó de Condição nunca retorna o status Em execução**.
+Um **nó de Condição (condition node)** avalia uma proposição sempre que recebe um tick. Então, dependendo se a proposição é verdadeira, ele retorna Sucesso ou Falha. Lembre-se de que **um nó de Condição nunca retorna o status Em execução**.
 
 ![u1_10](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_10.png)
 
@@ -227,6 +227,41 @@ A tabela a seguir condensa e define o raciocínio lógico dos nós BT.
 ![u1_11](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_11.png)
 
 ## Abordagem para BT
+A seção anterior definiu os **nós de comportamento lógico** comuns usados durante a arquitetura de BT para aplicações de robôs (tarefas). Agora, tente entender o principal motivo pelo qual a BT está ganhando popularidade nos domínios da robótica, jogos e inteligência artificial.
+
+Embora as BTs tenham ganhado popularidade nos últimos anos, as **Máquinas de Estados Finitos** (FSMs) ainda são um dos paradigmas mais conhecidos para definir o comportamento de robôs ou agentes de software.
+
+Para ser consistente, lembre-se do conceito simples de uma máquina de estados finitos. Uma FSM é baseada em uma máquina abstrativa (virtual) com um ou mais estados. A máquina alterna entre estados para executar várias tarefas, pois apenas um estado pode estar ativo.
+
+Ao implementar algoritmos, robótica ou jogos, as FSMs são frequentemente usadas para estruturar e descrever um fluxo de execução. Uma FSM, por exemplo, pode ser usada para criar o "cérebro" do robô. Geralmente, a FSM ajuda a arquitetar a aplicação do robô a partir de um nível de abstração mais alto. Cada estado corresponde às ações do robô (considere a figura abaixo), o que permite a execução de ações dedicadas para esse estado. Você também pode afirmar que o robô é observável, o que significa que, em cada registro de tempo, você conhece o estado do robô. O robô que segue o fluxo da FSM é previsível, em relação às ações que o robô executa e às transições que ele é capaz de realizar.
+
+Um grafo pode representar FSMs, com os nós denotando os estados e as arestas denotando as transições. Cada aresta possui um rótulo que indica quando a transição deve ocorrer. Por exemplo, considerando a figura, você pode diferenciar vários estados do robô, como se aproximar da bola, agarrar a bola ou esperar por ajuda.
+
+![u1_8](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_8.png)
+
+### Desafios com FSMs, transição para BTs
+Inúmeros problemas impactam as FSMs e surgem em situações do mundo real se houver transições suficientes entre estados e condições:
+
+* Pode haver NxN transições de estado em uma FSM com N estados.
+* Como o contexto de execução afeta o número de estados, N pode aumentar rapidamente.
+* Todos os outros estados que transitaram para o estado novo ou antigo devem alterar suas condições quando um novo estado é adicionado ou removido.
+* Os estados são fortemente conectados, o que impacta como eles podem ser reutilizados.
+* As representações gráficas e verbais do comportamento completo tornam-se muito complexas para o projetista compreender quando o número de estados é suficientemente grande.
+
+Não são os computadores, mas principalmente as pessoas, que são afetadas por esses problemas. Por exemplo, uma máquina de estados enorme pode ser facilmente manipulada por um interpretador de software, mas uma pessoa, sem dúvida, terá dificuldade em compreender e prever o comportamento geral do sistema.
+
+Em outras palavras, o problema fundamental com as FSMs é que elas logo se tornam incontroláveis à medida que o número de estados aumenta devido à carga cognitiva enfrentada pelos desenvolvedores, principalmente os projetistas de comportamento.
+
+A maioria desses problemas é resolvida pelas BTs, que aumentam a modularidade e podem ser reutilizadas. Elas são, por natureza, hierárquicas.
+
+* Qualquer subárvore fornece uma ação possivelmente reutilizável de uma perspectiva semântica.
+* O desenvolvedor pode utilizar e expandir a linguagem fornecida pela BT para aplicar padrões de projeto populares.
+* O fato de a hierarquia ser ordenada de cima para baixo e a precedência dos nós da esquerda para a direita torna as representações textuais e gráficas mais fáceis de serem "lidas" por um humano.
+* A BT geralmente usa Ações em vez de Estados (como em FSMs); essa estratégia está mais alinhada com o "modelo conceitual" usado para definir o comportamento e as interfaces de software fornecidas por arquiteturas orientadas a serviços.
+
+As figuras abaixo mostram como o mesmo exemplo pode ser mais facilmente utilizado pelas BTs.
+
+Os nós onde a Detecção de Obstáculos é implementada podem ser um **Decorator Node**, que executará seu nó filho somente se a condição interna for satisfeita, ou um **Condition Node**, que é uma folha da árvore que pode retornar SUCCESS ou FAILURE.
 
 
 
