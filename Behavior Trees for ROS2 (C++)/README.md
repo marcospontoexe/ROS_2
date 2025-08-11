@@ -110,5 +110,62 @@ O XML: descrevendo o comportamento do robô (nó Sequência) pode ser formulado.
 </root>
 ```
 
+Para obter sucesso na Sequência, todos os nós devem retornar SUCESSO.
+
+* Uma BT começa com o nó Raiz, que fornece sinais que permitem a execução de um nó chamado ticks com uma frequência específica, que é enviada aos seus filhos. Se, e somente se, um nó receber ticks, ele será executado. Se a execução estiver em andamento, o nó filho retornará instantaneamente Running para o pai, Success se o objetivo for atingido e Failure, caso contrário.
+* Existem quatro nós de fluxo de controle na formulação clássica (Sequência, Fallback, Paralelo e Decorador) e dois tipos de nós de execução (Ação e Condição).
+* O nó Sequência executa um algoritmo equivalente ao roteamento de ticks para seus filhos da esquerda até encontrar um filho que retorne Failure ou Running, e então retorna Failure ou Running para seu pai. Ele retorna Success somente se todos os seus filhos também retornarem Success. Deve-se observar que, quando um filho retorna Running ou Failure, o nó Sequência não encaminha os ticks para o próximo filho (se houver). Para simplificar, o nó Sequência pode ser considerado uma função lógica AND.
+
+```python
+#Do not run the cell
+
+BT::NodeStatus RobotTask1::tick()
+{
+    std::cout << "RobotTask1: " << this->name() << std::endl;
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::NodeStatus RobotTask2::tick()
+{
+    std::cout << "RobotTask2: " << this->name() << std::endl;
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::NodeStatus RobotTask3::tick()
+{
+    std::cout << "RobotTask3: " << this->name() << std::endl;
+    return BT::NodeStatus::SUCCESS;
+```
+
+Abaixo, veja uma definição do próximo bloco BT: **Fallback**.
+
+![u1_3](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_3.png)
+
+O nó Fallback conduz um algoritmo que envolve o envio de ticks para seus filhos da esquerda até localizar um filho que retorne Sucesso ou Em Execução. Em seguida, ele envia Sucesso ou Em Execução para seu pai de acordo com essa descoberta. Se, e somente se, todos os seus filhos também retornarem Falha, ele retornará Falha. Observe que, quando um filho retorna Em Execução ou Sucesso, o nó Fallback não transmite os ticks para o filho subsequente (se houver), seja Em Execução ou Sucesso.
+
+Seguindo essa abordagem simples, considere o nó Fallback uma função lógica OU.
+
+Observe atentamente o fluxo de ticks e retornos de chamada. Estude os seguintes diagramas:
+
+![u1_6](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_6.png)
+
+O XML que descreve o comportamento do robô (nó de fallback) pode ser formulado da seguinte forma:
+
+```xml
+ <root main_tree_to_execute = "MainTree" >
+
+     <BehaviorTree ID="MainTree">
+        <Fallback name="root_sequence">
+            <RobotTask1   name="task1"/>
+            <RobotTask2   name="task2"/>
+            <RobotTask3   name="task3"/>
+        </Fallback>
+     </BehaviorTree>
+
+ </root>
+```
+
+
+
 
 source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
