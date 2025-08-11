@@ -92,6 +92,23 @@ Agora, defina o primeiro bloco BT: **Sequência**.
 
 ![](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_0.png)
 
+Observe o fluxo de tick e callback e estude os seguintes diagramas:
+
+![u1_4](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u1_4.png)
+
+O XML: descrevendo o comportamento do robô (nó Sequência) pode ser formulado. 
+
+```xml
+<root main_tree_to_execute = "MainTree" >
+    <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+            <RobotTask1   name="task1"/>
+            <RobotTask2   name="task2"/>
+            <RobotTask3   name="task3"/>
+        </Sequence>
+    </BehaviorTree>
+</root>
+```
 
 
 source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
