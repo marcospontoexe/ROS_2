@@ -341,7 +341,7 @@ Os nós BT executam seu retorno de chamada (conjunto de ações). O retorno de c
 
 ![u2_2](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_2.png)
 
-## Tipos e Comportamento de Nós. O Modelo de Fluxo Lógico BT em Formato XML
+## Tipos de Nós e Comportamento. O Modelo de Fluxo Lógico BT em Formato XML
 Enfrente os desafios do design conceitual da BT, que por natureza deve ser legível por humanos, introduzindo o conceito XML. O BehaviorTree.CPP oferece uma linguagem de script XML que permite que humanos especifiquem árvores específicas e nós únicos.
 
 Para arquitetar a BT de cada tarefa do robô, você definiu brevemente as primitivas (nós) da BT na unidade anterior. Os nós Sequência, FallBack e Decoradores foram descritos. Isso ajudou você a entender a BT em geral. No entanto, você deve adicionar mecanismos e abstrações lógicas para ser mais consistente e aderir ao conceito do framework BehaviorTree.CPP.
