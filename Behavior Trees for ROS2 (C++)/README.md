@@ -348,10 +348,51 @@ Para arquitetar a BT de cada tarefa do robô, você definiu brevemente as primit
 
 Para fornecer uma compreensão completa da arquitetura da BT, veja abaixo uma variedade de técnicas e abstrações de framework na seção seguinte. O curso seguirá os princípios orientadores da abordagem de design XML. No entanto, você se concentrará principalmente em uma abordagem prática (usando exemplos em C++).
 
-Por favor, esteja familiarizado com a hierarquia de tipos de nós representada no diagrama abaixo.
-
 ![u2_3](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_3.png)
 
+Primeiro, considere o nó de sequência. O último diagrama descreve três tipos de nós de sequência. Na tabela a seguir, você pode entender o comportamento de cada um deles.
+
+![u2_4](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_4.png)
+
+Na tabela, **Reiniciar** e **Marcar novamente** podem ser compreendidos da seguinte forma:
+
+* Reiniciar significa que todo o nó da sequência é reiniciado a partir do primeiro filho da lista; Se o nó da sequência incluir os filhos A, B, C e D, então A e B são SUCESSO, no entanto, C é FALHA. A próxima marcação força você a verificar novamente, começando de A.
+* Marcar novamente significa que na próxima vez que a sequência for marcada, o mesmo filho será marcado. Os filhos anteriores lembram o status; Se o nó da sequência incluir os filhos A, B, C e D, então A e B são SUCESSO, no entanto, C é FALHA. A próxima marcação força você a verificar novamente C, e não A e B nos quais os estados são lembrados.
+
+Reveja os exemplos simples, as definições lógicas em XML e os exemplos em C++. O framework BehaviorTree.CPP será estudado cuidadosamente na próxima unidade.
+
+![u2_5](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_5.png)
+
+A sequência a seguir é simples.
+
+* O robô se move em linha reta e para a frente, lendo o sensor laser. As leituras são precisas e fornecem uma excelente visão geral do entorno.
+* O robô analisa os dados do sensor e percebe as condições para evitar obstáculos que possam aparecer nas proximidades do robô (enquanto se move em linha reta). Se o obstáculo estiver a menos de dois metros do robô (CONDIÇÃO 1), o robô precisa parar.
+* O robô deve analisar novamente o ambiente e decidir como evitar o obstáculo (neste caso, suponha que o robô possa virar à esquerda ou à direita; o robô escolhe a direção aleatoriamente). O robô verifica se há energia suficiente armazenada na bateria para girar (CONDIÇÃO 2) antes de girar (à esquerda ou à direita). Em caso afirmativo, o robô gira 90 graus (AÇÃO 1) e se move em linha reta (AÇÃO 2).
+
+Agora, você pode arquitetar a BT para essas ações do robô.
+
+```xml
+<root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+            <Obstacle   name=" Obstacle detected"/>
+            <EnoughBattery   name=" Battery OK"/>
+            <Rotate       name=" Rotated"/>
+            <MoveStraight name=" Moved"/>
+        </Sequence>
+    </BehaviorTree>
+</root>
+```
+
+Verifique a tabela acima. Se a CONDIÇÃO 1 for FALHA (sem obstáculo), a sequência será encerrada e o nó Sequência será reiniciado.
+
+Considere o caso em que o robô precisa de cinco segundos para girar antes que o retorno de chamada retorne **EM EXECUÇÃO**. Nesse caso, a ação, rotação, receberá o tick subsequente e determinará se o estado mudou de **EM EXECUÇÃO** para **SUCESSO**. O nó Sequência se lembra das verificações anteriores (CONDIÇÃO 1 e CONDIÇÃO 2) e não há necessidade de verificá-las novamente.
+
+Além disso, você descreveu exemplos na unidade anterior e agora é uma ótima oportunidade para entender o design XML. Como discutido, o XML é usado para modelar o fluxo lógico em BT. Neste exemplo, você pode arquitetar o nó Sequência da seguinte forma.
+
+Novamente, é crucial enfatizar que você projeta as conexões lógicas e o fluxo das ações aqui. Cada ação descrita nesta unidade possui um retorno de chamada (do ponto de vista do site raiz), o que implica que ela possui rotinas específicas para execução.
+
+Para simplificar, se o robô verificar a bateria, ele receberá os resultados SUCESSO (energia suficiente) ou FALHA (bateria vazia) do retorno de chamada. Em um sistema real, verificar a bateria é significativamente mais difícil e envolve mais etapas do que apenas verificar.
 
 
 
