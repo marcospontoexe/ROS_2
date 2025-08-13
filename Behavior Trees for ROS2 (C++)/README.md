@@ -469,10 +469,15 @@ Como mencionado anteriormente, o Nó **Sequencial Reativo** é uma melhoria para
 
 Este tipo de sequência (Sequencial Reativo) é empregado quando a ação do nó é **assíncrona**. Isso denota que, até ser concluída, o nó **retorna RUNNING** (a ação executada pelo nó leva mais tempo do que o tempo de amostragem do tick). Pense na ilustração resumida.
 
-Observe que a discussão a seguir é uma continuação daquela usada para mostrar a natureza assíncrona do nó no capítulo anterior (o último exemplo em que foi discutido o consumo de frutas).
-
 ![u2_6](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_6.png)
 
+Considere o diagrama abaixo, que deve lhe dar uma melhor compreensão do que acontece durante a execução deste exemplo. Como não estamos discutindo a implementação em C++, recomendamos que você execute o programa e estude o código.
+
+![u2_7](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_7.png)
+
+Agora, você explorará um aspecto crucial da BT e comparará o nó Sequencial descrito anteriormente com a Sequência Reativa no contexto do nó síncrono versus nó assíncrono.
+
+Primeiramente, observe que a thread para uma ação assíncrona é separada (thread própria). Dessa forma, o usuário pode empregar métodos de bloqueio ao retornar o fluxo de execução para a árvore.
 
 
 
