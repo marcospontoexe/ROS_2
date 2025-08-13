@@ -386,9 +386,9 @@ Agora, você pode arquitetar a BT para essas ações do robô.
 
 Verifique a tabela acima. Se a CONDIÇÃO 1 for FALHA (sem obstáculo), a sequência será encerrada e o nó Sequência será reiniciado.
 
-Considere o caso em que o robô precisa de cinco segundos para girar antes que o retorno de chamada retorne **EM EXECUÇÃO**. Nesse caso, a ação, rotação, receberá o tick subsequente e determinará se o estado mudou de **EM EXECUÇÃO** para **SUCESSO**. O nó Sequência se lembra das verificações anteriores (CONDIÇÃO 1 e CONDIÇÃO 2) e não há necessidade de verificá-las novamente.
+Considere o caso em que o robô precisa de cinco segundos para girar antes que o retorno de chamada retorne **EM EXECUÇÃO**. Nesse caso, a ação, **rotate**, receberá o tick subsequente e determinará se o estado mudou de **EM EXECUÇÃO** para **SUCESSO**. O nó **sequência** se lembra das verificações anteriores (CONDIÇÃO 1 e CONDIÇÃO 2) e não há necessidade de verificá-las novamente.
 
-Além disso, você descreveu exemplos na unidade anterior e agora é uma ótima oportunidade para entender o design XML. Como discutido, o XML é usado para modelar o fluxo lógico em BT. Neste exemplo, você pode arquitetar o nó Sequência da seguinte forma.
+Além disso, você descreveu exemplos na unidade anterior e agora é uma ótima oportunidade para entender o design XML. Como discutido, o XML é usado para modelar o fluxo lógico em BT. Neste exemplo, você pode arquitetar o nó **sequência** da seguinte forma.
 
 Novamente, é crucial enfatizar que você projeta as conexões lógicas e o fluxo das ações aqui. Cada ação descrita nesta unidade possui um retorno de chamada (do ponto de vista do site raiz), o que implica que ela possui rotinas específicas para execução.
 
