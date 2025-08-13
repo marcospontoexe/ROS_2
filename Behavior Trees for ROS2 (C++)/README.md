@@ -394,6 +394,87 @@ Novamente, é crucial enfatizar que você projeta as conexões lógicas e o flux
 
 Para simplificar, se o robô verificar a bateria, ele receberá os resultados SUCESSO (energia suficiente) ou FALHA (bateria vazia) do retorno de chamada. Em um sistema real, verificar a bateria é significativamente mais difícil e envolve mais etapas do que apenas verificar.
 
+## Esquema XML
+Observe que, apesar da biblioteca ser desenvolvida em C++, BTs ainda podem ser criados em tempo de execução. O XML pode ser lido de um arquivo ou incorporado ao código C++.
+
+```xml
+ <root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+            <SaySomething   name="action_hello" message="Hello"/>
+            <OpenGripper    name="open_gripper"/>
+            <ApproachObject name="approach_object"/>
+            <CloseGripper   name="close_gripper"/>
+        </Sequence>
+     </BehaviorTree>
+ </root>
+```
+
+Seguindo o padrão descrito:
+
+* A primeira tag da árvore é a **Root**. Ela deve conter uma ou mais tags, **BehaviorTree**.
+* A tag **BehaviorTree** deve ter o **ID** do atributo.
+    * A tag **Root** deve conter o atributo **main_tree_to_execute**.
+    * O atributo **main_tree_to_execute** é obrigatório se o arquivo contiver **várias BehaviorTrees**; opcional caso contrário.
+* Uma única tag representa cada nó da árvore. Em particular:
+    * O nome da tag é o **ID** usado para registrar o **TreeNode** na fábrica.
+    * O nome do atributo refere-se ao nome da instância e é opcional.
+    * As portas são configuradas usando atributos.
+
+Em termos do número de filhos:
+* **ControlNodes** contêm de 1 a N filhos.
+* **DecoratorNodes** e subárvores contêm apenas 1 filho.
+* **ActionNodes** e **ConditionNodes** não têm filhos.
+
+### Nós aninhados
+Os principais conceitos de design devem ser considerados ao arquitetar a BT. Por exemplo, a BT é executada de cima para baixo e da esquerda para a direita. Usando esses conceitos, você pode construir a figura a seguir e deduzir os princípios de fluxo lógico XML.
+
+Em seguida, examine o diagrama considerando o relacionamento XML entre as operações.
+
+![](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_8.png)
+
+```xml
+ <root main_tree_to_execute = "MainTree" >
+
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+                <Sequence name="sequence_1">
+                        <Sequence name="sequence_1">
+                            <Condition1   name="condition_1"/>
+                            <Action1      name="action_1"/>
+                        </Sequence>
+                        <Fallback name="fallback_1">
+                            <Action2      name="action_2"/>
+                            <Action3      name="action_3"/>
+                        </Fallback>
+                </Sequence>
+                <Fallback name="fallback_2">
+                         <Sequence name="sequence_3">
+                            <Condition2   name="condition_2"/>
+                            <Action4      name="action_4"/>
+                        </Sequence>
+                        <Sequence name="sequence_4">
+                            <Condition3   name="condition_3"/>
+                            <Action5      name="action_5"/>
+                        </Sequence>
+                </Fallback>
+        </Sequence>
+     </BehaviorTree>
+
+ </root>
+```
+
+### Nós assíncronos (nó sequencial reativo)
+Como mencionado anteriormente, o Nó **Sequencial Reativo** é uma melhoria para o Nó Sequencial, particularmente quando o **Nó Condicional** é verificado permanentemente antes de retornar SUCESSO. Mas, novamente, revise sua referência de tabela, que mostra que toda a sequência é redefinida.
+
+Este tipo de sequência (Sequencial Reativo) é empregado quando a ação do nó é **assíncrona**. Isso denota que, até ser concluída, o nó **retorna RUNNING** (a ação executada pelo nó leva mais tempo do que o tempo de amostragem do tick). Pense na ilustração resumida.
+
+Observe que a discussão a seguir é uma continuação daquela usada para mostrar a natureza assíncrona do nó no capítulo anterior (o último exemplo em que foi discutido o consumo de frutas).
+
+![u2_6](https://github.com/marcospontoexe/ROS_2/blob/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)/imagens/u2_6.png)
+
+
 
 
 source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
+
