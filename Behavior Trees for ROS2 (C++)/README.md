@@ -481,14 +481,29 @@ Primeiramente, observe que a thread para uma ação assíncrona é separada (thr
 
 Veja o exemplo a baixo:
 
-![Course Simulation]
+```shell
+------------ BUILDING A NEW TREE ------------
+OK. Detected !
+
+--- 1st executeTick() ---
+OK. Detected !
+thinking for :: 0
+
+--- 2nd executeTick() ---
+OK. Detected !
+
+--- 3rd executeTick() ---
+OK. Detected !
+thinking for :: 1
+thinking for :: 2
+thinking for :: 3
+thinking for :: 4
+```
 
 * Pense em como o software é executado. A cada segundo, o BT é marcado. Como o robô está se aproximando do obstáculo, você pode assumir que a condição retorna SUCESSO.
 * Cada vez que o nó de **obstacle** é marcado, ele imprime: OK. Detectado!
-* A ação Tomar Decisão é então verificada. A ação retorna EM EXECUÇÃO porque é assíncrona (o robô precisa de cinco segundos para pensar). O nó assíncrono opera em uma thread diferente (independentemente) quando o nó de sequência reativa é retomado; assim, o tempo passa enquanto o robô pensa. Cada vez que o nó é marcado, ele imprime: pensando por: (número de segundos).
+* A ação Tomar Decisão é então verificada. A ação retorna EM EXECUÇÃO porque é assíncrona (o robô precisa de cinco segundos para pensar). O nó assíncrono opera em uma thread diferente (independentemente) quando o nó de sequência reativa é retomado; assim, o tempo passa enquanto o robô pensa. Cada vez que o nó é marcado, ele imprime: thinking for: (número de segundos).
+* Após o segundo tique da árvore, você pode observar a saída do programa. Apesar da condição de obstáculo ser verificada novamente, o tempo de pensamento aumentou. Após o terceiro tique da árvore, o comportamento do nó ainda se aplica. O processo assíncrono ainda está em execução e termina (o status do nó muda de EM EXECUÇÃO para SUCESSO) após o esgotamento do contador.
 
-Após o segundo tique da árvore, você pode observar a saída do programa. Apesar da condição de obstáculo ser verificada novamente, o tempo de pensamento aumentou. Após o terceiro tique da árvore, o comportamento do nó ainda se aplica. O processo assíncrono ainda está em execução e termina (o status do nó muda de EM EXECUÇÃO para SUCESSO) após o esgotamento do contador.
-
-
-source /home/simulations/ros2_sims_ws/install/setup.bashsource ~/ros2_ws/install/setup.bash
+## Concorrência
 

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<!-- saved from url=(0131)https://i-04da5e5fe67cd26c0.robotigniteacademy.com/b0958d4f-635f-4a0f-85ed-59524947ff23/desktop_/#/client/Z3pjbGllbnQAYwBub2F1dGg=/ -->
+<html ng-app="index" ng-controller="indexController" class="ng-scope"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style type="text/css">@charset "UTF-8";[ng\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\:form{display:block;}</style>
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAA5dJREFUeF7tWL9rGlEc/wgOF3A4oYNCCj3IUIcODl2EDBE6NNAhhgwVOhTpUCRT/o5MIXQo0iGYDAE7BOwg0SHFDC04WmjADgE7BHQI5IZAyvdZzXm58+7Me8+Dew9E5d699/18vp/vj/diiPiIRRw/FAFKARFnQIVAxAWgkqAKARUCEWdAhUDEBaCqAIXAXZRVoAhQCghBCBTfFnF4dMgiMb2cRv+yLy0qFx4C+bU8mq3mFODyxzL2P+1LIWFhBMgEOYtJ6QSUt8vY3/P2buldCZWDinAVSCPAeGag96cXCFA2m0Wn0wn0TtDJIggYt9eT/qL0voTKlwrou3pUhWmaoNjv/u6yhFfYKKD2tcZstybEoGDmmS+UAHucZ1Yy6F50mZ1aQoN5bSKdSqP/tw9j2WDf5q05RYjoXCGCAPiNcyKCgPcu70Mj9zKH9o/2PM6c6x2uBGhxDZquYXg1DGQMKcMwDNQbdcf3RKqAGwE72zvY3dv1DZxAtX+2QeBbjRZST1OThCczD3AjwC9yXdexubGJG/MGST2J6kEVS4klFv+z5J9fzaN5Nt0w+d0zVH0AGWMtb+PyqGka6Hf3Vxe51RzaZw/zwPrrddS/OYfJvGTwVoB9Pcf1PZucOFB4c18a5wXn5z0uBFg840iAPdPb5czAntRcPW8FwjshciGADPwvW1cF5F/l0WzcxzBvIH687TSHGwFeBugJHbm1HOon3jFsJ8u+toW8B12nlx3251wJ4OHVzIsMzIE51RzNABUuAtwM9crepQ8lVD6PTn6sNb7qs4pA1aJ2PDoj2EfmeYZVjMcOrgogY9xUQF0i9fmTEQdwO/pHjc9wOHxQ4sbnhMeCXHgfQDWeToKD6wHMockyvtegypBMJSfKsM/3UpXX+uPn3BUAIJbNZu/s53gigT7U/fm5F7AekWckQb84XecJIYBumgtbhUn88kiOhMBYMdC7CHap4sWQMAK8NvZ6bj8QFbeKODwe3RzzHCIImNjHw/M81lh4EpzHY6KBi0yCU3iD3hNQuUQc7N5QxhAaAk41fxYoWV632iCFALoEoUbHbSwCuLQQGG/kdAdgLZUy5O60hxQFOG0s+/bXjeBFEfDoUxwvxSgCTpund+ffz9kpTn+iIxYbO4cXx47rhEoBQpGGfXEp7g4zCYqAMHtHhm1KATJYDvMeSgFh9o4M25QCZLAc5j2UAsLsHRm2KQXIYDnMe/wD56FfLMBGG80AAAAASUVORK5CYII=">
+        <link rel="icon" type="image/png" sizes="144x144" href="data:image/png;base64,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">
+        <link rel="apple-touch-icon" type="image/png" href="https://i-04da5e5fe67cd26c0.robotigniteacademy.com/b0958d4f-635f-4a0f-85ed-59524947ff23/desktop_/images/logo-144.png">
+        <link rel="stylesheet" type="text/css" href="./app.css">
+        <title ng-bind="page.title | translate" class="ng-binding">gzclient</title>
+    </head>
+    <body ng-class="page.bodyClassName" class="client">
+
+        <!-- Content for logged-in users -->
+        <!-- ngIf: !expectedCredentials --><div ng-if="!expectedCredentials" class="ng-scope">
+
+            <!-- Global status/error dialog -->
+            <div ng-class="{shown: guacNotification.getStatus()}" class="status-outer">
+                <div class="status-middle">
+                    <div class="notification ng-isolate-scope" ng-class="notification.className" notification="guacNotification.getStatus()">
+
+    <!-- Notification title -->
+    <div ng-show="notification.title" class="title-bar ng-hide">
+        <div class="title ng-binding"></div>
+    </div>
+
+    <div class="body">
+
+        <!-- Notification text -->
+        <p ng-show="notification.text" class="text ng-scope ng-hide" translate="" translate-values=""></p>
+
+        <!-- Current progress -->
+        <div class="progress ng-hide" ng-show="notification.progress"><div class="bar ng-hide" ng-show="progressPercent" ng-style="{&#39;width&#39;: progressPercent + &#39;%&#39;}"></div><div ng-show="notification.progress.text" translate="" translate-values="{PROGRESS: notification.progress.value, UNIT: notification.progress.unit}" class="ng-scope ng-hide"></div></div>
+
+        <!-- Default action countdown text -->
+        <p class="countdown-text ng-scope ng-hide" ng-show="notification.countdown.text" translate="" translate-values="{REMAINING: timeRemaining}"></p>
+
+    </div>
+
+    <!-- Buttons -->
+    <div ng-show="notification.actions.length" class="buttons ng-hide">
+        <!-- ngRepeat: action in notification.actions -->
+    </div>
+
+</div>
+                </div>
+            </div>
+
+            <!-- ngView:  --><div id="content" ng-view="" class="ng-scope">
+<guac-viewport class="ng-scope ng-isolate-scope"><div class="viewport" ng-transclude="" style="height: 100%;">
+
+    <!-- Client view -->
+    <div class="client-view ng-scope">
+        <div class="client-view-content">
+
+            <!-- Central portion of view -->
+            <div class="client-body" guac-touch-drag="clientDrag" guac-touch-pinch="clientPinch">
+
+                <!-- Client -->
+                <div class="main ng-isolate-scope" guac-resize="mainElementResized" client="client" style="overflow: hidden;"><object class="resize-sensor" type="text/html" data="./blank(1).html"></object>
+
+    <!-- Display -->
+    <div class="displayOuter">
+
+        <div class="displayMiddle">
+            <div class="display software-cursor" style="cursor: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAAGNJREFUKFON0tsOwCAIA1D6/x/NUuMIYmHzxURPvBTg7m5mBgCcuwFCGvoJB+RJEz7ghC/YYQkVbmHFI8z4EwZ+c6xB7zrEsspxbdZMr8rkGzJeMNe6haoJFJYd8xvuzxxPegCXZHgJiRuQCgAAAABJRU5ErkJggg==&quot;) 1 1, auto;"><div style="position: relative; width: 377px; height: 212.062px;"><div style="position: relative; width: 1600px; height: 900px; transform-origin: 0px 0px; transform: scale(0.235625, 0.235625);"><div style="width: 1600px; height: 900px; position: absolute; left: 0px; top: 0px; overflow: hidden;"><canvas width="1600" height="960" style="z-index: -1; position: absolute; left: 0px; top: 0px;"></canvas></div><div style="width: 10px; height: 16px; position: absolute; left: 0px; top: 0px; overflow: hidden; transform: translate(-1px, -1px) matrix(1, 0, 0, 1, 0, 0);"><canvas width="64" height="64" style="z-index: -1; position: absolute; left: 0px; top: 0px;"></canvas></div></div></div></div>
+        </div>
+
+    </div>
+
+</div>
+
+            </div>
+
+            <!-- Bottom portion of view -->
+            <div class="client-bottom">
+
+                <!-- Text input -->
+                <div class="text-input-container ng-hide" ng-show="showTextInput">
+                    <div class="text-input ng-isolate-scope" needs-focus="showTextInput">
+
+    <!-- Text input target -->
+    <div class="text-input-field"><div class="sent-history"><!-- ngRepeat: text in sentText track by $index --></div><textarea rows="1" class="target" autocorrect="off" autocapitalize="off"></textarea></div><div class="text-input-buttons"><button class="key ng-binding ng-isolate-scope sticky" ng-click="updateKey()" ng-class="{pressed: pressed, sticky: sticky}" keysym="65507" sticky="true" text="&#39;CLIENT.NAME_KEY_CTRL&#39;" pressed="ctrlPressed">
+
+    Ctrl
+</button><button class="key ng-binding ng-isolate-scope sticky" ng-click="updateKey()" ng-class="{pressed: pressed, sticky: sticky}" keysym="65513" sticky="true" text="&#39;CLIENT.NAME_KEY_ALT&#39;" pressed="altPressed">
+
+    Alt
+</button><button class="key ng-binding ng-isolate-scope" ng-click="updateKey()" ng-class="{pressed: pressed, sticky: sticky}" keysym="65307" text="&#39;CLIENT.NAME_KEY_ESC&#39;">
+
+    Esc
+</button><button class="key ng-binding ng-isolate-scope" ng-click="updateKey()" ng-class="{pressed: pressed, sticky: sticky}" keysym="65289" text="&#39;CLIENT.NAME_KEY_TAB&#39;">
+
+    Tab
+</button></div>
+
+</div>
+                </div>
+
+                <!-- On-screen keyboard -->
+                <div class="keyboard-container ng-hide" ng-show="showOSK">
+                    <div class="osk ng-isolate-scope" guac-resize="keyboardResized" layout="&#39;CLIENT.URL_OSK_LAYOUT&#39; | translate"><object class="resize-sensor" type="text/html" data="./blank.html"></object>
+<div class="guac-keyboard"><div class="guac-keyboard-group"><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-esc"><div class="guac-keyboard-cap">Esc</div></div></div><div class="guac-keyboard-gap" style="width: 0px; height: 0px;"></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f1"><div class="guac-keyboard-cap">F1</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f2"><div class="guac-keyboard-cap">F2</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f3"><div class="guac-keyboard-cap">F3</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f4"><div class="guac-keyboard-cap">F4</div></div></div><div class="guac-keyboard-gap" style="width: 0px; height: 0px;"></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f5"><div class="guac-keyboard-cap">F5</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f6"><div class="guac-keyboard-cap">F6</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f7"><div class="guac-keyboard-cap">F7</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f8"><div class="guac-keyboard-cap">F8</div></div></div><div class="guac-keyboard-gap" style="width: 0px; height: 0px;"></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f9"><div class="guac-keyboard-cap">F9</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f10"><div class="guac-keyboard-cap">F10</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f11"><div class="guac-keyboard-cap">F11</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-f12"><div class="guac-keyboard-cap">F12</div></div></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-gap" style="width: 0px; height: 0px;"></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-main guac-keyboard-group"><div class="guac-keyboard-alpha guac-keyboard-group"><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x60 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">`</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">~</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x31 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">1</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">!</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x32 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">2</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">@</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x33 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">3</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">#</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x34 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">4</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">$</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x35 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">5</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">%</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x36 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">6</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">^</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x37 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">7</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">&amp;</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x38 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">8</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">*</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x39 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">9</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">(</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x30 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">0</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">)</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x2d guac-keyboard-uses-shift"><div class="guac-keyboard-cap">-</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">_</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x3d guac-keyboard-uses-shift"><div class="guac-keyboard-cap">=</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">+</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-back"><div class="guac-keyboard-cap">Back</div></div></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-tab"><div class="guac-keyboard-cap">Tab</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x71 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">q</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">Q</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">Q</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">q</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x77 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">w</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">W</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">W</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">w</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x65 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">e</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">E</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">E</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">e</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x72 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">r</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">R</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">R</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">r</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x74 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">t</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">T</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">T</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">t</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x79 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">y</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">Y</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">Y</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">y</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x75 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">u</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">U</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">U</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">u</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x69 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">i</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">I</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">I</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">i</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x6f guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">o</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">O</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">O</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">o</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x70 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">p</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">P</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">P</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">p</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x5b guac-keyboard-uses-shift"><div class="guac-keyboard-cap">[</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">{</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x5d guac-keyboard-uses-shift"><div class="guac-keyboard-cap">]</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">}</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x5c guac-keyboard-uses-shift"><div class="guac-keyboard-cap">\</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">|</div></div></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-caps"><div class="guac-keyboard-cap">Caps</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x61 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">a</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">A</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">A</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">a</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x73 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">s</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">S</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">S</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">s</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x64 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">d</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">D</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">D</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">d</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x66 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">f</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">F</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">F</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">f</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x67 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">g</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">G</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">G</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">g</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x68 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">h</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">H</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">H</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">h</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x6a guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">j</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">J</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">J</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">j</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x6b guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">k</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">K</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">K</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">k</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x6c guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">l</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">L</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">L</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">l</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x3b guac-keyboard-uses-shift"><div class="guac-keyboard-cap">;</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">:</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x27 guac-keyboard-uses-shift"><div class="guac-keyboard-cap">'</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">"</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-enter"><div class="guac-keyboard-cap">Enter</div></div></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-lshift"><div class="guac-keyboard-cap">Shift</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x7a guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">z</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">Z</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">Z</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">z</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x78 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">x</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">X</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">X</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">x</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x63 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">c</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">C</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">C</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">c</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x76 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">v</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">V</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">V</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">v</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x62 guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">b</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">B</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">B</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">b</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x6e guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">n</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">N</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">N</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">n</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x6d guac-keyboard-uses-caps guac-keyboard-uses-shift"><div class="guac-keyboard-cap">m</div><div class="guac-keyboard-cap guac-keyboard-requires-caps">M</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">M</div><div class="guac-keyboard-cap guac-keyboard-requires-caps guac-keyboard-requires-shift">m</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x2c guac-keyboard-uses-shift"><div class="guac-keyboard-cap">,</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">&lt;</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x2e guac-keyboard-uses-shift"><div class="guac-keyboard-cap">.</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">&gt;</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-0x2f guac-keyboard-uses-shift"><div class="guac-keyboard-cap">/</div><div class="guac-keyboard-cap guac-keyboard-requires-shift">?</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-rshift"><div class="guac-keyboard-cap">Shift</div></div></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-lctrl"><div class="guac-keyboard-cap">Ctrl</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-super"><div class="guac-keyboard-cap">Super</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-lalt"><div class="guac-keyboard-cap">Alt</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-space"><div class="guac-keyboard-cap"> </div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-ralt"><div class="guac-keyboard-cap">Alt</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-menu"><div class="guac-keyboard-cap">Menu</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-rctrl"><div class="guac-keyboard-cap">Ctrl</div></div></div></div></div><div class="guac-keyboard-movement guac-keyboard-group"><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-ins"><div class="guac-keyboard-cap">Ins</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-home"><div class="guac-keyboard-cap">Home</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-pg-up"><div class="guac-keyboard-cap">PgUp</div></div></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-del"><div class="guac-keyboard-cap">Del</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-end"><div class="guac-keyboard-cap">End</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-pg-dn"><div class="guac-keyboard-cap">PgDn</div></div></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-gap" style="width: 0px; height: 0px;"></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-up"><div class="guac-keyboard-cap">↑</div></div></div></div><div class="guac-keyboard-group"><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-left"><div class="guac-keyboard-cap">←</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-down"><div class="guac-keyboard-cap">↓</div></div></div><div class="guac-keyboard-key-container" style="width: 0px; height: 0px; line-height: 0px; font-size: 0px;"><div class="guac-keyboard-key guac-keyboard-key-right"><div class="guac-keyboard-cap">→</div></div></div></div></div></div></div></div></div></div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- File transfers -->
+    <div id="file-transfer-dialog" ng-show="hasTransfers()" class="ng-scope ng-hide">
+        <div class="transfer-manager ng-isolate-scope" client="client">
+
+    <!-- File transfer manager header -->
+    <div class="header">
+        <h2 class="ng-binding">File Transfers</h2>
+        <button ng-click="clearCompletedTransfers()" class="ng-binding">Clear</button>
+    </div>
+
+    <!-- Sent/received files -->
+    <div class="transfer-manager-body">
+        <div class="transfers">
+            <!-- ngRepeat: upload in client.uploads --><!-- ngRepeat: download in client.downloads -->
+        </div>
+    </div>
+
+</div>
+    </div>
+
+    <!-- Menu -->
+    <div class="menu ng-scope" ng-class="{open: menu.shown}" id="guac-menu">
+        <div class="menu-content">
+
+            <!-- Stationary header -->
+            <div class="header">
+                <h2 class="ng-binding">gzclient</h2>
+                <div class="share-menu ng-hide" ng-show="canShareConnection()">
+                    <div class="menu-dropdown ng-isolate-scope" ng-class="{open: menuShown}" ng-click="toggleMenu()" menu-title="&#39;CLIENT.ACTION_SHARE&#39; | translate">
+    <div class="menu-title ng-binding">Share</div>
+    <div class="menu-indicator"></div>
+
+    <!-- Menu contents -->
+    <div class="menu-contents" ng-transclude="">
+                        <!-- ngRepeat: sharingProfile in sharingProfiles -->
+                    </div>
+</div>
+                </div>
+                <div class="user-menu ng-isolate-scope" ng-show="!isAnonymous()" local-actions="clientMenuActions">
+    <div class="menu-dropdown ng-isolate-scope" ng-class="{open: menuShown}" ng-click="toggleMenu()" menu-title="username">
+    <div class="menu-title ng-binding">c4d2a06f-efd2-4e50-93f7-27b129db32a8</div>
+    <div class="menu-indicator"></div>
+
+    <!-- Menu contents -->
+    <div class="menu-contents" ng-transclude="">
+           
+        <!-- User profile view -->
+        <div class="profile ng-scope ng-hide" ng-show="fullName">
+            <div class="full-name"><a ng-href="" class="ng-binding"></a></div>
+            <div class="organizational-role ng-binding ng-hide" ng-show="role"></div>
+            <div class="organization ng-binding ng-hide" ng-show="organization"></div>
+        </div>
+
+        <!-- Local actions -->
+        <ul class="action-list ng-scope">
+            <!-- ngRepeat: action in localActions --><li ng-repeat="action in localActions" class="ng-scope">
+                <a ng-class="action.className" ng-click="action.callback()" class="ng-binding danger disconnect">
+                    Disconnect
+                </a>
+            </li><!-- end ngRepeat: action in localActions -->
+        </ul>
+
+        <!-- Navigation links -->
+        <div class="page-list ng-scope ng-isolate-scope" ng-show="levels.length" pages="pages">
+
+    <!-- Navigation links -->
+    <!-- ngRepeat: level in levels track by $index --><ul class="page-list-level ng-scope" ng-repeat="level in levels track by $index">
+        <!-- ngRepeat: page in getPages(level) --><li ng-repeat="page in getPages(level)" class="">
+            <a class="home ng-binding" ng-click="navigateToPage(page)" ng-class="{current: isCurrentPage(page)}" href="https://i-04da5e5fe67cd26c0.robotigniteacademy.com/b0958d4f-635f-4a0f-85ed-59524947ff23/desktop_/#/">
+                Home
+            </a>
+        </li><!-- end ngRepeat: page in getPages(level) --><li ng-repeat="page in getPages(level)" class="">
+            <a class="home ng-binding" ng-click="navigateToPage(page)" ng-class="{current: isCurrentPage(page)}" href="https://i-04da5e5fe67cd26c0.robotigniteacademy.com/b0958d4f-635f-4a0f-85ed-59524947ff23/desktop_/#/settings/preferences">
+                Settings
+            </a>
+        </li><!-- end ngRepeat: page in getPages(level) -->
+    </ul><!-- end ngRepeat: level in levels track by $index -->
+
+</div>
+
+        <!-- Actions -->
+        <ul class="action-list ng-scope">
+            <!-- ngRepeat: action in actions --><li ng-repeat="action in actions" class="ng-scope">
+                <a ng-class="action.className" ng-click="action.callback()" class="ng-binding logout">
+                    Logout
+                </a>
+            </li><!-- end ngRepeat: action in actions -->
+        </ul>
+
+    </div>
+</div>
+</div>
+            </div>
+
+            <!-- Scrollable body -->
+            <div class="menu-body" guac-touch-drag="menuDrag" guac-scroll="menu.scrollState">
+
+                <!-- Connection sharing -->
+                <div class="menu-section ng-hide" id="share-links" ng-show="isShared()">
+                    <div class="content">
+                        <h3 class="ng-binding">This connection is now shared.</h3>
+                        <p class="description ng-scope" translate="CLIENT.HELP_SHARE_LINK" translate-values="{LINKS : getShareLinkCount()}">The current connection is being shared, and can be accessed by anyone with the following links:</p>
+                        <table>
+                            <tbody><!-- ngRepeat: link in client.shareLinks | orderBy: name -->
+                        </tbody></table>
+                    </div>
+                </div>
+
+                <!-- Clipboard -->
+                <div class="menu-section" id="clipboard-settings">
+                    <h3 class="ng-binding">Clipboard</h3>
+                    <div class="content">
+                        <p class="description ng-binding">Text copied/cut within Guacamole will appear here. Changes to the text below will affect the remote clipboard.</p>
+                        <textarea class="clipboard ng-isolate-scope" data="client.clipboardData"></textarea>
+                    </div>
+                </div>
+
+                <!-- Devices -->
+                <div class="menu-section ng-hide" id="devices" ng-show="client.filesystems.length">
+                    <h3 class="ng-binding">Devices</h3>
+                    <div class="content">
+                        <!-- ngRepeat: filesystem in client.filesystems -->
+                    </div>
+                </div>
+
+                <!-- Input method -->
+                <div class="menu-section" id="keyboard-settings">
+                    <h3 class="ng-binding">Input method</h3>
+                    <div class="content">
+
+                        <!-- No IME -->
+                        <div class="choice">
+                            <label class="ng-binding"><input id="ime-none" name="input-method" ng-change="closeMenu()" ng-model="menu.inputMethod" type="radio" value="none" class="ng-pristine ng-untouched ng-valid"> None</label>
+                            <p class="caption"><label for="ime-none" class="ng-binding">No input method is used. Keyboard input is accepted from a connected, physical keyboard.</label></p>
+                        </div>
+
+                        <!-- Text input -->
+                        <div class="choice">
+                            <div class="figure"><label for="ime-text"><img src="./tablet-keys.png" alt=""></label></div>
+                            <label class="ng-binding"><input id="ime-text" name="input-method" ng-change="closeMenu()" ng-model="menu.inputMethod" type="radio" value="text" class="ng-pristine ng-untouched ng-valid"> Text input</label>
+                            <p class="caption"><label for="ime-text" class="ng-binding">Allow typing of text, and emulate keyboard events based on the typed text. This is necessary for devices such as mobile phones that lack a physical keyboard. </label></p>
+                        </div>
+
+                        <!-- Guac OSK -->
+                        <div class="choice">
+                            <label class="ng-binding"><input id="ime-osk" name="input-method" ng-change="closeMenu()" ng-model="menu.inputMethod" type="radio" value="osk" class="ng-pristine ng-untouched ng-valid"> On-screen keyboard</label>
+                            <p class="caption"><label for="ime-osk" class="ng-binding">Display and accept input from the built-in Guacamole on-screen keyboard. The on-screen keyboard allows typing of key combinations that may otherwise be impossible (such as Ctrl-Alt-Del).</label></p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Mouse mode -->
+                <div class="menu-section" id="mouse-settings">
+                    <h3 class="ng-binding">Mouse emulation mode</h3>
+                    <div class="content">
+                        <p class="description ng-binding">Determines how the remote mouse behaves with respect to touches.</p>
+
+                        <!-- Touchscreen -->
+                        <div class="choice">
+                            <input name="mouse-mode" ng-change="closeMenu()" ng-model="client.clientProperties.emulateAbsoluteMouse" type="radio" ng-value="true" checked="checked" id="absolute" class="ng-pristine ng-untouched ng-valid" value="true">
+                            <div class="figure">
+                                <label for="absolute"><img src="./touchscreen.png" alt="Touchscreen"></label>
+                                <p class="caption"><label for="absolute" class="ng-binding">Tap to click. The click occurs at the location of the touch.</label></p>
+                            </div>
+                        </div>
+
+                        <!-- Touchpad -->
+                        <div class="choice">
+                            <input name="mouse-mode" ng-change="closeMenu()" ng-model="client.clientProperties.emulateAbsoluteMouse" type="radio" ng-value="false" id="relative" class="ng-pristine ng-untouched ng-valid" value="false">
+                            <div class="figure">
+                                <label for="relative"><img src="./touchpad.png" alt="Touchpad"></label>
+                                <p class="caption"><label for="relative" class="ng-binding">Drag to move the mouse pointer and tap to click. The click occurs at the location of the pointer.</label></p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Display options -->
+                <div class="menu-section" id="display-settings">
+                    <h3 class="ng-binding">Display</h3>
+                    <div class="content">
+                        <div id="zoom-settings">
+                            <div ng-click="zoomOut()" id="zoom-out"><img src="./zoom-out.png" alt="-"></div>
+                            <div id="zoom-state" class="ng-binding">24%</div>
+                            <div ng-click="zoomIn()" id="zoom-in"><img src="./zoom-in.png" alt="+"></div>
+                        </div>
+                        <div><label class="ng-binding"><input ng-model="menu.autoFit" ng-change="changeAutoFit()" ng-disabled="autoFitDisabled()" type="checkbox" id="auto-fit" class="ng-pristine ng-untouched ng-valid"> Automatically fit to browser window</label></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Filesystem menu -->
+    <div id="filesystem-menu" class="menu ng-scope" ng-class="{open: isFilesystemMenuShown()}">
+        <div class="menu-content">
+
+            <!-- Stationary header -->
+            <div class="header">
+                <h2 class="ng-binding"></h2>
+                <button class="upload button ng-binding" guac-upload="uploadFiles">Upload Files</button>
+                <button class="back ng-binding" ng-click="hideFilesystemMenu()">Back</button>
+            </div>
+
+            <!-- Breadcrumbs -->
+            <div class="header breadcrumbs"><div class="breadcrumb root" ng-click="changeDirectory(filesystemMenuContents, filesystemMenuContents.root)"></div><!-- ngRepeat: file in getPath(filesystemMenuContents.currentDirectory) -->
+            </div>
+
+            <!-- Scrollable body -->
+            <div class="menu-body">
+                <div class="file-browser ng-isolate-scope" client="client" filesystem="filesystemMenuContents">
+
+    <!-- Current directory contents -->
+    <div class="current-directory-contents"></div>
+
+</div>
+            </div>
+
+        </div>
+    </div>
+
+</div></guac-viewport></div>
+
+        </div><!-- end ngIf: !expectedCredentials -->
+
+        <!-- Login screen for logged-out users -->
+        <div class="login-ui ng-isolate-scope initial ng-hide" ng-class="{error: loginError, continuation: isContinuation(), initial: !isContinuation()}" ng-show="expectedCredentials" help-text="loginHelpText" form="expectedCredentials" values="acceptedCredentials">
+
+    <!-- Login error message -->
+    <p class="login-error ng-scope" translate="" translate-values=""></p>
+
+    <div class="login-dialog-middle">
+
+        <div class="login-dialog">
+
+            <form class="login-form ng-pristine ng-valid" ng-submit="login()">
+
+                <!-- Guacamole version -->
+                <div class="logo"></div>
+                <div class="version">
+                    <div class="app-name ng-binding">Apache Guacamole</div>
+                    <div class="version-number ng-binding">0.9.14</div>
+                </div>
+
+                <!-- Login message/instructions -->
+                <p ng-show="helpText" translate="" translate-values="" class="ng-scope ng-hide"></p>
+
+                <!-- Login fields -->
+                <div class="login-fields">
+                    <div class="form-group ng-isolate-scope" namespace="&#39;LOGIN&#39;" content="remainingFields" model="enteredValues">
+    <!-- ngRepeat: form in forms -->
+</div>
+                </div>
+
+                <!-- Submit button -->
+                <div class="buttons">
+                    <input type="submit" name="login" class="login" value="Login">
+                    <input type="submit" name="login" class="continue-login" value="Continue">
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+        <!-- Reformat URL for AngularJS if query parameters are present -->
+        <script type="text/javascript" src="./relocateParameters.js"></script>
+
+        <!-- Utility libraries -->
+        <script type="text/javascript" src="./jquery.min.js"></script>
+        <script type="text/javascript" src="./lodash.min.js"></script>
+
+        <!-- AngularJS -->
+        <script type="text/javascript" src="./angular.min.js"></script>
+        <script type="text/javascript" src="./angular-cookies.min.js"></script>
+        <script type="text/javascript" src="./angular-route.min.js"></script>
+        <script type="text/javascript" src="./angular-touch.min.js"></script>
+
+        <!-- Internationalization -->
+        <script type="text/javascript" src="./messageformat.min.js"></script>
+        <script type="text/javascript" src="./angular-translate.min.js"></script>
+        <script type="text/javascript" src="./angular-translate-interpolation-messageformat.min.js"></script>
+        <script type="text/javascript" src="./angular-translate-loader-static-files.min.js"></script>
+
+        <!-- Polyfills for Blob and the FileSaver API -->
+        <script type="text/javascript" src="./Blob.js"></script>
+        <script type="text/javascript" src="./FileSaver.min.js"></script>
+
+        <!-- Allow arbitrary ordering of Angular module creation and retrieval -->
+        <script type="text/javascript" src="./angular-module-shim.js"></script>
+
+        <!-- Web application -->
+        <script type="text/javascript" src="./app.js"></script>
+
+                <script type="text/javascript">
+          //<![CDATA[
+          function recieveMessage(event) {
+            let data = event.data
+            if (data.event_id != "statusCheck") {
+              console.log("not a statusCheck");
+              return
+            }
+            const elm = document.getElementById("assessment-status-data")
+            let status = elm.getAttribute("data-status")
+            let event_id = data.event_id
+            let instance_id = data.instance_id
+
+            console.log("EventID:    ", event_id);
+            console.log("Instance ID:", instance_id);
+            console.log("Status:     ", status);
+            console.log("Post message to parent window");
+            window.parent.postMessage({
+              event_id: 'status',
+              value: status,
+              instance_id: instance_id,
+            }, "*")
+          }
+          window.addEventListener("message", recieveMessage, false);
+
+
+
+          //]]>
+        </script>
+        <script>
+            // The Construct (Issue 977)
+            // Setting viewport height to 100% (Quillbot-related)
+            function fixViweportSize() {
+                const viewport = document.querySelector("#content .viewport");
+                if (viewport) {
+                    const height = viewport.style.height;
+                    if (height !== "100%") {
+                        viewport.style.height = "100%";
+                        console.log("🔵 Set viewport from '", height, "' to 100% at", new Date().toLocaleTimeString(), "🔵");
+                    }
+                }
+            }
+            document.addEventListener("DOMContentLoaded", function () {
+                fixViweportSize()
+
+                setInterval(function () {
+                    fixViweportSize()
+                }, 7000);
+            });
+
+        </script>
+        <div id="assessment-status-data" data-status="loaded">
+
+    
+
+</div><textarea class="clipboard-service-target"></textarea></body></html>
