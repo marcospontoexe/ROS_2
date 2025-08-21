@@ -1,4 +1,37 @@
 # Launch
+No ROS 2, os arquivos de inicialização podem ser criados usando diferentes formatos, incluindo **Python, XML e YAML**. Embora o Python seja comumente usado por sua flexibilidade, XML e YAML oferecem alternativas mais estruturadas e declarativas, tornando os arquivos de inicialização mais fáceis de ler e compartilhar.
+
+Observe que TODOS eles serão iniciados da MESMA MANEIRA.
+
+Por exemplo, a maneira de iniciar um programa ROS para qualquer tipo de arquivo de inicialização é:
+* `ros2 launch <package_name> <launch_file_name>`
+* `ros2 launch <path_to_launch_file>`
+
+Se você quiser passar um argumento para um arquivo de inicialização (todos os formatos):
+* `ros2 launch <package_name> <launch_file_name> argument1:=WHATEVER_VALUE`
+* `ros2 launch <path_to_launch_file> argument2:=WHATEVER_VALUE`
+
+**Nota**: lembre-se de que para iniciar nós com ros2, a passagem de parâmetros é um pouco diferente:
+* `ros2 run <package_name> <executable_name> --ros-args argument1:=WHATEVER_VALUE`
+
+Se você quiser obter os argumentos que podem ser fornecidos a um arquivo de inicialização (todos os formatos):
+* `ros2 launch <package_name> <launch_file_name> --show-args`
+* `ros2 run <package_name> <executable_name> --ros-args argument1:=WHATEVER_VALUE`
+
+# arquivos de launch usando python
+[Veja nesse exemplo]() um launch usando python.
+
+Alguns pontos a serem comentados:
+* TextSubstitution(text="0.2"): O que é este TextSubstitution? Este método tem duas funções:
+    * A primeira é que todas essas **launch.substitutions** são projetadas para NÃO avaliar os valores até que você execute o programa.
+    * Em teoria, isso permite uma melhor concatenação de literais no Python 2 e Python 3.
+    * Na realidade, você provavelmente não o usará muito e, em vez disso, usará uma string diretamente.
+
+```python
+turning_speed_f = LaunchConfiguration('turning_speed')
+```
+
+
 
 ## LogInfo
 O que é **launch.actions.LogInfo()** ?
@@ -133,7 +166,7 @@ def generate_launch_description():
     ])
 ```
 
-[No node]() observe que passamos os argumentos para o construtor da classe:
+[No node (**move_robot_node**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/launch_tests_pkg/src/move_robot.cpp) observe que passamos os argumentos para o construtor da classe:
 
 ```cpp
 DummyArgumetsExample(int &argc, char **argv)
@@ -191,5 +224,3 @@ ros2 launch launch_args_example_pkg start_with_arguments.launch.py msg_A:="Sith"
 [arguments_examples_demo-1] [INFO] [1680042762.572280166] [dummy_arguments_example]: --- Jedi ---
 [arguments_examples_demo-1] [INFO] [1680042763.572246556] [dummy_arguments_example]: --- Sith ---
 ```
-
-# Arquivos de inicialização XML e YAML
