@@ -141,3 +141,55 @@ DummyArgumetsExample(int &argc, char **argv)
 
 Obtemos os argumentos dentro do construtor da classe:
 
+```cpp
+message1 = argv[2];
+message2 = argv[3];
+timer_period = argv[5];
+```
+
+Observe como convertemos o argumento timer_period para o tipo std::chrono::duration, que é exigido pelo método create_wall_timer.
+
+```cpp
+timer_period = argv[5];
+float tp1 = std::stof(timer_period);
+auto tp2 = std::chrono::duration<double>(tp1);
+
+timer_ = this->create_wall_timer(
+    tp2, std::bind(&DummyArgumetsExample::timer_callback, this));
+```
+
+Ao executar a launch com o comando `ros2 launch launch_args_example_pkg start_with_arguments.launch.py timer_period:=0.5` sera exibido:
+
+```shel
+user:~/ros2_ws$ ros2 launch launch_args_example_pkg start_with_arguments.launch.py timer_period:=0.5
+[INFO] [launch]: All log files can be found below /home/user/.ros/log/2025-08-20-20-55-36-581281-1_xterm-9514
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: Tick
+[INFO] [launch.user]: Tack
+[INFO] [launch.user]: 0.5
+[INFO] [arguments_examples_demo-1]: process started with pid [9524]
+[arguments_examples_demo-1] [INFO] [1755723337.325793230] [dummy_arguments_example]: --- Tick ---
+[arguments_examples_demo-1] [INFO] [1755723337.825862063] [dummy_arguments_example]: --- Tack ---
+[arguments_examples_demo-1] [INFO] [1755723338.325762353] [dummy_arguments_example]: --- Tick ---
+[arguments_examples_demo-1] [INFO] [1755723338.825801782] [dummy_arguments_example]: --- Tack ---
+[arguments_examples_demo-1] [INFO] [1755723339.325830814] [dummy_arguments_example]: --- Tick ---
+```
+
+Ao executar a launch com o comando `ros2 launch launch_args_example_pkg start_with_arguments.launch.py msg_A:="Sith" msg_B:="Jedi" timer_period:=1.0` sera exibido:
+
+```shell
+ros2 launch launch_args_example_pkg start_with_arguments.launch.py msg_A:="Sith" msg_B:="Jedi" timer_period:=1.0
+[INFO] [launch]: All log files can be found below /home/user/.ros/log/2023-03-28-22-32-38-417407-1_xterm-27177
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: Sith
+[INFO] [launch.user]: Jedi
+[INFO] [launch.user]: 1.0
+[INFO] [arguments_examples_demo-1]: process started with pid [27179]
+[arguments_examples_demo-1] [INFO] [1680042759.572392362] [dummy_arguments_example]: --- Sith ---
+[arguments_examples_demo-1] [INFO] [1680042760.572349491] [dummy_arguments_example]: --- Jedi ---
+[arguments_examples_demo-1] [INFO] [1680042761.572317100] [dummy_arguments_example]: --- Sith ---
+[arguments_examples_demo-1] [INFO] [1680042762.572280166] [dummy_arguments_example]: --- Jedi ---
+[arguments_examples_demo-1] [INFO] [1680042763.572246556] [dummy_arguments_example]: --- Sith ---
+```
+
+# Arquivos de inicialização XML e YAML
