@@ -18,8 +18,10 @@ Se você quiser obter os argumentos que podem ser fornecidos a um arquivo de ini
 * `ros2 launch <package_name> <launch_file_name> --show-args`
 * `ros2 run <package_name> <executable_name> --ros-args argument1:=WHATEVER_VALUE`
 
-# arquivos de launch usando python
-[Veja nesse exemplo]() um launch usando python.
+## arquivos de launch usando python
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/launch_tests_pkg/launch/python_main.launch.py) a launch **python_main.launch.py** usando python.
+
+Ao executar o comando `ros2 launch launch_tests_pkg python_main.launch.py turning_speed:=6.0 forward_speed:=0.2`. Você deve fazer com que o robô comece a se mover para frente e girar em pequenos intervalos, com a velocidade de giro e avanço definida por você nesta execução de linha de comando.
 
 Alguns pontos a serem comentados:
 * TextSubstitution(text="0.2"): O que é este TextSubstitution? Este método tem duas funções:
@@ -55,6 +57,56 @@ No entanto, FindPackageShare é oficialmente recomendado pela API ROS.
 ```python
 launch_arguments={'rviz_config_file_name': rviz_config_file_name_f}.items()
 ```
+
+Os argumentos de inicialização são passados ​​assim. Observe que você sempre precisa passar uma versão em lista do dicionário. É por isso que você usa o método items().
+
+```python
+GroupAction(
+    actions=[
+        # push-ros-namespace to set namespace of included nodes
+        PushRosNamespace(custom_namespace_f),
+```
+
+Ao usar esta ação de grupo, basicamente, você pode, dentro desta matriz, colocar inclusões para iniciar arquivos, outras ações como executar comandos ou, neste caso, definir um namespace para todos os nós internos.
+        
+## Arquivos de launch usando XML
+Veja a baixo a mesma execução da launch **python_main.launch.py**, porém usando XML.
+
+```xml
+<launch>
+
+    <arg name="turning_speed" default="0.0"/>
+    <arg name="forward_speed" default="0.0"/>
+    <arg name="rviz_config_file_name" default="launch_part.rviz"/>
+    <arg name="custom_namespace" default="gypsi_danger"/>
+
+
+    <include file="$(find-pkg-share launch_tests_pkg)/launch/start_rviz_with_arguments.launch.py">
+        <arg name="rviz_config_file_name" value="$(var rviz_config_file_name)"/>
+    </include>
+
+
+  <group>
+    <push-ros-namespace namespace="$(var custom_namespace)"/>
+    <include file="$(find-pkg-share launch_tests_pkg)/launch/move_with_arguments.launch.xml">
+        <arg name="turning_speed" value="$(var turning_speed)"/>
+        <arg name="forward_speed" value="$(var forward_speed)"/>
+    </include>
+  </group>
+
+</launch>
+```
+
+A sintaxe é semelhante à que você encontrou no ROS1. No entanto, há algo diferente que vale a pena observar:
+
+args agora são acessados ​​usando a sintaxe:
+
+```xml
+$(var argument_name)
+```
+
+
+
 
 ## LogInfo
 O que é **launch.actions.LogInfo()** ?
