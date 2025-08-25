@@ -31,7 +31,30 @@ Alguns pontos a serem comentados:
 turning_speed_f = LaunchConfiguration('turning_speed')
 ```
 
+* O LaunchConfiguration() criará este objeto chamado turning_speed_f, que representa o valor futuro daquele argumento. Isso significa que você não pode usá-lo com operações padrão do Python. Sempre use estes sistemas de substituição.
 
+
+```python
+PathJoinSubstitution([
+    FindPackageShare(package_description),
+    'launch',
+    'start_rviz_with_arguments.launch.py'
+])
+```
+
+* Você fez isso da maneira padrão do Python antes:
+
+```python
+PythonLaunchDescriptionSource(
+    os.path.join(pkg_box_bot_gazebo, 'launch', 'start_rviz.launch.py'),
+)
+```
+
+No entanto, FindPackageShare é oficialmente recomendado pela API ROS.
+
+```python
+launch_arguments={'rviz_config_file_name': rviz_config_file_name_f}.items()
+```
 
 ## LogInfo
 O que é **launch.actions.LogInfo()** ?
