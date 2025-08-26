@@ -154,11 +154,6 @@ Veja a [**move_with_arguments.launch.yaml**](https://github.com/marcospontoexe/R
 
 Execute com o comando `ros2 launch launch_tests_pkg yaml_main.launch.yaml turning_speed:=1.0 forward_speed:=1.0 rviz_config_file_name:=launch_part_2.rviz`.
 
-
-
-
-
-
 ## LogInfo
 O que é **launch.actions.LogInfo()** ?
 
@@ -350,3 +345,226 @@ ros2 launch launch_args_example_pkg start_with_arguments.launch.py msg_A:="Sith"
 [arguments_examples_demo-1] [INFO] [1680042762.572280166] [dummy_arguments_example]: --- Jedi ---
 [arguments_examples_demo-1] [INFO] [1680042763.572246556] [dummy_arguments_example]: --- Sith ---
 ```
+
+# Parametros de nodes
+No ROS 2, os parâmetros fornecem uma maneira de configurar e personalizar nós em tempo de execução, tornando seus robôs mais flexíveis e adaptáveis ​​a diferentes ambientes e tarefas. Os parâmetros permitem definir valores para variáveis ​​que podem afetar o comportamento dos nós sem a necessidade de modificar o código em si. Isso facilita a adaptação a mudanças nas condições, o ajuste do comportamento dos robôs ou o ajuste de configurações em diferentes sistemas.
+
+Nesta unidade, você aprenderá a trabalhar com parâmetros no ROS 2, incluindo como definir, configurar, obter e atualizar parâmetros em seus nós. Você também explorará os diferentes tipos de parâmetros, seu uso e como eles ajudam a criar aplicações robóticas mais dinâmicas e reutilizáveis.
+
+Ao final desta unidade, você poderá trabalhar com parâmetros no ROS 2 com confiança para melhorar a flexibilidade e o desempenho do seu robô.
+
+**alguns comando uteis**:
+
+* Obter o valor de um parâmetro específico: `ros2 param get <node_name> <parameter_name>`
+* Defina o valor de um parâmetro específico: `ros2 param set <node_name> <parameter_name> <parameter_value>`
+* Generate a YAML file with the current parameters of a node: `ros2 param dump <node_name>`
+* Carregue os parâmetros de um arquivo YAML em um nó em execução: `ros2 param load <node_name> <parameter_file>`
+
+## Como os parâmetros funcionam no ROS 2?
+Parâmetros são valores usados ​​para configurar nós no ROS 2. Diferentemente do ROS 1, onde os parâmetros são compartilhados entre todos os nós por meio de um **roscore central**, no ROS 2 os parâmetros são específicos para cada nó individual. Essa é uma diferença fundamental que permite maior flexibilidade e modularidade na configuração de sistemas robóticos.
+
+No ROS 2, quando um nó é desligado, seus parâmetros associados também são apagados. Os parâmetros podem ser definidos no momento da inicialização do nó ou dinamicamente enquanto o nó está em execução, permitindo ajustes em tempo real no comportamento de um robô sem a necessidade de reiniciá-lo.
+
+Ao executar [este nó (**parameter_tests_node.cpp**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/parameter_tests/src/parameter_tests_node.cpp) com o comando: `ros2 run parameter_tests param_vel_node`.
+
+Será exibido: 
+
+```shell
+[INFO] [1645178156.488937533] [param_vel_node]: Velocity parameter is: 0.000000
+[INFO] [1645178158.454250656] [param_vel_node]: Velocity parameter is: 0.000000
+[INFO] [1645178160.454262152] [param_vel_node]: Velocity parameter is: 0.000000
+        
+...
+```
+
+Parece que seu nó contém um parâmetro para configurar a velocidade.
+
+Vamos analisar o código:
+
+```cpp
+VelParam()
+  : Node("param_vel_node")
+{
+  auto param_desc = rcl_interfaces::msg::ParameterDescriptor{};
+  param_desc.description = "Sets the velocity (in m/s) of the robot.";
+  this->declare_parameter<std::double_t>("velocity", 0.0, param_desc);
+  timer_ = this->create_wall_timer(
+  1000ms, std::bind(&VelParam::timer_callback, this));
+  publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+}
+```
+
+A primeira coisa a fazer é definir um **ParameterDescriptor** para fornecer alguns dados extras sobre ele.
+
+```cpp
+auto param_desc = rcl_interfaces::msg::ParameterDescriptor{};
+param_desc.description = "Sets the velocity (in m/s) of the robot.";
+```
+
+Não é obrigatório criar um descritor para seus parâmetros. No entanto, é sempre útil fornecer dados sobre eles, especialmente para nós complexos com muitos parâmetros.
+
+Em seguida, declare seu parâmetro e forneça:
+
+* O nome do parâmetro: velocidade
+* Um valor padrão para o parâmetro: 0,0.
+* O descritor de parâmetro criado anteriormente
+
+```cpp
+this->declare_parameter<std::double_t>("velocity", 0.0, param_desc);
+```
+
+Em seguida, crie um objeto timer. Este objeto timer é anexado a um **timer_callback** que será executado 1 vez por segundo:
+
+```cpp
+timer_ = this->create_wall_timer(1000ms, std::bind(&VelParam::timer_callback, this));
+```
+
+Por fim, crie um objeto publicador para publicar mensagens no tópico **/cmd_vel** para mover o robô:
+
+```cpp
+publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+```
+
+Certo, você encontra o timer_callback:
+
+```cpp
+void timer_callback()
+{
+  this->get_parameter("velocity", vel_parameter_);
+  RCLCPP_INFO(this->get_logger(), "Velocity parameter is: %f", vel_parameter_);
+  auto message = geometry_msgs::msg::Twist();
+  message.linear.x = vel_parameter_;
+  publisher_->publish(message);
+}
+```
+
+A linha mais importante aqui é onde você obtém o valor deste parâmetro.
+
+```cpp
+this->get_parameter("velocity", vel_parameter_);
+```
+
+Em seguida, defina o valor do parâmetro como a velocidade do robô e envie esta mensagem ao robô:
+
+```cpp
+message.linear.x = vel_parameter_;
+publisher_->publish(message);
+```
+
+
+
+
+
+## Interaja com parâmetros das ferramentas de linha de comando
+Primeiro, obtenha uma lista de todos os parâmetros disponíveis atualmente com o comando `ros2 param list`:
+
+```shell
+...
+/param_vel_node:
+  qos_overrides./parameter_events.publisher.depth
+  qos_overrides./parameter_events.publisher.durability
+  qos_overrides./parameter_events.publisher.history
+  qos_overrides./parameter_events.publisher.reliability
+  use_sim_time
+  velocity
+        
+...
+```
+
+Como você pode ver, cada nó (gazebo, moving_service, param_vel_node...) contém seus próprios parâmetros. Se você pesquisá-los, encontrará o nó que você iniciou, param_vel_node, com um parâmetro chamado velocity.
+
+Também é possível listar os parâmetros de um nó específico `ros2 param list /param_vel_node`:
+
+```shell
+qos_overrides./parameter_events.publisher.depth
+qos_overrides./parameter_events.publisher.durability
+qos_overrides./parameter_events.publisher.history
+qos_overrides./parameter_events.publisher.reliability
+use_sim_time
+velocity
+```
+
+Cada nó possui o parâmetro **use_sim_time**. Ele é gerado automaticamente e usado para gerenciar o Tempo ROS: https://design.ros2.org/articles/clock_and_time.html
+
+Além disso, você pode ver um conjunto de parâmetros no namespace **qos_overrides**:
+
+```shell
+qos_overrides./parameter_events.publisher.depth
+qos_overrides./parameter_events.publisher.durability
+qos_overrides./parameter_events.publisher.history
+qos_overrides./parameter_events.publisher.reliability
+```
+
+Esses parâmetros definem as **configurações de QoS** do tópico **parameter_events**. Este tópico é usado para monitorar alterações de parâmetros. Esses parâmetros são **somente leitura, portanto, não podem ser alterados**.
+
+Agora obtenha mais dados sobre este parâmetro de velocidade: `ros2 param describe /param_vel_node velocity`
+
+```shell
+Parameter name: velocity
+  Type: double
+  Description: Sets the velocity (in m/s) of the robot.
+  Constraints:
+```
+
+Você pode ver que o parâmetro de velocidade usa um tipo double, que parece configurar a velocidade do robô. Legal!
+
+Você também pode obter o valor atual deste parâmetro de velocidade com o seguinte comando: `ros2 param get /param_vel_node velocity`
+
+Para ter acesso a um parâmetro, você deve primeiro especificar o nó ao qual ele pertence.
+
+```shell
+Double value is: 0.0
+```
+
+E se você quiser alterar o valor deste parâmetro?
+
+Você pode alterar o valor de um parâmetro em tempo de execução com o comando ros2 param set: `ros2 param set /param_vel_node velocity 0.1`
+
+Observe que se você usar o valor **inteiro** 0 : `ros2 param set /param_vel_node velocity 0`
+
+você obterá um erro como o abaixo:
+
+```shell
+Setting parameter failed: Wrong parameter type, parameter {velocity} is of type {double}, setting it to {integer} is not allowed.
+```
+
+## Carregando e despejando parâmetros de arquivos YAML
+Às vezes, é útil obter uma cópia dos parâmetros específicos do nó. Isso permite que você execute um nó com uma configuração específica quando necessário, por exemplo. Você pode fazer isso com o seguinte comando: `ros2 param dump /param_vel_node`
+
+Será exibido:
+```shell
+Saving to:  ./param_vel_node.yaml
+```
+
+Isso gerará um arquivo chamado param_vel_node.yaml no caminho onde você executa o comando com o seguinte conteúdo:
+
+```yaml
+/param_vel_node:
+  ros__parameters:
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    use_sim_time: false
+    velocity: 0.1
+```
+
+Como você pode ver, os parâmetros são armazenados no formato de arquivo YAML. É claro que carregar esse arquivo YAML em um nó em execução também é possível. 
+
+Observe que você removeu os parâmetros qos_overrides, pois eles são somente leitura e não podem ser modificados.
+
+Agora, carregue o arquivo YAML com o seguinte comando: `ros2 param load /param_vel_node param_vel_node.yaml`
+
+Também é possível carregar parâmetros de um arquivo ao iniciar um nó: `ros2 run parameter_tests param_vel_node --ros-args --params-file /home/user/param_vel_node.yaml`
+
+## Configurando parâmetros via linha de comando na inicialização do nó
+Por fim, também é possível definir parâmetros na linha de comando ao iniciar um nó: `ros2 run parameter_tests param_vel_node --ros-args -p velocity:=0.1`
+
+## Carregando parametros no arquivos launch
+Também é possível definir parâmetros a partir de um arquivo de inicialização. Nesse caso, os parâmetros serão definidos na inicialização, não na execução. Siga as instruções descritas abaixo para saber como.
+
+[Veja essa launch (**test_parameters.launch.py**)]() como exemplo.
+
