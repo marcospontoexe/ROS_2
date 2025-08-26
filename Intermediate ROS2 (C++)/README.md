@@ -566,5 +566,28 @@ Por fim, também é possível definir parâmetros na linha de comando ao iniciar
 ## Carregando parametros no arquivos launch
 Também é possível definir parâmetros a partir de um arquivo de inicialização. Nesse caso, os parâmetros serão definidos na inicialização, não na execução. Siga as instruções descritas abaixo para saber como.
 
-[Veja essa launch (**test_parameters.launch.py**)]() como exemplo.
+[Veja essa launch (**test_parameters.launch.py**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/parameter_tests/launch/test_parameters.launch.py) como exemplo.
+
+## Parâmetros de callBack
+Como você pode ver, no ROS2, você pode interagir e modificar parâmetros a qualquer momento. Sempre que um parâmetro de nó for atualizado, você pode notificá-lo sobre essa alteração para que ele possa tomar as medidas necessárias, se necessário.
+
+[Veja nesse exemplo]() um nó (**parameter_tests_callback.cpp**) que chama a função **parameter_callback**, sempre que você definir um novo valor para o parâmetro **velocity**. 
+
+Ao definir uma velocidade de 0.1 m/s: `ros2 param set /param_vel_node velocity 0.1`:
+
+```shell
+...
+[INFO] [1646392513.493424804] [param_vel_node]: Velocity parameter is: 0.000000
+[INFO] [1646392514.493439021] [param_vel_node]: Velocity parameter is: 0.000000
+[INFO] [1646392515.139746729] [param_vel_node]: Parameter 'velocity' changed!
+[INFO] [1646392515.493460144] [param_vel_node]: Velocity parameter is: 0.100000
+[INFO] [1646392516.493485543] [param_vel_node]: Velocity parameter is: 0.100000
+...
+```
+
+Ao definir uma velocidade de 0.3 m/s: `ros2 param set /param_vel_node velocity 0.3`:
+
+```shell
+Setting parameter failed: Parameter 'velocity' cannot be higher than 0.2
+```
 
