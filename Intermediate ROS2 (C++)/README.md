@@ -35,7 +35,6 @@ turning_speed_f = LaunchConfiguration('turning_speed')
 
 * O LaunchConfiguration() criará este objeto chamado turning_speed_f, que representa o valor futuro daquele argumento. Isso significa que você não pode usá-lo com operações padrão do Python. Sempre use estes sistemas de substituição.
 
-
 ```python
 PathJoinSubstitution([
     FindPackageShare(package_description),
@@ -105,6 +104,37 @@ args agora são acessados ​​usando a sintaxe:
 $(var argument_name)
 ```
 
+Veja a baixo a mesma execução da launch **move_with_arguments.launch.py**, porém usando XML.
+
+```xml
+<launch>
+
+    <arg name="turning_speed" default="0.0"/>
+    <arg name="forward_speed" default="0.0"/>
+
+    <node pkg="launch_tests_pkg" exec="move_robot_with_params_exe" name="move_robot_node">
+        <param name="turning_speed" value="$(var turning_speed)"/>
+        <param name="forward_speed" value="$(var forward_speed)"/>
+    </node>
+
+</launch>
+```
+
+Observe que aqui, como entrada do nó, você não está usando argumentos, mas parâmetros. Portanto, você precisa criar uma versão do **move_robot_with_arguments.cpp** (que é executado com a luanch.py) que funcione com parâmetros. [Veja as modificações nesse executável **move_robot_with_params.cpp**](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/launch_tests_pkg/src/move_robot_with_params.cpp)
+
+Vamos fazer uma rápida revisão do código:
+
+```cpp
+this->declare_parameter("turning_speed", 0.0);
+this->declare_parameter("forward_speed", 0.0);
+```
+
+Declare os parâmetros que serão as entradas deste nó. Você deve declarar um valor padrão; caso contrário, você receberá avisos agora e erros em versões futuras do ROS2.
+
+```cpp
+turning_speed = this->get_parameter("turning_speed").get_parameter_value().get<float>();
+forward_speed = this->get_parameter("forward_speed").get_parameter_value().get<float>();
+```
 
 
 
