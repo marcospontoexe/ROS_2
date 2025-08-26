@@ -690,10 +690,72 @@ Se você não precisar disso e tiver APENAS uma thread, você pode usar:
 
 * Executor **Static Single-Threaded**: Ele executa uma varredura de nó apenas uma vez quando o nó é adicionado ao Executor. Use-o apenas com nós que criam todos os Callbacks relacionados durante a inicialização.
 
-Este é o [primeiro exemplo]() do problema que você terá se usar SINGLE THREAD EXECUTOR.
+Este é o primeiro exemplo do problema que você terá se usar SINGLE THREAD EXECUTOR. Ao executar `ros2 run executors_exercises_pkg executor_example_3_static_node` desse [pacote](https://github.com/marcospontoexe/ROS_2/tree/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg) verá o seguinte:
 
-Se você usar **STATIC SINGLE THREADED** EXECUTOR, a única alteração será substituir a instanciação do Executor único por esta:
-```cpp
-rclcpp::executors::StaticSingleThreadedExecutor executor;
+```shell
+[INFO] [1649179947.273255770] [slow_timer_subscriber]: slow_timer_node INFO...
+[INFO] [1649179950.762544006] [slow_timer_subscriber]: TICK
+[INFO] [1649179953.762827503] [slow_timer_subscriber]: TICK
+[INFO] [1649179953.762957992] [odom_subscriber]: Odometry=['0.275937','-0.902710','0.109371']
+[INFO] [1649179956.763160708] [slow_timer_subscriber]: TICK
+[INFO] [1649179956.763276857] [odom_subscriber]: Odometry=['0.275936','-0.902710','0.109371']
+[INFO] [1649179959.763499246] [slow_timer_subscriber]: TICK
+[INFO] [1649179959.763618150] [odom_subscriber]: Odometry=['0.275935','-0.902710','0.109371']
 ```
 
+Então, por que isso acontece?
+
+A resposta é que você tem apenas UMA THREAD no EXECUTOR porque usa o Executor Single-Threaded ou o Executor Estático Single-Threaded.
+
+Portanto, a solução lógica seria usar o [Executor Multi-Threaded](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/executor_example_4.cpp). 
+
+Neste primeiro exemplo, você está alterando o tipo de Executor para Multithread.
+Como você tem apenas UM RETORNO DE CHAMADA por Nó, não haverá problemas.
+Isso ocorre porque o Executor Multithread inicia UMA THREAD POR NÓ ADICIONADO.
+
+Ao executar `touch executors_exercises_pkg/src/executor_example_4_singlethreaded.cpp` verá o seguinte:
+
+```shell
+[INFO] [1649239417.277080517] [odom_subscriber]: Odometry=['0.210631','1.008857','0.109481']
+[INFO] [1649239417.296441313] [odom_subscriber]: Odometry=['0.210631','1.008857','0.109481']
+[INFO] [1649239417.311212740] [odom_subscriber]: Odometry=['0.210631','1.008857','0.109481']
+[INFO] [1649239417.331764518] [odom_subscriber]: Odometry=['0.210630','1.008857','0.109481']
+[INFO] [1649239417.341036044] [odom_subscriber]: Odometry=['0.210630','1.008857','0.109481']
+[INFO] [1649239417.350275506] [odom_subscriber]: Odometry=['0.210629','1.008857','0.109481']
+[INFO] [1649239417.373895865] [odom_subscriber]: Odometry=['0.210629','1.008857','0.109481']
+[INFO] [1649239417.383497167] [odom_subscriber]: Odometry=['0.210628','1.008857','0.109481']
+[INFO] [1649239417.392826479] [odom_subscriber]: Odometry=['0.210628','1.008857','0.109481']
+[INFO] [1649239417.415700319] [odom_subscriber]: Odometry=['0.210627','1.008857','0.109481']
+[INFO] [1649239417.428317525] [odom_subscriber]: Odometry=['0.210627','1.008857','0.109481']
+[INFO] [1649239417.440443096] [odom_subscriber]: Odometry=['0.210626','1.008857','0.109481']
+[INFO] [1649239417.457971920] [slow_timer_subscriber]: TICK
+[INFO] [1649239417.461313452] [odom_subscriber]: Odometry=['0.210626','1.008857','0.109481']
+[INFO] [1649239417.482754192] [odom_subscriber]: Odometry=['0.210626','1.008857','0.109481']
+```
+
+Você pode ver um TICK a cada três segundos, mas a odometria não para. Isso significa que ambos os Callbacks estão funcionando simultaneamente.
+
+Como exemplo adicional, veja como você acha que poderia ter o mesmo comportamento, mas usando [Executores de thread única e múltiplos](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/executor_example_4_singlethreaded.cpp).
+
+Como você pode ver, você está criando dois Executores Single Threaded e, em seguida, atribui a cada um deles apenas UM Nó.
+Em termos de desempenho, Single Threaded consome muito menos CPU do que Executores Multi-Threaded. Portanto, é sempre preferível.
+Outra opção seria criar binários diferentes juntos. Seria o mesmo que neste exemplo, mas em binários separados.
+
+execute `ros2 run executors_exercises_pkg executor_example_4_singlethreaded_node`:
+
+
+```shell
+[INFO] [1649253811.051878378] [odom_subscriber]: Odometry=['0.395768','1.000205','0.109481']
+[INFO] [1649253811.061593590] [odom_subscriber]: Odometry=['0.395768','1.000205','0.109481']
+[INFO] [1649253811.073167454] [odom_subscriber]: Odometry=['0.395767','1.000205','0.109481']
+[INFO] [1649253811.082616228] [odom_subscriber]: Odometry=['0.395767','1.000205','0.109481']
+[INFO] [1649253811.105497169] [odom_subscriber]: Odometry=['0.395767','1.000205','0.109481']
+[INFO] [1649253811.121808076] [odom_subscriber]: Odometry=['0.395766','1.000205','0.109481']
+[INFO] [1649253811.135817744] [odom_subscriber]: Odometry=['0.395766','1.000205','0.109481']
+[INFO] [1649253811.158670391] [odom_subscriber]: Odometry=['0.395765','1.000205','0.109481']
+[INFO] [1649253811.180828865] [odom_subscriber]: Odometry=['0.395765','1.000205','0.109481']
+```
+
+Como você pode ver, isso não funciona. Isso ocorre porque você só pode ter UM ÚNICO EXECUTOR por binário.
+
+## Uso de Callback Groups
