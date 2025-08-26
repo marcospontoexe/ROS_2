@@ -145,10 +145,14 @@ get_parameter('parameter_name').get_parameter_value().get<type_of_value>()
 Aqui está um guia de migração para portar seu lançamento do ROS1 em XML para versões XML do ROS2: [GUIA DE MIGRAÇÃO DE LANÇAMENTO DO ROS1 PARA ROS2 XML](https://docs.ros.org/en/galactic/How-To-Guides/Launch-files-migration-guide.html).
 
 
-## Arquivos de launch usando YAML
-[Veja uma launch **yaml_main.launch.yaml**]().
+Execute com o comando: `ros2 launch launch_tests_pkg xml_main.launch.xml turning_speed:=0.1 forward_speed:=10.0`
 
-Veja a [**move_with_arguments.launch.yaml**]() que executa **move_robot_with_params.cpp**
+## Arquivos de launch usando YAML
+[Veja uma launch **yaml_main.launch.yaml**](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/launch_tests_pkg/launch/yaml_main.launch.yaml).
+
+Veja a [**move_with_arguments.launch.yaml**](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/launch_tests_pkg/launch/move_with_arguments.launch.yaml) que executa **move_robot_with_params.cpp**. 
+
+Execute com o comando `ros2 launch launch_tests_pkg yaml_main.launch.yaml turning_speed:=1.0 forward_speed:=1.0 rviz_config_file_name:=launch_part_2.rviz`.
 
 
 
