@@ -136,6 +136,23 @@ turning_speed = this->get_parameter("turning_speed").get_parameter_value().get<f
 forward_speed = this->get_parameter("forward_speed").get_parameter_value().get<float>();
 ```
 
+Para obter os valores dos parâmetros, você deve seguir esta sintaxe:
+
+```cpp
+get_parameter('parameter_name').get_parameter_value().get<type_of_value>()
+```
+
+Aqui está um guia de migração para portar seu lançamento do ROS1 em XML para versões XML do ROS2: [GUIA DE MIGRAÇÃO DE LANÇAMENTO DO ROS1 PARA ROS2 XML](https://docs.ros.org/en/galactic/How-To-Guides/Launch-files-migration-guide.html).
+
+
+## Arquivos de launch usando YAML
+[Veja uma launch **yaml_main.launch.yaml**]().
+
+Veja a [**move_with_arguments.launch.yaml**]() que executa **move_robot_with_params.cpp**
+
+
+
+
 
 
 ## LogInfo
