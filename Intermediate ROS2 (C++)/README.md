@@ -571,7 +571,7 @@ Também é possível definir parâmetros a partir de um arquivo de inicializaç�
 ## Parâmetros de callBack
 Como você pode ver, no ROS2, você pode interagir e modificar parâmetros a qualquer momento. Sempre que um parâmetro de nó for atualizado, você pode notificá-lo sobre essa alteração para que ele possa tomar as medidas necessárias, se necessário.
 
-[Veja nesse exemplo]() um nó (**parameter_tests_callback.cpp**) que chama a função **parameter_callback**, sempre que você definir um novo valor para o parâmetro **velocity**. 
+[Veja nesse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/parameter_tests/src/parameter_tests_callback.cpp) um nó (**parameter_tests_callback.cpp**) que chama a função **parameter_callback**, sempre que você definir um novo valor para o parâmetro **velocity**. 
 
 Ao definir uma velocidade de 0.1 m/s: `ros2 param set /param_vel_node velocity 0.1`:
 
@@ -589,5 +589,111 @@ Ao definir uma velocidade de 0.3 m/s: `ros2 param set /param_vel_node velocity 0
 
 ```shell
 Setting parameter failed: Parameter 'velocity' cannot be higher than 0.2
+```
+
+Vamos dar uma olhada no código:
+
+```cpp
+callback_handle_ = this->add_on_set_parameters_callback(std::bind(&VelParam::parametersCallback, this, std::placeholders::_1));
+```
+
+Esta linha indica que, quando um novo parâmetro é definido para este nó, a função **parametersCallback** deve ser acionada. Portanto, você precisará usar o método **add_on_set_parameters_callback** se quiser adicionar um retorno de chamada de parâmetro ao seu nó.
+
+A resposta desta função parametersCallback será armazenada em **callback_handle_**.
+
+É claro que você precisa definir esta variável de identificador de chamada de retorno:
+
+```cpp
+OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+```
+
+Por fim, você tem a implementação desta função **parametersCallback**:
+
+```cpp
+rcl_interfaces::msg::SetParametersResult parametersCallback(
+        const std::vector<rclcpp::Parameter> &parameters)
+{
+    rcl_interfaces::msg::SetParametersResult result;
+    result.successful = false;
+    result.reason = "";
+    for (const auto &parameter : parameters)
+    {
+        if (parameter.get_name() == "velocity" &&
+            parameter.as_double() > 0.2)
+        {
+            RCLCPP_INFO(this->get_logger(), "Parameter 'velocity' not changed!");
+            result.reason = "Parameter 'velocity' cannot be higher than 0.2";
+        }
+        else
+        {
+            RCLCPP_INFO(this->get_logger(), "Parameter 'velocity' changed!");
+            result.successful = true;
+            result.reason = "Parameter 'velocity' is lower than 0.2";
+        }
+    }
+    return result;
+}
+```
+
+Esta função de retorno de chamada retornará um objeto **SetParametersResult**:
+
+```cpp
+rcl_interfaces::msg::SetParametersResult result;
+result.successful = false;
+result.reason = "";
+```
+
+Como você pode ver, este objeto SetParametersResult contém duas variáveis:
+
+* **successful**: um sinalizador booleano para indicar se o parâmetro foi atualizado (true) ou não (false).
+* **reason**: uma string para fornecer mais informações sobre o motivo da alteração do parâmetro.
+
+Em seguida, verifique se o parâmetro velocity possui um valor maior que 0,2:
+
+```cpp
+if (parameter.get_name() == "velocity" && parameter.as_double() > 0.2)
+{
+    RCLCPP_INFO(this->get_logger(), "Parameter 'velocity' not changed!");
+    result.reason = "Parameter 'velocity' cannot be higher than 0.2";
+}
+```
+
+Se for maior, deixe a variável "sucesso" como falsa; portanto, você não atualizará o parâmetro. Além disso, atualize a variável "reason" para indicar por que você não está atualizando o parâmetro.
+
+Se o parâmetro "velocity" não tiver um valor maior que 0,2, atualize a variável "sucesso" para verdadeira, permitindo assim que o parâmetro seja atualizado:
+
+```cpp
+else
+{
+    RCLCPP_INFO(this->get_logger(), "Parameter 'velocity' changed!");
+    result.successful = true;
+    result.reason = "Parameter 'velocity' is lower than 0.2";
+}
+```
+
+# Gerenciando nós complexos com C++
+Aplicações robóticas modernas frequentemente exigem que múltiplas tarefas sejam executadas simultaneamente, como processamento de dados de sensores, execução de planejamento de movimento e comunicação com outros sistemas. É aqui que o **multithreading** se torna essencial. O multithreading permite que diferentes partes de um programa sejam executadas simultaneamente, melhorando o desempenho e a responsividade.
+
+No ROS 2, **executores**, grupos de retorno de chamada (**callback groups**) e **WaitSet** são mecanismos-chave para gerenciar a execução multithread. 
+
+O **WaitSet** permite aguardar múltiplos eventos simultaneamente, possibilitando um tratamento mais eficiente de tarefas assíncronas. Ao utilizar multithreading, executores, grupos de retorno de chamada e WaitSet, você aumentará a eficiência e a responsividade de suas aplicações ROS 2, garantindo que elas possam lidar com tarefas complexas em tempo real de forma eficaz.
+
+## Uso de Executores
+O rclcpp fornece três tipos de Executores, derivados de uma classe pai compartilhada:
+
+* Executor **Single-Threaded**: Ele manipula apenas uma thread no nó.
+* Executor **Multi-Threaded**: Ele cria um número variável de threads que permite que múltiplas mensagens/eventos sejam processados ​​em paralelo.
+
+Em ambos os Executores **Single-Threaded/Multi-Threaded**, se você adicionar/remover/alterar assinaturas, temporizadores, servidores de serviço e servidores de ação, ele **se adaptará a essas alterações** escaneando o nó.
+
+Se você não precisar disso e tiver APENAS uma thread, você pode usar:
+
+* Executor **Static Single-Threaded**: Ele executa uma varredura de nó apenas uma vez quando o nó é adicionado ao Executor. Use-o apenas com nós que criam todos os Callbacks relacionados durante a inicialização.
+
+Este é o [primeiro exemplo]() do problema que você terá se usar SINGLE THREAD EXECUTOR.
+
+Se você usar **STATIC SINGLE THREADED** EXECUTOR, a única alteração será substituir a instanciação do Executor único por esta:
+```cpp
+rclcpp::executors::StaticSingleThreadedExecutor executor;
 ```
 
