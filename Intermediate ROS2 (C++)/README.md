@@ -1723,3 +1723,186 @@ O DDS utiliza uma arquitetura de assinante, publicador e NÓ para gerenciar seus
 Essas são algumas das tarefas transparentes para o usuário que o DDS gerencia.
 
 ### 2. QoS
+Este é um recurso essencial para usuários do ROS2, pois é um dos elementos com os quais você mais trabalhará.
+
+A forma como os dados são compartilhados em tópicos do DDS pode ser configurada de diversas maneiras. Algumas delas são:
+
+* Confiabilidade: Você deseja que as informações enviadas cheguem aos assinantes? Quantos pacotes você aceita perder e similares?
+* Saúde do Sistema: Você deseja verificar se o publicador publica informações a cada 0,1 segundo e, caso contrário, alertar o sistema? Isso é crítico em sistemas de segurança e com risco de vida.
+* Segurança: Você deseja que alguém acesse os dados? Você deseja que eles sejam criptografados?
+
+O DDS também armazena informações extras dos assinantes e publicadores dos tópicos para gerenciar a compatibilidade de ambas as extremidades da QoS.
+
+### 3. Descoberta Dinâmica
+O DDS habilita a funcionalidade PLUG&PLAY graças à Descoberta Dinâmica.
+
+O DDS monitora todos os nós que assinam e publicam os tipos de mensagens, a QoS, etc. Isso permite que os sistemas iniciem e parem os nós sem afetar os outros elementos do sistema que utilizam o DDS.
+
+O DDS também se adapta a novas versões das mensagens enviadas e propaga essas alterações pelo sistema.
+
+### 4. Segurança
+O DDS inclui mecanismos para autenticação, controle de acesso e integridade das informações.
+
+Para assistir a um tutorial sobre como habilitar a segurança, assista a este vídeo: [Segurança ROS2](https://www.youtube.com/watch?v=UJa4XWRA6EY).
+
+## Então, o DDS é usado no ROS1?
+
+Não. No ROS1, esses conceitos de comunicação foram implementados com base em protocolos personalizados (por exemplo, **TCPROS**).
+
+Para usar uma implementação de DDS/RTPS com o ROS2, é necessário criar um pacote de "interface ROS Middleware" que implemente a interface abstrata do ROS Middleware usando a API e as ferramentas da implementação de DDS ou RTPS.
+
+O ROS pode ser construído sobre uma implementação específica do DDS. No entanto, diversas implementações diferentes estão disponíveis, e cada uma tem seus prós e contras em termos de plataformas suportadas, linguagens de programação, características de desempenho, consumo de memória, dependências e licenciamento.
+
+Portanto, o ROS visa oferecer suporte a múltiplas implementações de DDS, embora cada uma difira ligeiramente em sua API exata. Uma interface abstrata é introduzida para abstrair as especificidades dessas APIs, que podem ser implementadas para diferentes implementações de DDS. Essa interface Middleware define a API entre a biblioteca cliente do ROS e qualquer implementação específica.
+
+## Verifique o Middleware atual
+Primeiro, pesquise o ROS2 Galactic para garantir que você possa acessar a ferramenta ROS2 doctor.
+
+```shell
+source /opt/ros/galactic/setup.bash
+```
+
+Agora, gere um relatório usando o ROS2 doctor: `ros2 doctor --report`
+
+Isso gerará um relatório completo detalhando alguns dados sobre a configuração atual do seu ambiente. Além disso, você verá uma seção entre os dados do relatório indicando o **MIDDLEWARE RMW** usado atualmente.
+
+No caso do **galactic**, por padrão, o cyclonedds é usado:
+
+```shell
+RMW MIDDLEWARE
+    middleware name    : rmw_cyclonedds_cpp
+```
+
+Enquanto no **foxy**, por padrão, você tinha **fastrtps**:
+
+```shell
+RMW MIDDLEWARE
+    middleware name    : rmw_fastrtps_cpp
+```
+
+## Implementações de DDS suportadas no Galactic
+Existem três implementações de DDS com suporte nativo no ROS2 Galactic:
+
+1. eProsima Fast DDS
+2. Eclipse Cyclone DDS [padrão]
+3. RTI Connext DDS
+
+### Eclipse Cyclone
+O ROS Galactic é a primeira versão do ROS2 que tem como DDS de Middleware PADRÃO o Eclipse Cyclone DDS.
+
+* Então, o que é?
+* Por que é a versão padrão?
+* O que o torna uma boa opção de DDS para o ROS2?
+
+#### Elementos do Eclipse Cyclone
+Eclipse Cyclone é uma implementação de DDS que teve um bom desempenho e possui dois projetos filhos que estão integrados ou provavelmente serão integrados no futuro, o que o torna uma boa opção para DDS:
+* Eclipse iceoryx
+* Eclipse zenoh
+
+##### **Eclipse iceoryx:**
+É o sistema de protocolo de cópia zero — um sistema de ponta a ponta que usa o Cyclone para transmitir grandes quantidades de dados de um nó para outro.
+
+O truque é que você não está passando os dados originais, mas PONTEIROS para esses dados. Isso não é novidade. O Iceoryx adiciona o gerenciamento da estrutura principal de publicador/assinante à combinação, tornando-o compatível com DDS.
+
+Isso foi desenvolvido especialmente para veículos autônomos, que geram enormes quantidades de dados de vídeo que devem ser processados ​​por aplicativos de detecção de faixa, aplicativos de detecção de pedestres, aplicativos de detecção de veículos e aplicativos de navegação. A lista continua. Era impossível enviar cópias de todos esses dados para cada aplicativo a tempo de decidir o que fazer e mover o carro de acordo.
+
+O envio de ponteiros reduz a latência.
+
+* **Eclipse zenoh:**
+Foi comprovado que o DDS é eficaz na transmissão de dados locais e em LAN. No entanto, ele não foi criado com Wi-Fi e Internet em mente. É aí que o Zenoh entra. Ele gera uma ponte entre os sistemas DDS e gerencia a descoberta de nós por meio de Wi-Fi e Internet, que é o principal problema na comunicação pela Internet.
+
+Você pode conferir este tutorial se tiver interesse: [Tutorial de integração do ZENOH ROS2](https://zenoh.io/blog/2021-04-28-ros2-integration/).
+
+## Como alterar a implementação do DDS
+Para fazer isso, altere o valor de uma variável de sistema **RMW_IMPLEMENTATION**:
+
+```shell
+# FastDDS
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+# CycloneDDS
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+# ContextDDS
+export RMW_IMPLEMENTATION=rmw_connextdds
+```
+
+Leve em consideração que o ros2doctor ainda indicará que você está usando o Cyclone DDS padrão.
+
+Para executar um lançamento de DDS ou Node, execute o comando em um terminal com a exportação feita assim:
+
+```shell
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+ros2 run <your_package> <your application>
+```
+
+Então, por que se preocupar?
+
+Boa pergunta. Para a maioria dos usuários do ROS2, isso não será importante. No entanto, para alguns, não será. Por exemplo:
+
+* O FastDDS dá acesso a alguns perfis de QoS extras que o Cyclone não oferece.
+* E o CycloneDDS funciona melhor com usuários que já possuem aplicativos CycloneDDS fora do ROS2.
+* Existem alguns eventos que o FastDDS ou o Cyclone não suportam. Por exemplo, o FastDDS não suporta eventos de QoS incompatíveis, o que o Cyclone suporta.
+
+## O que é o ROS 2 Daemon
+No **ROS1**, você tinha o **ROS_MASTER** ou o **ROSCORE**.
+
+Ele coordenava todos os nós para que pudessem se encontrar e se comunicar, entre outras coisas, como servir parâmetros, etc.
+
+No ROS2, isso é inútil.
+
+Ao usar o DDS, cada vez que você inicia o nó, ele usa um protocolo de descoberta para saber quais nós estão em execução e como a comunicação está sendo feita. O ROSCORE NÃO é necessário.
+
+No entanto, isso tem um preço a pagar: **velocidade**. Isso é especialmente verdadeiro em sistemas complexos com centenas de nós.
+
+Antes de iniciar, um novo nó descobre TODA a rede de nós, o que não é o ideal. É aqui que o DAEMON ROS2 entra. 
+
+Quando você executa o primeiro comando que precisa do daemon ROS, o daemon ROS2 é iniciado. Teste isto:
+
+```shell
+ps faux | grep "ros2_daemon"
+ros2 daemon stop
+ros2 daemon status
+```
+
+```shell
+The daemon is not running.
+```
+
+Agora, execute um comando que exija que o daemon ROS2 funcione e você verá que o daemon será reiniciado automaticamente.
+
+Iniciar Nodes não inicia o daemon ROS2 sozinho. Portanto, é recomendável que você o inicie antes de iniciar um sistema Node complexo.
+
+```shell
+ps faux | grep "ros2_daemon"
+ros2 topic list
+ros2 daemon status
+```
+
+```shell
+The daemon is running.
+```
+
+Claro, você também pode começar com: `ros2 daemon start`
+
+E dependendo de qual exportação do MiddleWare você fez, ele usará um ou outro:
+
+```shell
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+ros2 daemon stop
+ros2 daemon start
+ps faux | grep "ros2_daemon"
+```
+
+```shell
+/usr/bin/python3 /opt/ros/galactic/bin/_ros2_daemon --rmw-implementation rmw_fastrtps_cpp --ros-domain-id 0
+```
+
+``shell
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+ros2 daemon stop
+ros2 daemon start
+ps faux | grep "ros2_daemon"
+```
+
+```shel
+/usr/bin/python3 /opt/ros/galactic/bin/_ros2_daemon --rmw-implementation rmw_cyclonedds_cpp --ros-domain-id 0
+```
