@@ -1624,7 +1624,7 @@ ros2 bag play --remap /scan:=/scan2 -l neobotix_mp400_scan_bag
 ```
 
 ### Replay Changing the QoS
-Para isso foi criado [**qos_override.yaml**]()
+Para isso foi criado [**qos_override.yaml**](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/rosbags/qos_override.yaml)
 
 Aqui, altere o seguinte:
 
@@ -1672,3 +1672,54 @@ Adicione os dois lasers e defina a QoS do tópico corretamente para visualizar a
 Você deverá ver algo assim, onde o verde é o scan2 e o vermelho é o scan1.
 
 ![t5_qosRviz](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/imagens/t5_qosRviz.png)
+
+# DDS
+Nesta unidade, você explorará o Serviço de Distribuição de Dados (DDS), o principal middleware de comunicação usado no ROS 2. O DDS permite comunicação descentralizada, escalável e em tempo real, tornando o ROS 2 mais robusto e flexível que o ROS 1.
+
+Você também aprenderá como o DDS impacta publicadores e assinantes, como diferentes configurações de QoS afetam a comunicação e como analisar e solucionar problemas relacionados ao DDS em um sistema ROS 2.
+
+Ao final desta unidade, você terá uma sólida compreensão de como o DDS funciona no ROS 2 e como configurá-lo para uma comunicação eficiente em suas aplicações robóticas.
+
+O Serviço de Distribuição de Dados (DDS) é um middleware que visa permitir trocas de dados de alto desempenho usando um método de publicação-assinatura semelhante ao usado no ROS.
+
+Existem três vantagens principais no uso de sistemas DDS:
+
+* Conectividade de dados de baixa latência
+* Confiabilidade extrema e flexível
+* Arquiteturas escaláveis
+
+## **Então, DDS é a mesma coisa que ROS?**
+NÃO! DDS é um padrão de comunicação. Seu mercado é mais geral, como militar, controle de tráfego aéreo, veículos autônomos e dispositivos médicos.
+
+O ROS2 se assemelha mais a um ecossistema.
+
+Ele fornece uma estrutura amigável para quem deseja criar aplicações robóticas.
+
+O ROS2 oferece um nível de abstração mais alto do que o DDS, especialmente para aplicações robóticas. Por exemplo, ele fornece tipos de dados e componentes prontos para uso, projetados para robótica.
+
+O ROS2 também fornece configurações predefinidas de protocolo de Qualidade de Serviço (QoS), adaptadas para robótica.
+
+Resumindo: o ROS2 oferece, entre outras coisas, uma camada de simplificação sobre o protocolo DDS que facilita a vida do roboticista.
+
+Portanto, o ROS2 é construído sobre o **DDS/RTPS**, pois é um Middleware. Em resumo, o DDS é um Middleware de ponta a ponta que fornece recursos relevantes para sistemas ROS, como descoberta distribuída (não centralizada como no ROS1) e controle sobre diferentes opções de QoS para transporte.
+
+## Fundamentos do DDS
+O DDS possui os seguintes elementos básicos:
+
+1. Centralidade de Dados
+2. QoS
+3. Descoberta Dinâmica
+4. Segurança
+
+### 1. Centralidade de Dados
+Um dos problemas que sistemas complexos enfrentam é: para onde transmitir os dados gerados por um aplicativo para todos os outros, com o mínimo de impacto no sistema e baixa latência.
+
+O DDS utiliza uma arquitetura de assinante, publicador e NÓ para gerenciar seus dados.
+
+* Ele decide quando publicar as informações. Se ninguém estiver ouvindo o tópico, ele interrompe a publicação.
+* Se informações específicas de um tópico forem lidas por vários aplicativos/nós, ele as gerencia para evitar fazer cópias inúteis das informações.
+* Ele limpa as informações antigas ou as armazena por um período específico, dependendo das especificações e necessidades do publicador.
+
+Essas são algumas das tarefas transparentes para o usuário que o DDS gerencia.
+
+### 2. QoS
