@@ -1049,3 +1049,155 @@ ros2 run qos_tests_pkg publisher_custom_minimal_qos_exe -reliability reliable
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ros2 run qos_tests_pkg subscriber_custom_minimal_qos_exe
 ```
+
+Portanto, não há problemas ao usar uma QoS COMPATÍVEL. No entanto, o que acontece se você usar uma QoS INCOMPATÍVEL?
+
+```shell
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+ros2 run qos_tests_pkg publisher_custom_minimal_qos_exe -reliability best_effort
+```
+
+```shell
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+ros2 run qos_tests_pkg subscriber_custom_minimal_qos_exe
+```
+
+será exibido: 
+
+```shell
+[WARN] [1680119365.479235041] [subscriber_qos_obj]: New publisher discovered on topic '/q
+os_test', offering incompatible QoS. No messages will be sent to it. Last incompatible po
+licy: RELIABILITY_QOS_POLICY
+```
+
+Aqui, DOIS eventos acontecem:
+
+* No publicador, o evento **incompatible_qos** é DISPARADO, exibindo a mensagem dentro do Callback incompatible_qos_clb.
+
+```shell
+[WARN] [1680119365.479235041] [subscriber_qos_obj]: New publisher discovered on topic '/q
+os_test', offering incompatible QoS. No messages will be sent to it. Last incompatible po
+licy: RELIABILITY_QOS_POLICY
+```
+
+* No assinante, você recebe o aviso de QoS Incompatível.
+
+```shell
+user:~$ ros2 run qos_tests_pkg subscriber_custom_minimal_qos_exe
+[WARN] [1756303912.388105403] [subscriber_qos_obj]: New publisher discovered on topic '/qos_test', offering incompatible QoS. No messages will be sent to it. Last incompatible policy: RELIABILITY_QOS_POLICY
+```
+
+O motivo é que a QoS do publicador e do assinante são INCOMPATÍVEIS:
+
+* Confiabilidade da QoS do publicador = Melhor_Esforço
+* Confiabilidade da QoS do assinante = Confiável
+
+Também indica a QoS incompatível, pelo menos a última:
+
+* Última política incompatível: CONFIABILIDADE
+
+Esta configuração é INCOMPATÍVEL.
+
+No entanto, como saber quais configurações são compatíveis?
+
+Aqui você tem uma tabela para facilitar sua vida:
+
+![qos](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/imagens/table_qos_compatibility.png)
+
+Este curso não abordará como definir a QoS para Serviços e Ações. Se você consultar os links a seguir, perceberá que a forma como a QoS é definida para Serviços e Ações é bastante semelhante.
+
+* [Serviços](https://docs.ros2.org/galactic/api/rclpy/api/services.html)
+* [Ações](https://docs.ros2.org/galactic/api/rclpy/api/actions.html)
+
+## Criando um subscriber
+Crie um assinante para o tópico **/scan**. No entanto, agora você pode alterar todos os elementos da QoS do seu assinante.
+
+Leve em consideração os seguintes elementos:
+
+* O Middleware é usado pelo tópico /scan (cycloneDDS).
+* A QoS deve ser compatível com o tópico /scan.
+* Crie um novo script chamado **subscriber_scan_qos.py**.
+* Você precisa editar as seguintes configurações de QoS:
+    * history
+    * reliability
+    * lifespan
+    * deadline
+    * liveliness
+    * liveliness_lease_duration
+    * depth
+
+**Observações**:
+
+Para obter todas as informações de QoS de um tópico específico, adicione --verbose às informações do tópico ROS2: `ros2 topic info /scan --verbose`:
+
+```shell
+$ ros2 topic info /scan --verbose
+Type: sensor_msgs/msg/LaserScan
+
+Publisher count: 1
+
+Node name: lidar_1
+Node namespace: /
+Topic type: sensor_msgs/msg/LaserScan
+Endpoint type: PUBLISHER
+GID: 6f.e3.10.01.07.32.a2.b4.82.0f.5c.f2.00.00.3e.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: BEST_EFFORT
+  Durability: VOLATILE
+  Lifespan: 9223372036854775807 nanoseconds
+  Deadline: 9223372036854775807 nanoseconds
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: 9223372036854775807 nanoseconds
+
+Subscription count: 0
+```
+
+Como você pode ver, /scan tem:
+
+* Reliability = BEST_EFFORT. Esta é a maneira padrão de defini-la em sensores, pois você está interessado em obter um fluxo de dados. Não importa se você perder uma ou duas mensagens.
+* Durability = Volatile. Também é a maneira padrão para sensores, especialmente sensores com alto volume de geração de dados. Você não precisa salvar mensagens antigas para assinantes que se inscreveram tardiamente. Se você perder mensagens antigas, isso é irrelevante.
+ALiveliness = Automatic. Esta é a maneira padrão, especialmente para sensores. Considere que o publicador está ativo se QUALQUER um de seus tópicos publicados tiver publicado algo dentro do tempo definido pela duração do lease.
+* Deadline = "9223372036,854775807" segundos (VALOR INFINITO). Isso significa que NÃO há Prazo. Você não está definindo nenhum requisito para o período entre cada mensagem publicada do tópico /scan. Um sensor real não deve ser definido dessa forma, pois, normalmente, os sensores têm uma taxa de publicação específica. No entanto, esta é uma simulação, então você pode ser menos rigoroso.
+* Lifespan = "9223372036,854775807" segundos (VALOR INFINITO). Novamente, isso significa que NÃO há limitação. Não importa a idade de uma mensagem, ela é válida. Isso, novamente, normalmente não é feito em sistemas reais, pois dados antigos de sensores são inúteis. Você é menos rigoroso porque isso não acontece na simulação.
+
+## Políticas de QoS padrão
+Antes de nos aprofundarmos em políticas específicas de QoS, é importante entender as configurações padrão ao criar um publicador e um assinante no ROS 2. Essas políticas padrão são aplicadas, a menos que sejam explicitamente substituídas:
+
+* History: "keep last" -> Esta configuração garante que o publicador mantenha apenas as mensagens mais recentes, descartando as mais antigas. É útil para tópicos em que apenas os dados mais recentes são relevantes.
+* Queue Size: 10 -> Define o tamanho da fila de mensagens para o assinante. Se o assinante não conseguir processar uma mensagem com rapidez suficiente, as mensagens mais antigas serão descartadas quando a fila estiver cheia. Um tamanho de 10 é um padrão razoável para muitos casos de uso.
+* Reliability: reliable -> Esta política garante que as mensagens sejam entregues de forma confiável, o que significa que, se uma mensagem for perdida, ela será retransmitida. Isso é importante para comunicações críticas, onde a perda de dados não pode ser tolerada.
+* Durability: volatile -> Isso significa que as mensagens não são retidas após o envio. Os dados não são armazenados para novos assinantes que se inscrevem posteriormente. Para dados persistentes que precisam estar disponíveis para assinantes futuros, essa configuração precisa ser alterada para **transient**.
+* Liveliness: system default -> Isso determina como o sistema verifica a atividade de um publicador. O "padrão do sistema" significa que o ROS 2 usará o mecanismo definido pelo sistema para determinar se o publicador ainda está ativo.
+* Deadline, Lifespan, and Lease Durations: definidos com valores altos (9223372036854775807 nanossegundos) -> Essas configurações são usadas para especificar restrições de tempo. Por exemplo, o Prazo define o período máximo esperado entre mensagens. Quando definido com um valor tão alto, essas restrições se tornam essencialmente não restritivas.
+
+Essas políticas de QoS padrão são aplicadas ao criar publicadores e assinantes, a menos que você especifique explicitamente outros valores.
+
+## Durability
+A durabilidade regula se uma mensagem publicada pelo publicador permanece lá para sempre, de modo que os assinantes possam lê-la mesmo após a assinatura da mensagem. É assim, por exemplo, que o robot_description ou os parâmetros globais devem funcionar.
+
+Você tem duas configurações:
+
+* Transient local: O publicador é responsável por fazer com que as mensagens persistam no tempo para os assinantes que se cadastram após a publicação da mensagem pelo publicador.
+* Volatile: Você não fará nada para que as mensagens persistam.
+
+[Veja um exemplo]() (**subscriber_durability.cpp**). Aqui, você define **reliability=ReliabilityPolicy.RELIABLE**. Isso significa que você está forçando este assinante a receber cada mensagem enviada pelo publicador.
+
+[Veja um exemplo]() (**publisher_durability.cpp**).
+
+Ao executar `ros2 run qos_tests_pkg publisher_durability_exe -durability transient_local` sera mostrado:
+
+```shell
+[INFO] [1680120446.045756631] [publisher_qos_obj]: Publishing: 0:1680120446.045713,168012
+0446045713462
+```
+
+Agora, esse assinante deve receber a mensagem mesmo que ela tenha sido iniciada depois que o publicador a publicou: `ros2 run qos_tests_pkg subscriber_durability_exe -durability transient_local`:
+
+```shell
+[INFO] [1680120490.024011041] [subscriber_qos_obj]: Data Received = '0:1680120446.045713,1680120446045713462'
+```
+
+Você também pode usar um comando de terminal simples. Defina o comando echo com o QoS apropriado: `ros2 topic echo --qos-durability transient_local /qos_test`
+
+Defina a confiabilidade (**reliability**) além da durabilidade; caso contrário, não funcionará. Este problema no Galactic será resolvido na próxima versão do ROS2: `ros2 topic echo --qos-durability transient_local --qos-reliability reliable /qos_test`
+
