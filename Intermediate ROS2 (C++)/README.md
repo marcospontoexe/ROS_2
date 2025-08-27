@@ -1180,9 +1180,9 @@ Você tem duas configurações:
 * Transient local: O publicador é responsável por fazer com que as mensagens persistam no tempo para os assinantes que se cadastram após a publicação da mensagem pelo publicador.
 * Volatile: Você não fará nada para que as mensagens persistam.
 
-[Veja um exemplo]() (**subscriber_durability.cpp**). Aqui, você define **reliability=ReliabilityPolicy.RELIABLE**. Isso significa que você está forçando este assinante a receber cada mensagem enviada pelo publicador.
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/subscriber_durability.cpp) (**subscriber_durability.cpp**). Aqui, você define **reliability=ReliabilityPolicy.RELIABLE**. Isso significa que você está forçando este assinante a receber cada mensagem enviada pelo publicador.
 
-[Veja um exemplo]() (**publisher_durability.cpp**).
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/publisher_durability.cpp) (**publisher_durability.cpp**).
 
 Ao executar `ros2 run qos_tests_pkg publisher_durability_exe -durability transient_local` sera mostrado:
 
@@ -1201,3 +1201,96 @@ Você também pode usar um comando de terminal simples. Defina o comando echo co
 
 Defina a confiabilidade (**reliability**) além da durabilidade; caso contrário, não funcionará. Este problema no Galactic será resolvido na próxima versão do ROS2: `ros2 topic echo --qos-durability transient_local --qos-reliability reliable /qos_test`
 
+## Deadline
+Agora, considere o máximo que deve transcorrer entre a publicação de uma mensagem e a próxima para considerar o tópico saudável. Isso é útil para comandos de controle, como cmd_vel, ou outros comandos mais críticos que precisam ser regulares, como detecção de obstáculos, por exemplo.
+
+A variável regula isso:
+
+* **Duration**: Tempo entre a publicação de mensagens subsequentes.
+
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/subscriber_deadline.cpp) (**subscriber_deadline.cpp**)
+
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/publisher_deadline.cpp) (**publisher_deadline.cpp**) 
+
+Execute os scripts em condições de funcionamento, por exemplo. Condição de funcionamento significa que:
+
+* O publicador tem um prazo que excede o tempo que leva para publicar suas mensagens.
+* O assinante tem um prazo que excede o tempo do publicador para publicar normalmente E durante a fase de pausa no código.
+* Ambos têm valores de QoS compatíveis (consulte a tabela mostrada anteriormente).
+
+```shell
+ros2 run qos_tests_pkg publisher_deadline_exe -deadline 10.0
+```
+
+
+```shell
+deadline==Duration(nanoseconds=10000000000)
+[INFO] [1644936043.662228672] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936043,647624987')"
+[INFO] [1644936044.648765369] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936044,648061429')"
+[INFO] [1644936044.649647590] [publisher_qos_obj]: Counter =1
+[INFO] [1644936045.648750958] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936045,648067137')"
+[INFO] [1644936045.649631783] [publisher_qos_obj]: Counter =2
+[INFO] [1644936046.648815753] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936046,647949835')"
+[INFO] [1644936046.649476575] [publisher_qos_obj]: Counter =3
+[INFO] [1644936047.648672771] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936047,647940313')"
+[INFO] [1644936047.649307089] [publisher_qos_obj]: Counter =4
+[INFO] [1644936048.648772383] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936048,648042781')"
+[INFO] [1644936048.649380699] [publisher_qos_obj]: Counter =5
+[INFO] [1644936049.648826664] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936049,648102316')"
+[INFO] [1644936049.649409283] [publisher_qos_obj]: Counter =6
+[INFO] [1644936050.748734377] [publisher_qos_obj]: Paused =0.0/2.0
+[INFO] [1644936050.849589211] [publisher_qos_obj]: Paused =0.1/2.0
+[INFO] [1644936050.950404186] [publisher_qos_obj]: Paused =0.2/2.0
+[INFO] [1644936051.051182319] [publisher_qos_obj]: Paused =0.30000000000000004/2.0
+[INFO] [1644936051.152053497] [publisher_qos_obj]: Paused =0.4/2.0
+[INFO] [1644936051.252723450] [publisher_qos_obj]: Paused =0.5/2.0
+[INFO] [1644936051.353412801] [publisher_qos_obj]: Paused =0.6000000000000001/2.0
+[INFO] [1644936051.454263050] [publisher_qos_obj]: Paused =0.7000000000000001/2.0
+[INFO] [1644936051.555149310] [publisher_qos_obj]: Paused =0.8/2.0
+[INFO] [1644936051.655982300] [publisher_qos_obj]: Paused =0.9/2.0
+[INFO] [1644936051.756735299] [publisher_qos_obj]: Paused =1.0/2.0
+[INFO] [1644936051.857541979] [publisher_qos_obj]: Paused =1.1/2.0
+[INFO] [1644936051.958319656] [publisher_qos_obj]: Paused =1.2000000000000002/2.0
+[INFO] [1644936052.059184485] [publisher_qos_obj]: Paused =1.3/2.0
+[INFO] [1644936052.159936629] [publisher_qos_obj]: Paused =1.4000000000000001/2.0
+[INFO] [1644936052.260631850] [publisher_qos_obj]: Paused =1.5/2.0
+[INFO] [1644936052.361722072] [publisher_qos_obj]: Paused =1.6/2.0
+[INFO] [1644936052.462475582] [publisher_qos_obj]: Paused =1.7000000000000002/2.0
+[INFO] [1644936052.563326299] [publisher_qos_obj]: Paused =1.8/2.0
+[INFO] [1644936052.664155447] [publisher_qos_obj]: Paused =1.9000000000000001/2.0
+[INFO] [1644936052.665534631] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936052,664860538')"
+[INFO] [1644936052.666173215] [publisher_qos_obj]: Counter =1
+[INFO] [1644936053.648618315] [publisher_qos_obj]: Published: "std_msgs.msg.String(data='1644936053,647928872')"
+[INFO] [1644936053.649236053] [publisher_qos_obj]: Counter =2
+```
+
+```shell
+ros2 run qos_tests_pkg subscriber_deadline_exe -deadline 10.0
+```
+
+```shell
+deadline==Duration(nanoseconds=10000000000)
+[INFO] [1644936043.662486552] [subscriber_qos_obj]: Data Received =1644936043,647624987
+[INFO] [1644936044.649069145] [subscriber_qos_obj]: Data Received =1644936044,648061429
+[INFO] [1644936045.649059219] [subscriber_qos_obj]: Data Received =1644936045,648067137
+[INFO] [1644936046.649305336] [subscriber_qos_obj]: Data Received =1644936046,647949835
+[INFO] [1644936047.649032866] [subscriber_qos_obj]: Data Received =1644936047,647940313
+[INFO] [1644936048.648978854] [subscriber_qos_obj]: Data Received =1644936048,648042781
+[INFO] [1644936049.649103841] [subscriber_qos_obj]: Data Received =1644936049,648102316
+[INFO] [1644936052.665971148] [subscriber_qos_obj]: Data Received =1644936052,664860538
+[INFO] [1644936053.648887735] [subscriber_qos_obj]: Data Received =1644936053,647928872
+```
+
+Você pode ver que o assinante não apresenta erro, mesmo quando o editor não publica nada por aproximadamente 2 segundos. Isso ocorre porque o assinante tinha 10 segundos de deadline, que está dentro da margem.
+
+E o editor também não apresenta erro porque está publicando algo com um período inferior ao seu deadline de 10 segundos.
+
+### Teste diferentes valores de prazo para observar os diferentes comportamentos:
+
+1. O publicador não cumpre seu prazo: 
+    * Aqui, você deve definir um prazo menor que o tempo que o publicador leva para publicar sua mensagem.
+2. O assinante não recebe a mensagem do publicador a tempo: 
+    * Defina o prazo para o assinante ser menor que o tempo do publicador para publicar cada mensagem.
+    * Se o prazo do assinante for pequeno o suficiente, isso acionará o evento de retorno de chamada no loop de pausa ou mesmo no loop de publicação normal.
+3. Os assinantes e os publicadores têm valores de QoS incompatíveis.
+    * Aqui, você deve consultar a tabela de compatibilidades.
