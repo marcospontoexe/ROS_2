@@ -1944,3 +1944,233 @@ A figura a seguir representa os estados de um nó gerenciado e as transições e
 **OBSERVAÇÃO**: atualmente, nós gerenciados estão disponíveis para C++, não Python.
 
 ## Exemplo simples de nó gerenciado
+Crie um nó simples e gerenciado chamado **scan_publisher** que simula uma conexão com o hardware do laser do robô. Quando a conexão for estabelecida e o laser estiver funcionando corretamente, ele publicará os dados do laser no tópico **/managed_scan**.
+
+Qualquer aplicativo de ciclo de vida que você criar depende dos seguintes pacotes:
+
+* lifecycle_msgs.
+* rclcpp_lifecycle
+* std_msgs
+
+Para iniciar um nó gerenciado, use a classe **LifeCycleNode** no arquivo de inicialização, em vez da classe Node típica para iniciar outros nós não gerenciados.
+
+Execute o nó **scan_publisher** com a launch [**start_managed_scan.launch.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/managed_scan/launch/start_managed_scan.launch.py): `ros2 launch managed_scan start_managed_scan.launch.py`.
+
+Você pode observar o seguinte: Há um tópico chamado **/managed_scan_node/transition_event**.
+
+Se você criar uma lista de tópicos ros2, deverá ver o seguinte tópico (entre outras coisas): `ros2 topic list | grep /managed_scan_node/transition_event `
+
+Este tópico é criado automaticamente por qualquer nó gerenciado com o nome <your_node_name>/transition_event.
+
+Este tópico é usado para observar quando o nó realiza uma transição. Você pode ouvi-lo e ser notificado quando uma transição no estado do nó for realizada.
+
+Digite o seguinte comando em um terminal: `ros2 topic echo /managed_scan_node/transition_event`.
+
+**Não há nenhum tópico chamado /managed_scan!**
+Mesmo que o seu nó gerenciado construa um publicador de tópicos, não há tópico /managed_scan.
+
+Isso ocorre porque o nó não está no estado em que cria o tópico. Então, em qual estado o publicador está definido? Se você verificar o código, verá o seguinte:
+
+```cpp
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+on_configure(const rclcpp_lifecycle::State &)
+{
+    pub_ = this->create_publisher<std_msgs::msg::String>("managed_scan", 10);
+    timer_ = this->create_wall_timer(1s, std::bind(&ManagedScan::publish, this));
+    RCLCPP_INFO(get_logger(), "on_configure() is called.");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+}
+```
+
+Esta é a parte que cria o publicador de tópicos. Como você pode ver, essa função é chamada **on_configure**. Este é o nome da função que é ativada quando o nó gerenciado está sendo alternado para um estado configurado.
+
+Você deve definir essa função com esse nome e assinatura para cada nó gerenciado que criar.
+
+Na função **on_configure**, você deve incluir tudo o que o nó precisa preparar antes de começar a executar seu trabalho. Você pode considerá-la como a função construtora do nó.
+
+Considere um ponto importante: os publicadores dentro de um nó gerenciado devem ser de um tipo específico, chamado **LifecyclePublisher**. Isso é necessário para permitir a ativação e a desativação do publicador nos estados apropriados.
+
+Você pode ver como o publicador é definido dessa forma na seção privada do código:
+
+```cpp
+std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>> pub_;
+```
+
+Atualmente (ROS2 Humble), não existe nenhuma classe semelhante para **subscribers**.
+
+**A questão agora é: em que estado está o nó?**
+
+Você pode responder a essa pergunta perguntando ao nó.
+
+Em um terminal, execute o comando `**ros2 service list**`. Você deverá obter isto (entre outras coisas):
+
+```shell
+/managed_scan_node/change_state
+/managed_scan_node/describe_parameters
+/managed_scan_node/get_available_states
+/managed_scan_node/get_available_transitions
+/managed_scan_node/get_parameter_types
+/managed_scan_node/get_parameters
+/managed_scan_node/get_state
+/managed_scan_node/get_transition_graph
+/managed_scan_node/list_parameters
+/managed_scan_node/set_parameters
+/managed_scan_node/set_parameters_atomically
+```
+
+Esta é uma lista de serviços criados automaticamente pelo nó gerenciado. Cada nó gerenciado fornece, por padrão, todos esses serviços.
+
+Agora, obtenha o estado do nó chamando o serviço **/managed_scan_node/get_state**: `ros2 service call /managed_scan_node/get_state lifecycle_msgs/srv/GetState {}`
+
+Você deverá obter uma resposta como esta:
+
+```shell
+waiting for service to become available...
+requester: making request: lifecycle_msgs.srv.GetState_Request()
+
+response:
+lifecycle_msgs.srv.GetState_Response(current_state=lifecycle_msgs.msg.State(id=1, label='unconfigured'))
+```
+
+Isso significa que o nó está em um **estado não configurado**. Isso faz todo o sentido, de acordo com o que foi explicado acima.
+
+## Interface de linha de comando (CLI) de nós gerenciados
+Outra maneira de identificar o estado do nó é usar a CLI que o ciclo de vida fornece para simplificar isso. Por exemplo, para verificar o estado do nó, você pode usar o seguinte comando: `ros2 lifecycle get /managed_scan_node`.
+
+Você deverá obter uma resposta como esta:
+
+```shell
+unconfigured [1]
+```
+
+Agora, faça o nó mudar para o **estado configurado**. Para isso, chame o serviço /managed_scan_node/change_state: `ros2 service call /managed_scan_node/change_state lifecycle_msgs/ChangeState "{transition: {id: 1}}"`
+
+Alternativamente, você pode obter o mesmo resultado usando o CLI do ciclo de vida: `ros2 lifecycle set <node_name> <name_of_the_new_state>` (por exemplo: `ros2 lifecycle set /managed_scan_node configure`)
+
+Depois de emitir esse comando, você deverá receber a mensagem:
+
+```shell
+Transitioning successful
+```
+
+Se você digitar o comando `**ros2 topic list**` novamente, deverá ver o tópico **/managed_scan**.
+
+O que aconteceu foi que, quando você solicitou a transição para um estado configurado, o nó chamou a função **on_configuring**, que inclui a criação do publicador.
+
+Por fim, você tem outro comando que permite ver a máquina de estados completa do nó, o que é útil para depuração: `ros2 lifecycle list managed_scan_node -a`
+
+## Nenhuma publicação no tópico
+Você alterou para o estado inativo com sucesso e o tópico foi criado. No entanto, ele ainda não está sendo publicado. Tente o seguinte comando: `ros2 topic echo /managed_scan`
+
+Você não deve receber nada.
+
+O motivo é que a publicação só é realizada em **estado ativo**. Portanto, se você quiser que alguns dados sejam publicados sobre o tópico, precisará alterar o status do nó novamente: `ros2 lifecycle set /managed_scan_node activate`
+
+Agora, verifique se, após a transição para o estado ativo, o nó está publicando no tópico.
+
+O motivo é que o código de ativação foi executado. O código de ativação do nó é o que você deve inserir na sua função **on_activate**.
+
+```cpp
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+on_activate(const rclcpp_lifecycle::State &)
+{
+    pub_->on_activate();
+    RCUTILS_LOG_INFO_NAMED(get_name(), "on_activate() is called.");
+    std::this_thread::sleep_for(2s);
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+}
+```
+
+Como você pode ver, essa função é a que ativa o publicador.
+
+## O resultado de cada função de transição de estado
+Como você pode ver nas funções de transição de estado anteriores, todas elas têm uma assinatura específica e devem retornar um valor SUCESSO.
+
+Bem, elas devem retornar SUCESSO ou FALHA, dependendo do que ocorreu dentro da função de transição de estado.
+
+```cpp
+return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+```  
+
+ou 
+
+```cpp
+return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+```
+
+Dependendo do que a função retornar, o nó transita para o estado solicitado, se SUCESSO, ou permanece no mesmo estado, FALHA. Você pode ver como as transições são feitas na figura acima.
+
+### Parando o nó
+Para interromper o nó de forma limpa, faça a transição do nó para finalizado. Isso chama a função **on_shutdown**, onde você insere todo o código de limpeza necessário para encerrar o nó perfeitamente.
+
+O interessante aqui é que você pode fazer a transição do nó para finalizado a partir de qualquer outro estado.
+
+```cpp
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+on_shutdown(const rclcpp_lifecycle::State & state)
+{
+    timer_.reset();
+    pub_.reset();
+    RCUTILS_LOG_INFO_NAMED(get_name(), "on shutdown is called from state %s.", state.label().c_str());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+}
+```
+
+Você faz a transição do nó para finalizado definindo seu estado como **shutdown**.
+
+Pare o nó chamando a transição: `ros2 lifecycle set /managed_scan_node shutdown`
+
+Agora o nó está parado, mas não morto. Você pode verificar se o nó existe emitindo o comando: `ros2 node list`
+
+No entanto, a partir desse estado, a única coisa que o nó pode fazer é morrer. Você não pode trazer o nó de volta à vida a partir do estado **finalizado**.
+
+### Pausando o nó
+Em alguns casos, talvez você não precise parar o nó; em vez disso, você pode querer pausá-lo. Nesse caso, você coloca o nó no **estado inativo**. Ao fazer isso, a função **on_deactivate** é chamada:
+
+```cpp
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+on_deactivate(const rclcpp_lifecycle::State &)
+{
+    pub_->on_deactivate();
+    RCUTILS_LOG_INFO_NAMED(get_name(), "on_deactivate() is called.");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+}
+```
+Essa função exige que você escreva o que for necessário para pausar seu nó corretamente. Leve em consideração que, após chamar essa função, o nó passará para o estado **Inativo** e deverá funcionar corretamente se retornar ao estado **Ativo**.
+
+### Desativando o nó e reativando (reiniciando)
+Caso precise reiniciar o nó, o procedimento a seguir é diferente.
+
+1. Primeiro, coloque o nó no **estado inativo**.
+2. Em seguida, coloque o nó no **estado não configurado**.
+3. Em seguida, coloque-o de volta no **estado inativo**.
+4. Finalmente, coloque-o de volta no **estado ativo**.
+
+Você já sabe como funcionam as etapas 1, 3 e 4. Na etapa 2, o sistema chama a função **on_cleanup**:
+
+```cpp
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+on_cleanup(const rclcpp_lifecycle::State &)
+{
+    timer_.reset();
+    pub_.reset();
+    RCUTILS_LOG_INFO_NAMED(get_name(), "on cleanup is called.");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+}
+```
+
+Essa é a função responsável por redefinir tudo de volta ao seu estado inicial, como se nunca tivesse sido ativado, para que esteja pronto para começar tudo de novo do zero.
+
+### Exceções não capturadas
+Uma função pode gerar uma exceção que não é capturada. Nesse caso, a máquina de estados que gerencia as transições gera uma mensagem de erro e salta diretamente para a função **on_error**, levando o nó diretamente ao estado **finalizado**.
+
+```cpp
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+on_error(const rclcpp_lifecycle::State &)
+{
+    RCUTILS_LOG_INFO_NAMED(get_name(), "something went wrong!");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+}
+```
+
+## Life Cycle Manager
