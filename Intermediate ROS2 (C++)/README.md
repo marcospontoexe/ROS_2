@@ -759,3 +759,70 @@ execute `ros2 run executors_exercises_pkg executor_example_4_singlethreaded_node
 Como você pode ver, isso não funciona. Isso ocorre porque você só pode ter UM ÚNICO EXECUTOR por binário.
 
 ## Uso de Callback Groups
+Até agora, você aprendeu a trabalhar com executores. No entanto, para lidar adequadamente com múltiplos retornos de chamada (Callback), muitas vezes você precisará de ferramentas de gerenciamento adicionais. É aqui que os grupos de retorno de chamada (Callback Groups) entram em ação!
+
+[Veja neese exemplo (**executor_example_5.cpp**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/executor_example_5.cpp):
+
+* Aqui, você tem uma classe Node com MAIS de um Callback, neste caso, DOIS.
+* Veja o que acontece, porque, com base no que você explicou anteriormente, o Executor **Multi-Threaded** inicia apenas UMA THREAD por Node, a menos que você especifique o contrário.
+
+Após executar: `ros2 run executors_exercises_pkg executor_example_5_node`, verá o seguinte:
+
+```shell
+[INFO] [1649243091.314707167] [slow_timer_subscriber]: timer_1_node INFO...
+[INFO] [1649243092.774541260] [slow_timer_subscriber]: TIMER CALLBACK 1
+[INFO] [1649243093.776366590] [slow_timer_subscriber]: TIMER CALLBACK 1
+[INFO] [1649243094.776625513] [slow_timer_subscriber]: TIMER CALLBACK 1
+[INFO] [1649243095.776895726] [slow_timer_subscriber]: TIMER CALLBACK 1
+[INFO] [1649243096.777163350] [slow_timer_subscriber]: TIMER CALLBACK 1
+```
+
+* Você vê que SOMENTE o PRIMEIRO RETORNO DE CHAMADA é executado.
+* O motivo pelo qual apenas um Retorno de Chamada é executado é que o Executor criou apenas uma thread por Nó. Portanto, você tem apenas uma thread para executar tudo; portanto, não é possível executar vários Retornos de Chamada em paralelo.
+* E o motivo pelo qual o timer_callback_1 é executado é que ele foi instanciado primeiro no construtor.
+
+**O que você pode fazer?**
+
+Introduzir um novo conceito chamado **Grupos de Callback**.
+
+Grupos de Callback permitem agrupar diferentes Callbacks para que alguns sejam executados em paralelo e outros não. Existem DOIS tipos:
+
+* **Reentrant**: Todos os Callbacks nesses tipos de grupos poderão ser executados simultaneamente. O Executor gerará quantas threads forem necessárias para isso.
+* **MutualyExclusive**: Todos os Callbacks dentro desses tipos de grupos podem ser executados **UM de cada vez**. Isso é útil para Callbacks que, por algum motivo, afetam o mesmo sistema ou usam os mesmos recursos que outro. Além disso, oferece melhor controle sobre o fluxo de Callback.
+
+[Veja um exemplo de **Reentrant**]().
+
+A única mudança real é adicionar esses callback_groups aos assinantes, serviços ou, neste caso, temporizadores.
+
+* Neste caso, ambos usam o mesmo Grupo de Callback do tipo Reentrante.
+
+```cpp
+callback_group_ =this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
+...
+
+timer1_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_1, this), callback_group_);
+timer2_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_2, this), callback_group_);
+```
+
+[Veja um exemplo de **MutualyExclusive**]().
+
+Você alterou o tipo de Grupo de retorno de chamada para Mutuamente exclusivo:
+
+```cpp
+callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+```
+
+[Veja um exemplo de **mutualyexclusive_multiple**]().
+
+E, neste exemplo, você está dando a cada um dos temporizadores seu próprio Grupo de Retorno de Chamada. Isso o torna igual à versão Reentrante.
+
+```cpp
+callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+callback_group_2 = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
+...
+
+timer1_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_1, this), callback_group_);
+timer2_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_2, this), callback_group_2);
+```
