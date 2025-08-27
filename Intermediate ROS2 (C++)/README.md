@@ -1913,3 +1913,34 @@ No ROS 2, os nós podem ser categorizados em dois tipos:
 * **Nós Gerenciados**, que herdam de **LifecycleNode()**, proporcionando maior controle sobre sua execução.
 
 Esta unidade se concentra nos Nós Gerenciados — por que eles são úteis, como diferem dos nós padrão e como implementá-los em um sistema ROS 2. Ao final, você entenderá como usar os Nós de Ciclo de Vida (LifecycleNode) para melhorar a confiabilidade do sistema, o gerenciamento de recursos e os processos de inicialização/desligamento em suas aplicações robóticas.
+
+## Por que você precisa de nós gerenciados?
+Nós gerenciados proporcionam maior controle sobre o ciclo de vida de um sistema ROS 2, abordando dois desafios principais:
+
+1. Coordenação da Ordem de Execução dos Nós: Em aplicações robóticas complexas, determinados nós devem ser inicializados em uma sequência específica para que o sistema possa funcionar corretamente. Por exemplo, um sistema de localização não deve ser iniciado até que o servidor de mapas esteja ativo e fornecendo mapas. Nós gerenciados ajudam a impor essa ordem, evitando erros devido à execução prematura.
+
+2. Reinicialização ou Pausagem de Nós sem Reinício: Em alguns casos, pode ser necessário pausar, reiniciar ou reinicializar um sistema sem desligá-lo completamente. Por exemplo, se as condições de navegação mudarem, pode ser necessário redefinir o sistema de navegação dinamicamente sem interromper e reiniciar todo o processo.
+
+Embora os nós gerenciados ainda estejam em evolução, eles já são amplamente utilizados em grandes projetos ROS 2, como Nav2 e MoveIt2, comprovando sua importância em aplicações robóticas modernas.
+
+## O que é um nó gerenciado?
+Um nó gerenciado é um nó com diferentes estados possíveis. O nó realiza ações diferentes dependendo do seu estado atual.
+
+Os possíveis estados de um nó gerenciado são:
+
+* Não Configurado
+* Inativo
+* Ativo
+* Finalizado
+
+Quando um nó gerenciado é criado, ele inicia no estado **Não Configurado**.
+
+Para mudar de um estado para outro, alguém precisa chutar o nó para que ele pule para o outro estado. Isso é feito por um nó externo que geralmente assume a tarefa de gerenciar os nós e coordená-los. Também pode ser feito manualmente pela linha de comando (veja abaixo).
+
+A figura a seguir representa os estados de um nó gerenciado e as transições entre eles:
+
+![lifecycle](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/imagens/lifecycle.png)
+
+**OBSERVAÇÃO**: atualmente, nós gerenciados estão disponíveis para C++, não Python.
+
+## Exemplo simples de nó gerenciado
