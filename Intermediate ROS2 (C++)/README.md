@@ -1294,3 +1294,153 @@ E o editor também não apresenta erro porque está publicando algo com um perí
     * Se o prazo do assinante for pequeno o suficiente, isso acionará o evento de retorno de chamada no loop de pausa ou mesmo no loop de publicação normal.
 3. Os assinantes e os publicadores têm valores de QoS incompatíveis.
     * Aqui, você deve consultar a tabela de compatibilidades.
+
+## Lifespan
+É definido pela duração, o tempo entre a publicação e o recebimento da mensagem, após o qual a mensagem se torna obsoleta. Isso é importante para dados de sensores, como varreduras a laser ou câmeras, porque, normalmente, você está interessado em ter os valores mais recentes, e dados que chegam depois são inúteis.
+
+**Primeiro**, a duração do tempo de vida só é útil se você a usar com **reliable e transient_local**. O motivo é que, se você não garantir o recebimento da mensagem (**Reliable**) e não esperar que os assinantes atrasados ​​a recebam (**transient_local**), não será possível avaliar a duração da mensagem publicada.
+
+É por isso que você define a QoS no publicador e nos assinantes:
+
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/subscriber_lifespan.cpp) (**subscriber_lifespan.cpp**)
+
+[Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/publisher_lifespan.cpp) (**publisher_lifespan.cpp**)
+
+Como funciona o tempo de vida?
+
+Defina uma data de expiração para as mensagens publicadas pelo publicador. Se o assinante receber uma mensagem mais antiga que o tempo de vida definido no publicador, ele nem mesmo processará esses dados. É como se a mensagem não tivesse chegado ao assinante.
+
+No código do assinante, você tem o seguinte:
+
+```cpp
+void listener_callback(const std_msgs::msg::String::SharedPtr msg) {
+    // The data has the format Seconds,NanoSeconds
+
+    raw_data = msg->data;
+    RCLCPP_INFO(this->get_logger(), "Data Received = %s seconds",
+                raw_data.c_str());
+    delimiter = ",";
+    last = 0;
+    next = 0;
+    while ((next = raw_data.find(delimiter, last)) != std::string::npos) {
+      seconds = std::stod(raw_data.substr(last, next - last));
+      last = next + 1;
+    }
+    nanoseconds = std::stod(raw_data.substr(last));
+    RCLCPP_INFO(this->get_logger(), "SPLIT = [%lf,%lf]", seconds, nanoseconds);
+    RCLCPP_INFO(this->get_logger(), "seconds = %lf, nseconds = %lf", seconds,
+                nanoseconds);
+
+    total_seconds = seconds + nanoseconds;
+    RCLCPP_INFO(this->get_logger(), "total_seconds = %lf", total_seconds);
+
+    rclcpp::Time time_now_obj = this->now();
+    total_current_time = time_now_obj.seconds() + time_now_obj.nanoseconds();
+    RCLCPP_INFO(this->get_logger(), "total_current_time = %lf",
+                total_current_time);
+    delta = total_current_time - total_seconds;
+    RCLCPP_INFO(this->get_logger(), "Message Age = %lf seconds", delta);
+}
+```
+
+Aqui, calcule o tempo decorrido entre o momento em que a mensagem foi publicada e o momento em que o assinante a recebeu.
+
+Lembre-se de que, se esse tempo exceder o tempo de vida útil do publicador, o Retorno de Chamada do Assinante não será acionado. Isso é feito internamente pela estrutura DDS ROS2.
+
+Ao executar: `ros2 run qos_tests_pkg publisher_lifespan_exe -lifespan 20.0`:
+
+```shell
+[INFO] [1680129694.728612919] [publisher_qos_obj]: Publishing: 1680129694.728510,1680129694728509652
+```
+
+Isso deve ser lançado antes do editor ou nos próximos 20 segundos.
+
+```shell
+ros2 run qos_tests_pkg subscriber_lifespan_exe -lifespan 1.0
+```
+
+```shell
+[INFO] [1680131593.313753596] [subscriber_qos_obj]: Data Received = 1680131588.319890,1680131588319890176.000000 seconds
+[INFO] [1680131593.313841995] [subscriber_qos_obj]: SPLIT = [1680131588.319890,1680131588319890176.000000]
+[INFO] [1680131593.313881163] [subscriber_qos_obj]: seconds = 1680131588.319890, nseconds = 1680131588319890176.000000
+[INFO] [1680131593.313921224] [subscriber_qos_obj]: total_seconds = 1680131588.319890
+[INFO] [1680131593.313943456] [subscriber_qos_obj]: total_current_time = 1680131593.313942
+[INFO] [1680131593.313964152] [subscriber_qos_obj]: Message Age = 4.994052 seconds
+```
+
+Observe que a Idade da Mensagem mostrará o número de segundos decorridos entre o início do publicador e o início do assinante.
+
+### Vida útil do Publisher muito restritiva
+Para fazer este teste, você deve iniciar o assinante primeiro; caso contrário, você não poderá medir o tempo corretamente.
+
+```shell
+ros2 run qos_tests_pkg subscriber_lifespan_exe -lifespan 1.0
+```
+
+Inicie uma vida útil rápida, mas factível pelo seu sistema
+
+```shell
+ros2 run qos_tests_pkg publisher_lifespan_exe -lifespan 0.00001
+```
+
+Como você pode ver, a mensagem "Age" tem 0,000424 segundos, então, em teoria, NÃO DEVERIA ter funcionado. No entanto, o assinante foi muito mais rápido do que o tempo que o Callback levou para fazer os cálculos e se conectar ao Callback. Ele recebeu a mensagem em 0,00001 segundos, o tempo de vida do publicador.
+
+```shell
+[INFO] [1680132077.273447403] [subscriber_qos_obj]: Data Received = 1680132077.273251,1680132077273251072.000000 seconds
+[INFO] [1680132077.273569591] [subscriber_qos_obj]: SPLIT = [1680132077.273251,1680132077273251072.000000]
+[INFO] [1680132077.273608618] [subscriber_qos_obj]: seconds = 1680132077.273251, nseconds = 1680132077273251072.000000
+[INFO] [1680132077.273652540] [subscriber_qos_obj]: total_seconds = 1680132077.273251
+[INFO] [1680132077.273676718] [subscriber_qos_obj]: total_current_time = 1680132077.273675
+[INFO] [1680132077.273697039] [subscriber_qos_obj]: Message Age = 0.000424 seconds
+```
+
+## Liveliness and LeaseDuration
+A vivacidade é usada para saber se um publicador ou nó está ativo. Isso significa que ele é publicado a uma taxa regular.
+
+A duração do lease é o período em que você considera que o publicador deve fornecer alguma mensagem ou sinal de que está ativo; caso contrário, considere-o inativo.
+
+[Veja esse exemplo]() (**subscriber_liveliness.cpp**)
+
+[Veja esse exemplo]() (**publisher_liveliness.cpp**)
+
+Precisamos comentar vários aspectos do código:
+
+* O fato de você agora estar usando grupos MutuallyExclusiveCallbackGroup
+
+```cpp
+self.group_timer_publisher = MutuallyExclusiveCallbackGroup()
+self.group_alive_timer = MutuallyExclusiveCallbackGroup()
+self.group_events_clb = MutuallyExclusiveCallbackGroup()
+```
+
+Os motivos são os seguintes: Como você executa apenas dois Callbacks regulares (timer_callback e alive_callback), se você usasse RentrantCallbackGroups, o sistema executaria timer_callback ou alive_callback várias vezes simultaneamente. Você não quer isso. Você quer que esses Callbacks sejam executados apenas uma instância de cada. É por isso que você usa mutuamente exclusivos.
+
+* O fato de você estar usando agora três Grupos de Retorno de Chamada
+
+```cpp
+event_callbacks = PublisherEventCallbacks(incompatible_qos=self.incompatible_qos_clb,liveliness=self.liveliness_clb)
+self.publisher_ = self.create_publisher(msg_type=String, topic='/qos_test', qos_profile=qos_profile, event_callbacks=event_callbacks, callback_group=self.group_events_clb)
+
+...
+
+self.create_timer(self.publish_period, self.timer_callback, callback_group=self.group_timer_publisher)
+
+self.create_timer(self.pub_topic_assert_period, self.alive_callback, callback_group=self.group_alive_timer)
+```
+
+Os motivos são os seguintes:
+
+Você deseja que pelo menos três Callbacks possam ser executados simultaneamente:
+* timer_callback
+* alive_callback
+* event_callbacks, que são o liveliness_clb ou o incompatible_qos_clb
+
+* O fato de você agora estar usando o executor multithread
+
+```cpp
+executor = MultiThreadedExecutor(num_threads=3)
+```
+
+Os motivos são os seguintes: Você precisa de pelo menos três threads para processar três Callbacks em paralelo.
+
+### Usando AUTOMATIC LIVELINESS
