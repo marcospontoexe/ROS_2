@@ -873,3 +873,88 @@ Ao executar: `ros2 run executors_exercises_pkg executor_example_5_mutualyexclusi
 Aqui, como você tem um Grupo de Callback por Callback, o Executor cria uma thread para cada Grupo de Callback. Portanto, o comportamento é o mesmo do Grupo de Callback único Reentrante.
 
 ## Uso de WaitSet
+A maioria dos aplicativos de robótica que você criará com o ROS2 Multi-Threading já são suficientes para o que você acabou de ver. No entanto, há algumas ocasiões em que isso não é suficiente.
+
+É aqui que entra a estrutura WaitSet. Ela permite controlar tópicos, temporizadores, condições de disparo e muito mais de forma controlada.
+
+[Veja um exemplo (**wait_for_box_bots_arrive.cpp**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/wait_for_box_bots_arrive.cpp).
+
+Alguns ponto importantes:
+
+``cpp
+// Minimum 2 {} {} to avoid problems in declaration.
+rclcpp::WaitSet wait_set({}, {});
+
+wait_set.add_subscription(sub1);
+wait_set.add_subscription(sub2);
+wait_set.add_subscription(sub3);
+```
+
+* Aqui, inicialize o objeto wait_set.
+* Você precisa adicionar os `{}` vazios para que o construtor funcione corretamente. O motivo é a maneira como o construtor e os modelos funcionam. Existem outras maneiras de fazer isso, mas esta é a mais simples.
+* Após a inicialização do objeto, você pode adicionar diferentes funções invocáveis, como:
+    * add_subscritions
+    * add_guard_condition
+    * add_client
+    * add_waitable
+    * add_service
+    * add_timer
+* Nesta unidade, você verá apenas exemplos de add_subscritions e add_guard_condition, pois são os básicos.
+
+```cpp
+const auto wait_result = wait_set.wait(3s);
+```
+
+* É assim que você define o tempo limite.
+
+```cpp
+wait_result.kind() == rclcpp::WaitResultKind::Ready
+```
+
+* Este tipo de função fornece o status do WaitSet. Os básicos são:
+    * **Timeout**: Nada aconteceu no tempo limite especificado.
+    * **Empty**: Aqui é onde você não adicionou nada ao wait_set. É útil quando você usa a função remove_elements do wait_set. Não é mostrado aqui.
+    * **Ready**: Algo aconteceu. Um dos elementos internos foi acionado.
+
+```cpp
+wait_result.get_wait_set().get_rcl_wait_set().subscriptions[0U];
+```
+
+* É assim que você verifica se há novas mensagens no objeto de assinatura.
+* Observe que você não está usando **int** como índice, mas sim o tipo **size_t**. Portanto, é o {INDEXNUMBER}{U}, ou você pode inicializá-lo assim:
+
+```cpp
+// For index 0, instead of using dirrectly 0U
+size_t guard_index = 0;
+```
+
+E é assim que você obtém os dados da mensagem, um de cada vez.
+
+```cpp
+sub1->take(topic_msg, msg_info);
+```
+
+### Otimizando o uso do CPU
+Se quiser otimizar o impacto na CPU, você pode usar StaticWaitSet. Este é um melhor desempenho porque, após a inicialização, os elementos não podem ser adicionados ou removidos.
+
+[Aqui (**wait_for_box_bots_arrive_static.cpp**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/wait_for_box_bots_arrive_static.cpp), DEFINA EXPLICITAMENTE TODOS OS ELEMENTOS NECESSÁRIOS para o WaitSet, mesmo que NÃO HAJA NENHUM:
+
+Como você pode ver, esta é a única parte que mudou:
+
+Indique através de TEMPLATES os elementos dentro do StaticWaitSet
+
+```cpp
+rclcpp::StaticWaitSet<3, 0, 0, 0, 0, 0>
+```
+
+Sempre coloque os elementos dentro desta estrutura:
+
+```
+{{{ELEMENT_1}, {ELEMENT_2}, ..., {ELEMENT_N}}}
+// If empty
+{}
+```
+
+Aqui, você está adicionando TRÊS assinantes.
+
+O comportamento é EXATAMENTE O MESMO que o WaitSet normal.
