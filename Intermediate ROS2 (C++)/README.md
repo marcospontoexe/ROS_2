@@ -790,7 +790,7 @@ Grupos de Callback permitem agrupar diferentes Callbacks para que alguns sejam e
 * **Reentrant**: Todos os Callbacks nesses tipos de grupos poderão ser executados simultaneamente. O Executor gerará quantas threads forem necessárias para isso.
 * **MutualyExclusive**: Todos os Callbacks dentro desses tipos de grupos podem ser executados **UM de cada vez**. Isso é útil para Callbacks que, por algum motivo, afetam o mesmo sistema ou usam os mesmos recursos que outro. Além disso, oferece melhor controle sobre o fluxo de Callback.
 
-[Veja um exemplo de **Reentrant**]().
+* [Veja um exemplo de **Reentrant**](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/executor_example_5_reentrant.cpp).
 
 A única mudança real é adicionar esses callback_groups aos assinantes, serviços ou, neste caso, temporizadores.
 
@@ -805,7 +805,22 @@ timer1_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_1, 
 timer2_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_2, this), callback_group_);
 ```
 
-[Veja um exemplo de **MutualyExclusive**]().
+Ao executar: `ros2 run executors_exercises_pkg executor_example_5_reentrant_node`, verá o seguinte:
+
+```shell
+[INFO] [1649245219.694108351] [slow_timer_subscriber]: Wating...TIMER CALLBACK 2
+[INFO] [1649245219.698429480] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245219.698525651] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245220.699197731] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245220.699308479] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245221.699431638] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245221.699605561] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245222.694242393] [slow_timer_subscriber]: End TIMER CALLBACK 2
+```
+
+Você pode ver que funciona perfeitamente. Porque o Callback 1 é chamado a cada um segundo e o Callback 2 a cada três segundos. Você vê exatamente esse comportamento, então eles funcionam em paralelo.
+
+* [Veja um exemplo de **MutualyExclusive**](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/executor_example_5_mutualyexclusive.cpp).
 
 Você alterou o tipo de Grupo de retorno de chamada para Mutuamente exclusivo:
 
@@ -813,7 +828,21 @@ Você alterou o tipo de Grupo de retorno de chamada para Mutuamente exclusivo:
 callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 ```
 
-[Veja um exemplo de **mutualyexclusive_multiple**]().
+ao executar: `ros2 run executors_exercises_pkg executor_example_5_mutualyexclusive_node` verá o seguinte:
+
+```shell
+[INFO] [1649245342.195628849] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245343.195787567] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245343.195980444] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245344.196122558] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245344.196328147] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245345.196444581] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245345.196621215] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+```
+
+Aqui, o comportamento é exatamente o mesmo sem Grupos de Callback. Isso ocorre porque, por padrão, os Callbacks em um Nó estão TODOS dentro do mesmo Grupo de Callback do tipo Mutuamente Exclusivo.
+
+* [Veja um exemplo de **mutualyexclusive_multiple**](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/executor_example_5_mutualyexclusive_multiple.cpp).
 
 E, neste exemplo, você está dando a cada um dos temporizadores seu próprio Grupo de Retorno de Chamada. Isso o torna igual à versão Reentrante.
 
@@ -826,3 +855,21 @@ callback_group_2 = this->create_callback_group(rclcpp::CallbackGroupType::Mutual
 timer1_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_1, this), callback_group_);
 timer2_ = this->create_wall_timer(500ms, std::bind(&TwoTimer::timer_callback_2, this), callback_group_2);
 ```
+
+Ao executar: `ros2 run executors_exercises_pkg executor_example_5_mutualyexclusive_multiple_node` verá o seguinte: 
+
+```shell
+[INFO] [1649245460.033089561] [slow_timer_subscriber]: Wating...TIMER CALLBACK 2
+[INFO] [1649245460.033469544] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245460.033586291] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245461.033712353] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245461.033941159] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245462.034098058] [slow_timer_subscriber]: End TIMER CALLBACK 1
+[INFO] [1649245462.034267823] [slow_timer_subscriber]: Wating...TIMER CALLBACK 1
+[INFO] [1649245463.033231549] [slow_timer_subscriber]: End TIMER CALLBACK 2
+[INFO] [1649245463.033400761] [slow_timer_subscriber]: Wating...TIMER CALLBACK 2
+```
+
+Aqui, como você tem um Grupo de Callback por Callback, o Executor cria uma thread para cada Grupo de Callback. Portanto, o comportamento é o mesmo do Grupo de Callback único Reentrante.
+
+## Uso de WaitSet
