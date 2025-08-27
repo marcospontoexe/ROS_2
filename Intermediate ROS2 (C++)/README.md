@@ -1906,3 +1906,10 @@ ps faux | grep "ros2_daemon"
 ```shel
 /usr/bin/python3 /opt/ros/galactic/bin/_ros2_daemon --rmw-implementation rmw_cyclonedds_cpp --ros-domain-id 0
 ```
+
+# LifecycleNode
+No ROS 2, os nós podem ser categorizados em dois tipos:
+* **Nós Padrão**, que herdam de **Node()**, operando continuamente após serem iniciados.
+* **Nós Gerenciados**, que herdam de **LifecycleNode()**, proporcionando maior controle sobre sua execução.
+
+Esta unidade se concentra nos Nós Gerenciados — por que eles são úteis, como diferem dos nós padrão e como implementá-los em um sistema ROS 2. Ao final, você entenderá como usar os Nós de Ciclo de Vida (LifecycleNode) para melhorar a confiabilidade do sistema, o gerenciamento de recursos e os processos de inicialização/desligamento em suas aplicações robóticas.
