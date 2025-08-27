@@ -958,3 +958,67 @@ Sempre coloque os elementos dentro desta estrutura:
 Aqui, você está adicionando TRÊS assinantes.
 
 O comportamento é EXATAMENTE O MESMO que o WaitSet normal.
+
+### GUARD CONDITIONS
+Veja um possível uso de CONDIÇÕES DE GUARDA.
+É uma boa maneira de controlar seu fluxo em assinaturas e outros elementos.
+Neste caso, use UMA CONDIÇÃO DE GUARDA para detectar se houve TRÊS TIMEOUTS sem nenhuma publicação do box_bot nos tópicos atingidos. Em caso afirmativo, o Node será encerrado.
+
+[Veja um exemplo (**wait_for_box_bots_arrive_condition.cpp**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/executors_exercises_pkg/src/wait_for_box_bots_arrive_condition.cpp).
+
+Alguns ponto importantes:
+
+```cpp
+auto guard_condition1 = std::make_shared<rclcpp::GuardCondition>();
+...
+wait_set.add_guard_condition(guard_condition1);
+```
+
+* Aqui, inicialize a condição de guarda.
+* E adicione-a ao objeto wait_set, usando, neste caso, o método add_guard_condition.
+
+```cpp
+bool condition1_triggered = wait_result.get_wait_set().get_rcl_wait_set().guard_conditions[guard_index];
+```
+
+Isso é o equivalente a guard_conditions para esperar por um gatilho.
+
+```cpp
+if (condition1_triggered) {
+        RCLCPP_INFO(node->get_logger(), "TOO MANY TIMEOUTS CONDITION TRIGGERED...ENDING NODE");
+        break;
+    }
+```
+
+Se esta condição FOR DISPARADA, interrompa o loop while.
+
+```cpp
+timeout_counter += 1;
+if (timeout_counter > 3) {
+  RCLCPP_INFO(node->get_logger(), "Action: Trigger Guard condition 1");
+  guard_condition1->trigger();
+}
+```
+
+Acione-o usando o método guard_condition1->trigger().
+
+Ao executar: `ros2 run executors_exercises_pkg wait_for_box_bots_arrive_condition_node` verá o seguinte:
+
+Quando alguém está publicando trabalhos, **o mesmo que nos exemplos acima.
+No entanto, se houver mais de TRÊS TEMPOS LIMITE, você deverá obter algo assim:
+
+```shell
+[ERROR] [1649439358.883992389] [wait_set_listener]: Wait-set failed with timeout
+[ERROR] [1649439361.884370644] [wait_set_listener]: Wait-set failed with timeout
+[ERROR] [1649439364.884603913] [wait_set_listener]: Wait-set failed with timeout
+[ERROR] [1649439367.884840660] [wait_set_listener]: Wait-set failed with timeout
+[INFO] [1649439367.884938357] [wait_set_listener]: Action: Trigger Guard condition 1
+[INFO] [1649439367.884988920] [wait_set_listener]: TOO MANY TIMEOUT CONDITIONS TRIGGERED, ENDING THE NODE
+```
+
+# Qualidade de serviço (QoS)
+Nesta unidade, você será apresentado à Qualidade de Serviço (QoS) no ROS 2, um conceito crítico para garantir a comunicação confiável entre nós em sistemas robóticos. As configurações de QoS determinam como os dados são transmitidos entre nós, impactando fatores como confiabilidade, latência e uso de largura de banda.
+
+Compreender a QoS é essencial para ajustar suas aplicações ROS 2 a requisitos específicos, especialmente em ambientes robóticos em tempo real, distribuídos e críticos para a segurança. Ao final desta unidade, você terá uma compreensão clara do que é QoS e como ela pode ser usada para otimizar a comunicação em sistemas ROS 2.
+
+Vamos nos aprofundar nos detalhes da QoS e explorar como você pode aplicá-la para melhorar o desempenho e a robustez do seu robô.
