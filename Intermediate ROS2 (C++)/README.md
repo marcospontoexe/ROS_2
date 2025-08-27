@@ -1022,3 +1022,30 @@ Nesta unidade, você será apresentado à Qualidade de Serviço (QoS) no ROS 2, 
 Compreender a QoS é essencial para ajustar suas aplicações ROS 2 a requisitos específicos, especialmente em ambientes robóticos em tempo real, distribuídos e críticos para a segurança. Ao final desta unidade, você terá uma compreensão clara do que é QoS e como ela pode ser usada para otimizar a comunicação em sistemas ROS 2.
 
 Vamos nos aprofundar nos detalhes da QoS e explorar como você pode aplicá-la para melhorar o desempenho e a robustez do seu robô.
+
+No ROS 1, o TCP era usado para transporte de mensagens. No entanto, o TCP não é ideal para redes com perdas, como Wi-Fi ou sistemas não confiáveis. Essa limitação dificultou o uso do ROS 1 por engenheiros em aplicações críticas ao sistema ou em ambientes reais.
+
+Tudo isso mudou com o ROS 2, que usa o **UDP** como **protocolo de transporte** e utiliza o **DDS** (Serviço de Distribuição de Dados). Com essa mudança, agora você pode controlar a confiabilidade dos nós e personalizar a comunicação com base em necessidades específicas.
+
+O ROS 2 oferece controle detalhado sobre as configurações de QoS, permitindo a configuração de parâmetros como **confiabilidade, histórico e durabilidade** para publicadores e assinantes de tópicos.
+
+No entanto, para uma comunicação eficaz entre nodes, suas **configurações de QoS devem ser compatíveis** — isso às vezes pode ser uma fonte de problemas em sistemas ROS 2.
+
+## Entendendo a compatibilidade QoS
+[Veja esse exemplo (**subscriber_custom_minimal_qos.cpp**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/subscriber_custom_minimal_qos.cpp).
+
+Aqui, defina **reliability=ReliabilityPolicy.RELIABLE**. Isso significa que você está forçando este assinante a receber todas as mensagens enviadas pelo publicador.
+
+[Veja esse exemplo (**publisher_custom_minimal_qos.cpp**)](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/publisher_custom_minimal_qos.cpp).
+
+Observe que você está DEFININDO a versão do DDS explicitamente. Isso ocorre porque cada implementação do DDS possui algumas QoS que suporta e outras que não. Dessa forma, você garante que está usando o Cyclone, pois é a versão padrão no Galactic:
+
+```shell
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+ros2 run qos_tests_pkg publisher_custom_minimal_qos_exe -reliability reliable
+```
+
+```shell
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+ros2 run qos_tests_pkg subscriber_custom_minimal_qos_exe
+```
