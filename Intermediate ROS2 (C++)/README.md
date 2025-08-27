@@ -1281,9 +1281,9 @@ deadline==Duration(nanoseconds=10000000000)
 [INFO] [1644936053.648887735] [subscriber_qos_obj]: Data Received =1644936053,647928872
 ```
 
-Você pode ver que o assinante não apresenta erro, mesmo quando o editor não publica nada por aproximadamente 2 segundos. Isso ocorre porque o assinante tinha 10 segundos de deadline, que está dentro da margem.
+Você pode ver que o assinante não apresenta erro, mesmo quando o publisher não publica nada por aproximadamente 2 segundos. Isso ocorre porque o assinante tinha 10 segundos de deadline, que está dentro da margem.
 
-E o editor também não apresenta erro porque está publicando algo com um período inferior ao seu deadline de 10 segundos.
+E o publisher também não apresenta erro porque está publicando algo com um período inferior ao seu deadline de 10 segundos.
 
 ### Teste diferentes valores de prazo para observar os diferentes comportamentos:
 
@@ -1353,7 +1353,7 @@ Ao executar: `ros2 run qos_tests_pkg publisher_lifespan_exe -lifespan 20.0`:
 [INFO] [1680129694.728612919] [publisher_qos_obj]: Publishing: 1680129694.728510,1680129694728509652
 ```
 
-Isso deve ser lançado antes do editor ou nos próximos 20 segundos.
+Isso deve ser lançado antes do publisher ou nos próximos 20 segundos.
 
 ```shell
 ros2 run qos_tests_pkg subscriber_lifespan_exe -lifespan 1.0
@@ -1498,7 +1498,7 @@ Observe que o acionamento no assinante é instantâneo quando o publicador morre
 
 ### Usando o método ALIVE para o MANUAL_BY_TOPIC
 
-**Exemplo de uma mensagem de editor rápido, mas Alive lenta:**
+#### **Exemplo de uma mensagem de publisher rápido, mas Alive lenta:**
 
 Neste caso, o tempo de publicação do sinal Alive é maior que o LeaseDuration. Isso significa que ele deve gerar um erro. O único momento em que isso não ocorre é quando você publica, pois a publicação tem prioridade sobre o sinal Alive.
 
@@ -1536,3 +1536,98 @@ ros2 run qos_tests_pkg subscriber_liveliness_exe -liveliness_lease_duration 3000
 [INFO] [1645026611.247577412] [subscriber_liveliness]: Data Received =1645026611,246611642
 ```
 
+Veja várias fases:
+
+* Fase 1: O publicador publica a cada segundo, então não há problema.
+* Fase 2: O publicador entra na fase de pausa, onde não publicará até 5 segundos depois; portanto, o único método que poderia salvá-lo é o Alive. No entanto, o método Alive publica a cada três segundos. Portanto, após três segundos (declarados no LeaseDuration do assinante), o gatilho mostra que agora você tem um NOT_ALIVE_COUNT:
+
+```shell
+* not_alive_count=1
+* alive_count_change=-1
+* not_alive_count_change=1
+```
+
+* Fase 3: O publicador começa a publicar novamente e, portanto, aciona o Callback novamente, informando que você recuperou aquele publicador:
+
+```shell
+* alive_count=1
+* not_alive_count=0
+* alive_count_change=1
+* not_alive_count_change=-1
+```
+
+#### **Exemplo de uma mensagem de publicação lenta, mas um Alive rápido
+Nesse caso, embora o publicador seja mais lento do que o leaseDuration necessário (4 segundos para publicar, LeaseDuration 2 segundos), porque o sinal Alive é publicado em um período de 1 segundo, não importa se o publicador está lento. Mesmo quando você pausa o publicador por 5 segundos, não importa, pois o sinal Alive está sempre publicando.
+
+```shell
+ros2 run qos_tests_pkg publisher_liveliness_exe -liveliness_lease_duration 2000 -publish_period 4000 -topic_assert_period 1000 --publish_assert yes --policy MANUAL_BY_TOPIC
+```
+
+```shell
+ros2 run qos_tests_pkg subscriber_liveliness_exe -liveliness_lease_duration 3000 --policy AUTOMATIC
+```
+
+Aqui, nenhum problema ocorrerá, apenas a primeira mensagem informando que há um publisher. E se você interromper o publisher, ele informará, após o término do contrato, que não há mais publishers:
+
+```shell
+[ERROR] [1645027798.044206747] [subscriber_liveliness]: SUBSCRIBER::: Liveliness Triggered!
+[ERROR] [1645027798.044944871] [subscriber_liveliness]: alive_count=1
+[ERROR] [1645027798.045553071] [subscriber_liveliness]: not_alive_count=0
+[ERROR] [1645027798.046156011] [subscriber_liveliness]: alive_count_change=1
+[ERROR] [1645027798.046756773] [subscriber_liveliness]: not_alive_count_change=0
+[ERROR] [1645027798.047374311] [subscriber_liveliness]: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+```
+
+E se você parar o publisher, ele informará após o término do contrato que não há mais publishers:
+
+```shell
+[ERROR] [1645027892.103160561] [subscriber_liveliness]: SUBSCRIBER::: Liveliness Triggered!
+[ERROR] [1645027892.103815172] [subscriber_liveliness]: alive_count=0
+[ERROR] [1645027892.104451484] [subscriber_liveliness]: not_alive_count=0
+[ERROR] [1645027892.105099979] [subscriber_liveliness]: alive_count_change=-1
+[ERROR] [1645027892.105572328] [subscriber_liveliness]: not_alive_count_change=0
+[ERROR] [1645027892.106211099] [subscriber_liveliness]: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+```
+
+#### Event Callbacks:
+Você utilizou Callbacks de Eventos para capturar os diferentes problemas de QoS.
+
+Se quiser ver todas as opções, dê uma olhada no código-fonte aqui: [qos_event](https://github.com/ros2/rclpy/blob/master/rclpy/rclpy/qos_event.py)
+
+## QoS no ROS 2 Bags
+Existem algumas situações em que você pode querer substituir o QoS do ROS2Bags. Talvez porque o perfil gravado originalmente seja muito restrito ou você queira simular um sistema mais rigoroso com os dados de reprodução.
+
+No entanto, a gravação tem suas ressalvas.
+
+### Gravação ROSbags QoS
+Rosbags armazena o QoS original.
+
+Registre o tópico da varredura em um rosbag: 
+
+```shell
+cd ~/ros2_ws/src
+mkdir rosbags
+cd rosbags
+ros2 bag record /scan -o neobotix_mp400_scan_bag
+```
+
+PRESSIONE CTRL+C quando terminar
+
+Agora, repita o loop e verifique se o QoS foi registrado corretamente:
+
+Como o robô ainda está publicando o tópico /scan, você remapear o tópico rosbags /scan para /scan2.
+
+```shell
+cd ~/ros2_ws/src
+cd rosbags
+ros2 bag play --remap /scan:=/scan2 -l neobotix_mp400_scan_bag
+```
+
+### Replay Changing the QoS
+Para isso foi criado [**qos_override.yaml**]()
+
+Aqui, altere o seguinte:
+
+* reliability -> RELIABLE
+* history -> KEEP_ALL
+* deadline ->  1 segundo e 100 nanossegundos
