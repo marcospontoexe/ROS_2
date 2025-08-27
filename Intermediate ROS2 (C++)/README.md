@@ -1631,3 +1631,44 @@ Aqui, altere o seguinte:
 * reliability -> RELIABLE
 * history -> KEEP_ALL
 * deadline ->  1 segundo e 100 nanossegundos
+
+**Reproduza o ROSbag** com o arquivo QoS personalizado qos_override.yaml
+
+Como o robô ainda está publicando o tópico /scan, você remapear o tópico /scan do rosbag para /scan2.
+
+```shell
+cd ~/ros2_ws/src/rosbags/
+ros2 bag play --remap /scan:=/scan2 --qos-profile-overrides-path qos_override.yaml -l neobotix_mp400_scan_bag
+```
+
+```shell
+ros2 topic info /scan2 --verbose
+```
+
+```shell
+Type: sensor_msgs/msg/LaserScan
+
+Publisher count: 1
+
+Node name: rosbag2_player
+Node namespace: /
+Topic type: sensor_msgs/msg/LaserScan
+Endpoint type: PUBLISHER
+GID: 79.3e.10.01.7a.6e.af.7a.7b.f5.23.31.00.00.15.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  Durability: VOLATILE
+  Lifespan: 9223372036854775807 nanoseconds
+  Deadline: 1000000100 nanoseconds
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: 9223372036854775807 nanoseconds
+
+Subscription count: 0
+```
+
+Você também pode verificar isso no RVIZ2.
+
+Adicione os dois lasers e defina a QoS do tópico corretamente para visualizar ambos.
+Você deverá ver algo assim, onde o verde é o scan2 e o vermelho é o scan1.
+
+![t5_qosRviz](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/imagens/t5_qosRviz.png)
