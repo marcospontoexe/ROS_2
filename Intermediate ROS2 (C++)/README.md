@@ -1399,9 +1399,9 @@ A vivacidade é usada para saber se um publicador ou nó está ativo. Isso signi
 
 A duração do lease é o período em que você considera que o publicador deve fornecer alguma mensagem ou sinal de que está ativo; caso contrário, considere-o inativo.
 
-[Veja esse exemplo]() (**subscriber_liveliness.cpp**)
+[Veja esse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/subscriber_liveliness.cpp) (**subscriber_liveliness.cpp**)
 
-[Veja esse exemplo]() (**publisher_liveliness.cpp**)
+[Veja esse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/publisher_liveliness.cpp) (**publisher_liveliness.cpp**)
 
 Precisamos comentar vários aspectos do código:
 
@@ -1444,3 +1444,95 @@ executor = MultiThreadedExecutor(num_threads=3)
 Os motivos são os seguintes: Você precisa de pelo menos três threads para processar três Callbacks em paralelo.
 
 ### Usando AUTOMATIC LIVELINESS
+Você não publica a mensagem Alive; você publica a cada três segundos, com leaseDuration de dois segundos. Em teoria, isso deveria acionar o erro de retorno de chamada de liveliness. No entanto, do lado do assinante e do publicador, nada acontece.
+
+```shell
+ros2 run qos_tests_pkg publisher_liveliness_exe -liveliness_lease_duration 2000 -publish_period 3000 -topic_assert_period 3000 --publish_assert no --policy AUTOMATIC
+```
+
+Veja o assinante: Se você definir um LeaseDuration menor que o do publicador, a QoS será incompatível.
+
+```shell
+ros2 run qos_tests_pkg subscriber_liveliness_exe -liveliness_lease_duration 1000 --policy AUTOMATIC
+```
+
+Entretanto, se você definir a liveliness para um valor MAIOR que o do publicador, o Callback será acionado pelo assinante para nos informar que você tem um publicador ativo:
+
+```shell
+ros2 run qos_tests_pkg subscriber_liveliness_exe -liveliness_lease_duration 3000 --policy AUTOMATIC
+```
+
+```shell
+[ERROR] [1645025787.812470945] [subscriber_liveliness]: SUBSCRIBER::: Liveliness Triggered!
+[ERROR] [1645025787.813001553] [subscriber_liveliness]: alive_count=1
+[ERROR] [1645025787.813461276] [subscriber_liveliness]: not_alive_count=0
+[ERROR] [1645025787.813915481] [subscriber_liveliness]: alive_count_change=1
+[ERROR] [1645025787.814364720] [subscriber_liveliness]: not_alive_count_change=0
+[ERROR] [1645025787.814814320] [subscriber_liveliness]: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+```
+
+* alive_count_change=1, significa que você ganhou um publisher.
+* alive_count=1, agora você vê que tem um publisher ativo.
+
+Tente interromper o PUBLISHER agora, enquanto o assinante ainda estiver ouvindo. Neste caso, o assinante está contando o tempo definido na Duração do Contrato de Assinante. E então o sistema será acionado, informando que você perdeu um publicador:
+
+```shell
+[ERROR] [1645025805.018105382] [subscriber_liveliness]: SUBSCRIBER::: Liveliness Triggered!
+[ERROR] [1645025805.018746115] [subscriber_liveliness]: alive_count=0
+[ERROR] [1645025805.019210407] [subscriber_liveliness]: not_alive_count=0
+[ERROR] [1645025805.019749429] [subscriber_liveliness]: alive_count_change=-1
+[ERROR] [1645025805.020284825] [subscriber_liveliness]: not_alive_count_change=0
+[ERROR] [1645025805.020858597] [subscriber_liveliness]: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+```
+
+* alive_count_change=-1, significa que você perdeu um publicador.
+* alive_count=0, agora você vê que não tem nenhum publisher ativo.
+
+**A conclusão é que:**
+
+* O valor LeaseDuration SOMENTE é usado ao usar MANUAL_BY_TOPIC.
+* Um dos casos em AUTOMATIC, onde o valor LeaseDuration é usado, é para uma verificação de compatibilidade de QoS.
+* Outro caso em que você pode acionar o retorno de chamada de atividade é quando você fecha o nó do publicador enquanto o assinante ainda está funcionando.
+
+Observe que o acionamento no assinante é instantâneo quando o publicador morre. Portanto, a duração do lease não é usada.
+
+### Usando o método ALIVE para o MANUAL_BY_TOPIC
+
+**Exemplo de uma mensagem de editor rápido, mas Alive lenta:**
+
+Neste caso, o tempo de publicação do sinal Alive é maior que o LeaseDuration. Isso significa que ele deve gerar um erro. O único momento em que isso não ocorre é quando você publica, pois a publicação tem prioridade sobre o sinal Alive.
+
+Se eu puder falar com você, é óbvio que você está ativo. Não preciso de nenhum sinal especial para me dizer.
+
+Neste exemplo, você vê que ele gera um gatilho de atividade quando o tópico publicado é pausado, porque:
+
+Você parou de publicar; portanto, não recebe nenhuma mensagem.
+O sinal Alive publica a cada três segundos, o que é maior que os dois segundos da duração do lease.
+
+```shell
+ros2 run qos_tests_pkg publisher_liveliness_exe -liveliness_lease_duration 2000 -publish_period 1000 -topic_assert_period 3000 --publish_assert yes --policy MANUAL_BY_TOPIC
+```
+
+```shell
+ros2 run qos_tests_pkg subscriber_liveliness_exe -liveliness_lease_duration 3000 --policy AUTOMATIC
+```
+
+```shell
+[INFO] [1645026603.247400671] [subscriber_liveliness]: Data Received =1645026603,246501420
+[INFO] [1645026604.247414913] [subscriber_liveliness]: Data Received =1645026604,246504289
+[ERROR] [1645026607.247663506] [subscriber_liveliness]: SUBSCRIBER::: Liveliness Triggered!
+[ERROR] [1645026607.248263356] [subscriber_liveliness]: alive_count=0
+[ERROR] [1645026607.248822345] [subscriber_liveliness]: not_alive_count=1
+[ERROR] [1645026607.249401287] [subscriber_liveliness]: alive_count_change=-1
+[ERROR] [1645026607.250044846] [subscriber_liveliness]: not_alive_count_change=1
+[ERROR] [1645026607.250583916] [subscriber_liveliness]: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[ERROR] [1645026610.285465126] [subscriber_liveliness]: SUBSCRIBER::: Liveliness Triggered!
+[ERROR] [1645026610.286062735] [subscriber_liveliness]: alive_count=1
+[ERROR] [1645026610.286643833] [subscriber_liveliness]: not_alive_count=0
+[ERROR] [1645026610.287334065] [subscriber_liveliness]: alive_count_change=1
+[ERROR] [1645026610.287854927] [subscriber_liveliness]: not_alive_count_change=-1
+[ERROR] [1645026610.288318913] [subscriber_liveliness]: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[INFO] [1645026610.288989710] [subscriber_liveliness]: Data Received =1645026610,284628135
+[INFO] [1645026611.247577412] [subscriber_liveliness]: Data Received =1645026611,246611642
+```
+
