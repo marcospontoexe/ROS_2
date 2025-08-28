@@ -2178,4 +2178,145 @@ Um Gerenciador de Ciclo de Vida é um programa para gerenciar a transição de e
 
 Todos os nós gerenciados fornecem esse serviço que permite que pessoas de fora alterem seu estado. O Gerenciador de Ciclo de Vida se conecta a ele por meio de um cliente de serviço e gerencia a mudança de estado do nó.
 
-Um exemplo desse programa é o seguinte, que faz a transição do managed_scan_node para o estado ativo.
+Um exemplo é [esse programa](**lifecycle_manager.cpp**), que ao ser executado (`ros2 launch managed_scan start_managed_scan_2.launch.py`) faz a transição do managed_scan_node para o estado ativo.
+
+Isso deve iniciar dois nós:
+
+* o managed_scan_node. Este nó é gerenciado durante a publicação de dados de laser.
+* o manager_client_node. Este nó faz a transição do nó anterior para um estado ativo.
+
+**Vamos ver como esse gerenciador funciona:**
+
+### 1. Crie o cliente de serviço
+Seu gerenciador se comunicará com o serviço fornecido pelos nós gerenciados por padrão. É assim que o gerenciador altera os estados dos nós conforme sua vontade.
+
+* O gerenciador utilizará o serviço /managed_scan_node/change_state.
+* O gerenciador deve então incluir um cliente de serviço, como você estudou no curso ROS2 Basics C++.
+
+O cliente é criado na seguinte linha:
+
+```cpp
+client_change_state_ = this->create_client<lifecycle_msgs::srv::ChangeState>(node_change_state_topic);
+```
+
+### 2. Chame o cliente para fazer uma transição
+O serviço é chamado no seguinte código:
+
+```cpp
+auto request = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
+request->transition.id = transition;
+if (!client_change_state_->wait_for_service(time_out)) {
+    RCLCPP_ERROR(
+    get_logger(),
+    "Service %s is not available.",
+    client_change_state_->get_service_name());
+    return false;
+}
+auto future_result = client_change_state_->async_send_request(request);
+auto future_status = wait_for_result(future_result, time_out);
+```
+
+Lembre-se de que as mensagens de estado que você vai usar são:
+
+```cpp
+lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE
+```
+
+```cpp
+lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE
+```
+
+## Nós gerenciados no Nav2
+O Nav2 utiliza extensivamente nós gerenciados.
+
+O Nav2 utiliza um wrapper do LifecycleNode, o **nav2_util**, e o **LifecycleNode**. Este wrapper oculta muitas das complexidades dos LifecycleNodes para aplicações típicas. Ele também inclui uma conexão de vínculo para o gerenciador de ciclo de vida, garantindo que ele permaneça ativo após a transição de um nó para o nível superior. Quando um nó falha, ele informa o gerenciador de ciclo de vida e faz a transição do sistema para o nível inferior para evitar uma falha crítica.
+
+![diagram_lifecycle_manager](https://github.com/marcospontoexe/ROS_2/blob/main/ROS2%20Navigation%20(python)/imagens/diagram_lifecycle_manager.png)
+
+O nav2_lifecycle_manager fornece um serviço ROS, a partir do qual outros nós ROS podem invocar as funções de **inicialização, desligamento, redefinição, pausa ou retomada**. Com base nessa solicitação de serviço, o nav2_lifecycle_manager chama os serviços de ciclo de vida necessários nos nós gerenciados.
+
+Você pode chamar esse serviço a partir dos seus programas para **reiniciar/desativar** a navegação de forma controlada.
+
+O serviço fornecido pelo nav2_lifecycle_manager é chamado `<o nome do seu nó gerenciador de ciclo de vida>/manage_nodes`. O nav2_lifecycle_manager requer uma lista de nós a serem gerenciados. Veja este trecho de arquivo de inicialização como exemplo:
+
+```python
+Node(
+    package='nav2_lifecycle_manager',
+    executable='lifecycle_manager',
+    name='lifecycle_manager',
+    output='screen',
+    parameters=[{'autostart': True},
+                {'node_names': ['map_server',
+                                'amcl',
+                                'controller_server',
+                                'planner_server',
+                                'recoveries_server',
+                                'bt_navigator']}])
+```
+
+Ele usará a lista node_names e a ordem nessa lista para identificar os nós a serem gerenciados, a **ordem** em que eles devem ser movidos para a inicialização (do primeiro para o último) e a ordem em que devem ser pausados/parados (do último para o primeiro).
+
+Certifique-se de que este gerenciador tenha um parâmetro **{'autostart': True}** que indica o que o nav2_lifecycle_manager fará por padrão assim que os nós forem carregados na memória.
+
+Vamos verificar o sistema de navegação da sessão anterior (mapa), do pacote maps_server. 
+
+Agora verifique se o serviço fornecido pelo nav2_lifecycle_manager está em execução. Para isso, digite o seguinte comando em outro terminal: `ros2 service list | grep lifecycle`. 
+
+```shell
+/lifecycle_manager_mapper/describe_parameters
+/lifecycle_manager_mapper/get_parameter_types
+/lifecycle_manager_mapper/get_parameters
+/lifecycle_manager_mapper/is_active
+/lifecycle_manager_mapper/list_parameters
+/lifecycle_manager_mapper/manage_nodes
+/lifecycle_manager_mapper/set_parameters
+/lifecycle_manager_mapper/set_parameters_atomically
+```
+
+Como você pode ver, o serviço **/lifecycle_manager_mapper/manage_nodes** é fornecido pelo **nav2_lifecycle_manager**.
+
+Agora, vamos ver qual tipo de mensagem deve ser chamada:
+
+```shell
+nav2_msgs/srv/ManageLifecycleNodes
+```
+
+Agora, vamos ver como essa mensagem é composta com o seguinte comando: `ros2 service type /lifecycle_manager/manage_nodes`:
+
+```shell
+uint8 STARTUP = 0
+uint8 PAUSE = 1
+uint8 RESUME = 2
+uint8 RESET = 3
+uint8 SHUTDOWN = 4
+
+uint8 command
+---
+bool success
+```
+
+Ao chamar o serviço, você deve fornecer um número entre 0 e 4 para indicar o estado em que deseja colocar o sistema de navegação. O serviço retornará um valor booleano indicando se foi bem-sucedido.
+
+Assim, por exemplo, você pode chamar esse serviço com a seguinte mensagem para pausar o sistema de navegação: `ros2 service call /lifecycle_manager_mapper/manage_nodes nav2_msgs/srv/ManageLifecycleNodes command:\ 1\`. Em seguida, pressione ENTER e você deverá obter a seguinte resposta:
+
+```shell
+requester: making request: nav2_msgs.srv.ManageLifecycleNodes_Request(command=1)
+
+response:
+nav2_msgs.srv.ManageLifecycleNodes_Response(success=True)
+```
+
+E se você verificar o terminal onde você iniciou o map_server, você deverá ver uma mensagem como a seguinte aparecendo:
+
+```shell
+[lifecycle_manager-2] [INFO] [1655285986.303567128] [lifecycle_manager_mapper]: Terminating bond timer...
+[lifecycle_manager-2] [INFO] [1655285986.303659326] [lifecycle_manager_mapper]: Pausing managed nodes...
+[lifecycle_manager-2] [INFO] [1655285986.303698330] [lifecycle_manager_mapper]: Deactivating map_server
+[map_server-1] [INFO] [1655285986.307166044] [map_server]: Deactivating
+[map_server-1] [INFO] [1655285986.307227673] [map_server]: Destroying bond (map_server) to lifecycle manager.
+[lifecycle_manager-2] [INFO] [1655285986.412322210] [lifecycle_manager_mapper]: Managed nodes have been paused
+```
+
+Agora **você não pode enviar metas de navegação** para o robô porque o sistema de navegação, mesmo em execução, está pausado. Se quiser retomar a navegação, chame o serviço novamente com o seguinte comando: `ros2 service call /lifecycle_manager_mapper/manage_nodes nav2_msgs/srv/ManageLifecycleNodes command:\ 2\`
+
+O objetivo deste serviço é simplificar o gerenciamento do status de todo o sistema de navegação. Você pode adicionar funcionalidades para iniciar, pausar, parar e reconfigurar o sistema de navegação adicionando uma chamada de cliente de serviço, em vez de gerenciar todos os nós de uma só vez.

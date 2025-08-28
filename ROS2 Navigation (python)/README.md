@@ -433,7 +433,7 @@ Agora, vamos ver qual tipo de mensagem deve ser chamada:
 nav2_msgs/srv/ManageLifecycleNodes
 ```
 
-Agora, vamos ver como essa mensagem é composta com o seguinte comando:
+Agora, vamos ver como essa mensagem é composta com o seguinte comando: `ros2 service type /lifecycle_manager/manage_nodes`:
 
 ```shell
 uint8 STARTUP = 0
