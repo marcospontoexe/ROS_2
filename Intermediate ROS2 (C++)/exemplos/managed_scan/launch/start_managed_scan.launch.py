@@ -7,3 +7,6 @@ def generate_launch_description():
         LifecycleNode(package='managed_scan', executable='scan_publisher',
                       name='managed_scan_node', namespace='', output='screen')
     ])
+
+
+

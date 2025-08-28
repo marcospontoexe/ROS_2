@@ -2174,3 +2174,8 @@ on_error(const rclcpp_lifecycle::State &)
 ```
 
 ## Life Cycle Manager
+Um Gerenciador de Ciclo de Vida é um programa para gerenciar a transição de estado de um nó gerenciado ou conjunto deles, para que você não precise gerenciá-los manualmente.
+
+Todos os nós gerenciados fornecem esse serviço que permite que pessoas de fora alterem seu estado. O Gerenciador de Ciclo de Vida se conecta a ele por meio de um cliente de serviço e gerencia a mudança de estado do nó.
+
+Um exemplo desse programa é o seguinte, que faz a transição do managed_scan_node para o estado ativo.
