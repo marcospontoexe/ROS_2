@@ -348,3 +348,104 @@ Se você receber esse erro, poderá abrir os parâmetros **controller.yaml** e r
     
 critics: ["RotateToGoal", "Oscillation", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
 ```
+
+## Speed Limits
+O princípio do Filtro de Limites de Velocidade é semelhante ao usado para Zonas de Exclusão. No entanto, neste caso, os valores da máscara terão um significado diferente: limites de velocidade codificados para as áreas correspondentes à célula no mapa.
+
+Como você já sabe, os valores da Grade de Ocupação pertencem ao intervalo [0 a 100]. Para o Filtro de Velocidade, um valor 0 significa que não há limite de velocidade na área correspondente ao mapa. Valores do intervalo [1 a 100] estão sendo convertidos linearmente em um valor de limite de velocidade pela seguinte fórmula: limite_de_velocidade = dados_da_máscara_do_filtro * multiplicador + base
+
+Simplificar significa que quanto mais clara a porcentagem de cinza usada, menor será o limite de velocidade e vice-versa.
+
+Pinte de CINZA (use tons diferentes para áreas diferentes) as áreas do mapa onde você deseja que seu robô tenha limites de velocidade.
+
+Um exemplo é o seguinte:
+
+![map_speeds_edit](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/map_speeds_edit.png)
+
+Após editar seu mapa, carregue-o novamente. 
+
+### onfigure os Speed Limit nodes
+Nesta unidade, aplique o filtro de velocidade apenas ao Costmap global. Portanto, primeiro, atualize o parâmetro do filtro:
+
+Add to planner_server.yaml:
+```yaml
+# For Keepout Zones
+#filters: ["keepout_filter"]
+
+# For Speed Limits
+filters: ["speed_filter"]
+```
+
+E, claro, você tem que adicionar a configuração do filtro:
+
+Add to planner_server.yaml:
+```yaml
+speed_filter:
+    plugin: "nav2_costmap_2d::SpeedFilter"
+    enabled: True
+    filter_info_topic: "/costmap_filter_info"
+    speed_limit_topic: "/speed_limit"
+```
+
+Como você pode ver, você especifica o filtro a ser usado, **SpeedFilter**.
+
+Além disso, você precisa especificar o mesmo **speed_limit_topic** para a configuração do **controller_server**:
+
+controller.yaml
+```yaml
+...
+
+controller_server:
+  ros__parameters:
+    ...
+    # For Speed Limits
+    speed_limit_topic: "/speed_limit"
+    ...
+```
+
+Agora atualize o arquivo filters.yaml para definir os parâmetros necessários para o filtro de velocidade:
+
+filters.yaml
+```yaml
+costmap_filter_info_server:
+  ros__parameters:
+    use_sim_time: true
+    filter_info_topic: "/costmap_filter_info"
+    # For Keepout Zones
+    #type: 0
+    #mask_topic: "/keepout_filter_mask"
+    #base: 0.0
+    #multiplier: 1.0
+    # For Speed Limits
+    type: 1
+    mask_topic: "/speed_filter_mask"
+    base: 100.0
+    multiplier: -1.0
+
+filter_mask_server:
+  ros__parameters:
+    use_sim_time: true
+    frame_id: "map"
+    # For Keepout Zones
+    #topic_name: "/keepout_filter_mask"
+    #yaml_filename: "/home/user/ros2_ws/src/map_server/maps/map_keepout.yaml"
+    # For Speed Limits
+    topic_name: "/speed_filter_mask"
+    yaml_filename: "/home/user/ros2_ws/src/nav2_pkgs/map_server/maps/map_speeds.yaml"
+```
+
+Se você seguiu todas as instruções corretamente, você obterá um Costmap como o mostrado abaixo:
+
+![speed_filter_costmap](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/speed_filter_costmap.png)
+
+Para visualizar a máscara de filtro, adicione uma exibição de Mapa com a seguinte configuração:
+
+![speed_display](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/speed_display.png)
+
+Envie uma meta Nav2 para o robô e verifique como o limite de velocidade muda dependendo da área de navegação do robô.
+
+Você também pode visualizar o tópico **/speed_limit** para obter dados adicionais. Sempre que o robô entrar em uma nova área com limite de velocidade, uma mensagem como a seguinte será publicada neste tópico:
+
+![speed_limit_topic](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/speed_limit_topic.png)
+
+# Nav2 Behaviors
