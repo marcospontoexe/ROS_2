@@ -182,7 +182,7 @@ if Duration.from_msg(feedback.navigation_time) > Duration(seconds=180.0):
 
 Observe que, neste script, você também está adicionando um tempo limite. Se a tarefa de navegação demorar mais de 180 segundos, você cancelará a tarefa atual usando o método cancelTask().
 
-### Waypoint Following
+## Waypoint Following
 A ação FollowWaypoints é mais adequada para tarefas de autonomia simples, nas quais você deseja parar em cada ponto de referência e executar um comportamento (por exemplo, pausar por 2 segundos, tirar uma foto, esperar que alguém coloque uma caixa sobre ele, etc.). O servidor  waypoint follower de referência Nav2 contém plugins **TaskExecutor** para executar uma tarefa em cada ponto de referência.
 
 FollowWaypoints.action:
@@ -277,7 +277,7 @@ Revise como fazer o robô evitar certas zonas do ambiente usando um filtro de M�
 
 A Máscara de Exclusão é um arquivo semelhante a um mapa, contendo a máscara a ser aplicada como Zona de Exclusão. Portanto, para aplicar uma máscara, você precisará de um arquivo de mapa do ambiente. Agora, você pintará de PRETO a área do mapa que deseja que seu robô evite. Um exemplo simples é o seguinte:
 
-![map_keepout](https://github.com/marcospontoexe/ROS_2/tree/main/Advanced%20ROS2%20Navigation%20(python)/imagens)
+![map_keepout](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/map_keepout.png)
 
 Você pode se perguntar: "Por que preciso pintar de preto?". A tonalidade de cada pixel na máscara representa informações codificadas para o filtro Costmap específico que você usará. O arquivo de máscara recebido está sendo lido pelo Map-Server e convertido em valores de OccupancyGrid no intervalo [0 a 100], onde:
 * 0 significa célula livre
@@ -364,7 +364,7 @@ Um exemplo é o seguinte:
 
 Após editar seu mapa, carregue-o novamente. 
 
-### onfigure os Speed Limit nodes
+### Configure os Speed Limit nodes
 Nesta unidade, aplique o filtro de velocidade apenas ao Costmap global. Portanto, primeiro, atualize o parâmetro do filtro:
 
 Add to planner_server.yaml:
