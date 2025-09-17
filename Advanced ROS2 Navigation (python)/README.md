@@ -70,5 +70,48 @@ Na demonstração a seguir, você usa a ação NavigateToPose para fazer seu rob
 
 Na pasta scripts tem o código [**navigate_to_pose.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_new_features/scripts/navigate_to_pose.py).
 
+Vamos analisar o código. Preste atenção especial à parte em que você usa a API. Comece do início:
 
+```python
+navigator = BasicNavigator()
+```
 
+Claro, você também precisa instanciar a classe para usá-la.
+
+```python
+navigator.setInitialPose(initial_pose)
+```
+
+Aqui, você está usando o método **setInitialPose()**, que definirá a pose inicial do robô (o mesmo que com a ferramenta Estimativa de Pose 2D do RVIZ2). Neste caso, você está especificando a pose inicial na variável initial_pose (ela deve ser do tipo PoseStamped).
+
+```python
+navigator.waitUntilNav2Active()
+```
+
+O método **waitUntilNav2Active()** bloqueia a execução do programa até que o Nav2 esteja totalmente online e os nós do ciclo de vida estejam no estado ativo.
+
+```python
+navigator.goToPose(shelf_item_pose)
+```
+
+Aqui, você está usando o método **goToPose()**, que solicita que o robô navegue até a pose especificada. Neste caso, você está especificando a pose na variável shelf_item_pose (ela deve ser do tipo PoseStamped).
+
+```python
+while not navigator.isTaskComplete():
+```
+
+O método **isTaskComplete()** retornará True somente após o robô atingir o objetivo. Ele retornará False enquanto ainda estiver em andamento.
+
+```python
+feedback = navigator.getFeedback()
+```
+
+O método **getFeedback()** retorna o feedback do servidor de ação NavigateToPose.
+
+```python
+result = navigator.getResult()
+```
+
+O método **getResult()** retorna o resultado do servidor de ação NavigateToPose.
+
+Você pode revisar todos os métodos do Nav2 Simple Commander [aqui](https://docs.nav2.org/commander_api/index.html).
