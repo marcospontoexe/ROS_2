@@ -307,7 +307,44 @@ keepout_filter:
 
 Como você pode ver, você especifica o filtro a ser usado, **KeepoutFilter**.
 
+Agora, defina parâmetros extras para os novos nós de filtro que você iniciará. Você iniciará dois novos nós:
+
+* Servidor de Informações do Filtro Costmap: Este nó publicará mensagens nav2_msgs/CostmapFilterInfo. Essas mensagens contêm metadados, como o tipo de filtro ou coeficientes de conversão de dados.
+* Servidor de Mapa de Máscaras: Este nó publicará mensagens OccupancyGrid.
+
+Ambas as mensagens precisam ser publicadas em pares para gerar o filtro Costmap. Se quiser saber mais sobre esse processo interno, consulte o [documento de design](https://github.com/ros-navigation/navigation2/blob/main/doc/design/CostmapFilters_design.pdf).
+
+Comece criando um novo arquivo de configuração chamado [**filters.yaml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_new_features/config/filters.yaml), onde você coloca os parâmetros necessários para esses nós.
+
+O parâmetro **type** define o tipo de filtro Costmap utilizado. Os valores são:
+* 0 para filtro de Zonas de Exclusão/faixas preferenciais
+* 1 para filtro de velocidade (se o limite de velocidade for especificado em % da velocidade máxima)
+* 2 para filtro de velocidade (se o limite de velocidade for especificado em valor absoluto (m/s))
+
+O parâmetro **mask_topic** define o tópico para publicar a máscara de filtro. Portanto, o nome do tópico especificado deve ser o mesmo que o parâmetro **topic_name** do Map-Server.
+
+A base e o multiplicador são coeficientes usados ​​para aplicar a máscara ao filtro. Eles são usados ​​na **seguinte fórmula**: filter_space_value = base + multiplicador * valor_da_máscara
+
+Para Zonas de Exclusão, eles precisam ser definidos como 0,0 e 1,0, respectivamente, para mostrar explicitamente que você tem uma conversão um-para-um de valores da OccupancyGrid -> para um espaço de valores de filtro.
+
+Se você seguiu todas as instruções corretamente, você obterá um Costmap como o mostrado abaixo:
+
+![keepout_filter](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/keepout_filter.png)
+
+Agora, quando você enviar um gol para perto da Keepout Zone, o plano evitará a área rosa.
+
+**Cuidado**:
+
+Ao tentar navegar perto da Keepout Zone, você pode acabar recebendo erros como este:
+
+```shell
+[controller_server-3] [ERROR] [1654803915.474550722] [DWBLocalPlanner]: 1.00: ObstacleFootprint/Trajectory Hits Obstacle.
+```
+
+Se você receber esse erro, poderá abrir os parâmetros **controller.yaml** e remover o crítico chamado **ObstacleFootprint** da lista de críticos.
 
 ```yaml
-
+#critics: ["RotateToGoal", "Oscillation", "ObstacleFootprint", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+    
+critics: ["RotateToGoal", "Oscillation", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
 ```
