@@ -1,4 +1,4 @@
-# Nav2
+# Recursos do Nav2
 O Nav2 oferece novos recursos e ferramentas que facilitam a criação de aplicações robóticas.
 
 Nesta unidade, você revisará os novos recursos essenciais introduzidos no Nav2, que incluem:
@@ -11,7 +11,7 @@ Em seguida, você criará uma demonstração básica de robótica autônoma base
 
 Você usará o AWS [Small Warehouse World](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world) e o robô industrial móvel [MP-400](https://www.neobotix-robots.com/products/mobile-robots/mobile-robot-mp-400) da Neobotix.
 
-# A API Simple Commander
+## A API Simple Commander
 O Nav2 Simple Commander é uma API Python que simplifica a interação com o sistema Nav2, permitindo controlar e gerenciar a navegação do robô por meio de código Python3. Ele fornece uma interface de alto nível para executar tarefas de navegação sem a necessidade de interagir diretamente com mensagens e serviços ROS 2 de nível inferior.
 
 Nesta unidade, você explorará métodos essenciais para a construção de uma aplicação de robô de navegação, incluindo **goToPose()** para se mover para um local específico, **goThroughPoses()** para seguir uma sequência de poses e **followWaypoints()** para navegar por pontos de referência predefinidos. A compreensão dessas funções permitirá que você desenvolva comportamentos de navegação mais flexíveis e autônomos.
@@ -36,4 +36,37 @@ Se você quiser algo parecido em C++, tem que implementar manualmente usando os 
 
 Ou seja, você mesmo precisa criar a sua própria versão de um "Simple Commander" em C++ se quiser essa simplicidade.
 
-## 
+## Navigate To Pose
+A ação NavigateToPose é mais adequada para solicitações de navegação de um ponto para outro ponto ou outras tarefas que podem ser representadas em uma árvore de comportamento (behavior tree) com uma pose de condição de contorno, como o acompanhamento dinâmico de objetos.
+
+Veja abaixo a estrutura da ação NavigateToPose (NavigateToPose.action):
+
+```txt
+#goal definition
+geometry_msgs/PoseStamped pose
+string behavior_tree
+---
+#result definition
+std_msgs/Empty result
+---
+# feedback definition
+geometry_msgs/PoseStamped current_pose
+builtin_interfaces/Duration navigation_time
+builtin_interfaces/Duration estimated_time_remaining
+int16 number_of_recoveries
+float32 distance_remaining
+```
+
+Como você pode ver, as entradas principais da ação são a pose para a qual você deseja que o robô navegue e a behavior_tree (opcional) a ser usada. Ela usa a árvore de comportamento padrão do BT Navigator, caso nenhuma seja especificada. Durante a execução da ação, você recebe feedback com informações essenciais, como:
+* a pose do robô,
+* o tempo decorrido,
+* o tempo estimado restante,
+* a distância restante
+* e o número de recuperações executadas durante a navegação até o objetivo. 
+Essas informações podem ser usadas para tomar boas decisões de autonomia ou monitorar o progresso.
+
+### Demo
+Na demonstração a seguir, você usa a ação NavigateToPose para fazer seu robô se deslocar do ponto de parada até uma prateleira para que um humano coloque um item nele. Em seguida, você se deslocará até a transpaleteira para embarque no próximo caminhão a sair do armazém. Para isso crie um pacote chamado **nav2_new_features**.
+
+Na pasta 
+
