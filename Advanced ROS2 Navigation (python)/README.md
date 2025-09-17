@@ -1251,3 +1251,19 @@ Como você pode ver, este é um tópico profundo e seria necessário um curso in
 Agora, você criará vários exemplos e exercícios que ensinam como modificar e criar plugins PERSONALIZADOS para Mapas de Custo, Planejamento e Controladores.
 
 ## Criação de plugins Nav2 personalizados
+A maioria das etapas para a criação de plugins segue uma estrutura semelhante, mas os detalhes específicos da **implementação** dependem da classe base da qual cada plugin é derivado. A classe base define a funcionalidade principal e a interface às quais o plugin deve aderir, influenciando sua integração com o sistema geral. Entender essas diferenças é crucial para implementar e estender corretamente o comportamento de cada plugin dentro do framework Nav2.
+
+Antes de se aprofundar na criação de plugins personalizados, você precisa de uma pilha de navegação funcional para testar seus novos plugins. 
+
+### Costmap Plugin
+Neste primeiro exemplo, você aprenderá os conceitos fundamentais para criar seu próprio plugin no Nav2. Especificamente, você desenvolverá um plugin personalizado de filtragem de Costmap, que permite modificar a maneira como a pilha de navegação processa os mapas de custo. Esse conhecimento servirá como base para a construção de plugins mais avançados posteriormente.
+
+Crie um novo pacote ROS 2 ([**custom_nav2_costmap_plugin**](https://github.com/marcospontoexe/ROS_2/tree/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin)) para armazenar todos os plugins do Costmaps. Execute os seguintes comandos para isso:
+
+```shell
+cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_cmake custom_nav2_costmap_plugin --dependencies rclcpp nav2_costmap_2d pluginlib
+cd ~/ros2_ws
+colcon build --packages-select custom_nav2_costmap_plugin
+source install/setup.bash
+```
