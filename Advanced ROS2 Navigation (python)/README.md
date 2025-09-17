@@ -118,6 +118,7 @@ Você pode revisar todos os métodos do Nav2 Simple Commander [aqui](https://doc
 
 ## Navigate Through Poses
 A ação NavigateThroughPoses é mais adequada para solicitações de navegação com restrição de pose ou outras tarefas representadas em uma árvore de comportamento com um conjunto de poses. Ela NÃO para em cada ponto de referência, mas percorre cada um deles como uma restrição de pose.
+Permite enviar várias poses em sequência (ex.: P1 → P2 → P3). O planejador global gera um único plano contínuo que passa por todas as poses
 
 NavigateThroughPoses.action:
 
@@ -182,20 +183,77 @@ if Duration.from_msg(feedback.navigation_time) > Duration(seconds=180.0):
 Observe que, neste script, você também está adicionando um tempo limite. Se a tarefa de navegação demorar mais de 180 segundos, você cancelará a tarefa atual usando o método cancelTask().
 
 ### Waypoint Following
-A ação FollowWaypoints é mais adequada para tarefas de autonomia simples, nas quais você deseja parar em cada ponto de referência e executar um comportamento (por exemplo, pausar por 2 segundos, tirar uma foto, esperar que alguém coloque uma caixa sobre ele, etc.). O servidor  waypoint follower de referência Nav2 contém plugins TaskExecutor para executar uma tarefa em cada ponto de referência.
+A ação FollowWaypoints é mais adequada para tarefas de autonomia simples, nas quais você deseja parar em cada ponto de referência e executar um comportamento (por exemplo, pausar por 2 segundos, tirar uma foto, esperar que alguém coloque uma caixa sobre ele, etc.). O servidor  waypoint follower de referência Nav2 contém plugins **TaskExecutor** para executar uma tarefa em cada ponto de referência.
 
+FollowWaypoints.action:
 
-
-```python
-
+```txt
+#goal definition
+geometry_msgs/PoseStamped[] poses
+---
+#result definition
+int32[] missed_waypoints
+---
+#feedback definition
+uint32 current_waypoint
 ```
 
+Como você pode ver, a API é simples. Ela recebe o conjunto de poses, onde a última pose é o objetivo final. O feedback é o ID do waypoint atual que está sendo executado e retorna um vetor de IDs de waypoints perdidos no final, caso algum deles esteja inavegável.
 
+### Launch the FollowWaypoints action
+A ação FollowWaypoints não é iniciada por padrão com o sistema de navegação. Portanto, adicione-a ao seu arquivo de inicialização de navegação se desejar utilizá-la.
+
+Comece criando um arquivo de configuração para ela. Na pasta **config** do seu pacote **path_planner_server**, adicione um novo arquivo de configuração chamado [**waypoint_follower.yaml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_new_features/config/waypoint_follower.yaml).
+
+Neste exemplo, carregue o plugin padrão **WaitAtWaypoint**. Esses plugins pausam o robô por um tempo específico após atingir cada ponto de referência. O tempo de espera pode ser configurado com o parâmetro **waypoint_pause_duration** (especificado em milissegundos).
+
+Existem outros plugins disponíveis, como **PhotoAtWaypoint** ou **InputAtWaypoint**. Se quiser saber mais sobre eles, consulte a documentação oficial [aqui](https://docs.nav2.org/configuration/packages/configuring-waypoint-follower.html).
+
+Agora é hora de adicionar a ação FollowWaypoints ao seu arquivo de inicialização. Para isso, serão necessárias algumas modificações.
+
+Primeiro, adicione o novo caminho do arquivo de configuração:
+
+navigation.launch.py:
 ```python
-
+waypoint_follower_yaml = os.path.join(get_package_share_directory(
+        'path_planner_server'), 'config', 'waypoint_follower.yaml')
 ```
 
+Em seguida, adicione um novo elemento Node para iniciar o servidor waypoint_follower:
 
+navigation.launch.py:
+```python
+Node(
+    package='nav2_waypoint_follower',
+    executable='waypoint_follower',
+    name='waypoint_follower',
+    output='screen',
+    parameters=[waypoint_follower_yaml]),
+```
+
+Por fim, e importante, você precisa adicionar o novo nó a ser iniciado no gerenciador de ciclo de vida:
+
+navigation.launch.py:
+```python
+Node(
+    package='nav2_lifecycle_manager',
+    executable='lifecycle_manager',
+    name='lifecycle_manager',
+    output='screen',
+    parameters=[{'autostart': True},
+                {'node_names': ['map_server',
+                                'amcl',
+                                'controller_server',
+                                'planner_server',
+                                'recoveries_server',
+                                'bt_navigator',
+                                'waypoint_follower']}])
+```
+
+### Demo
+Nesta demonstração, use a ação FollowWaypoints para que seu robô se desloque do ponto de parada até um conjunto de pontos de inspeção. O plugin TaskExecutor,  waypoint follower do Nav2, captura imagens e escaneia RFID das prateleiras, que podem ser analisadas para gerenciamento de estoque. Veja esse script [**follow_waypoints.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_new_features/scripts/follow_waypoints.py) como exemplo.
+
+navigation.launch.py:
 ```python
 
 ```
