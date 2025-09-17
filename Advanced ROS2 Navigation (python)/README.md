@@ -448,4 +448,380 @@ Você também pode visualizar o tópico **/speed_limit** para obter dados adicio
 
 ![speed_limit_topic](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/speed_limit_topic.png)
 
-# Nav2 Behaviors
+# Behavior Trees (BTs)
+Nesta unidade, você explorará como as Árvores de Comportamento (BTs) são integradas ao Nav2 para controlar o comportamento de navegação de um robô. As BTs são essenciais para lidar tanto com a navegação padrão direcionada a objetivos quanto com situações desafiadoras em que o robô encontra obstáculos ou erros.
+
+Ao final desta unidade, você terá uma compreensão clara de como as BTs aprimoram a tomada de decisões e a adaptabilidade na navegação autônoma.
+
+![bt](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/groot_behavior2.png)
+
+O pacote do sistema de navegação é responsável por gerenciar as árvores de comportamento no nav2_bt_navigator.
+
+O nav2_bt_navigator é responsável por controlar o movimento até o objetivo do robô. Ele é composto por várias partes:
+1. O nó bt_navigator e seu arquivo de configuração
+2. O comportamento do nó bt_navigator
+3. O nó recoveries_server e seu arquivo de configuração
+
+O comportamento do nó bt_navigator e como ele se conecta ao recoveries_server são especificados usando Árvores de Comportamento. Nesta unidade, você aprenderá como criar esses comportamentos e fornecê-los ao sistema de navegação.
+
+## bt_navigator node
+O bt_navigator é o nó do Nav2 responsável por **gerenciar** o planejador de caminho, o controlador e os comportamentos de recuperação.
+
+A maneira como o bt_navigator deve gerenciar esses nós é definida em uma árvore de comportamento.
+
+VOCÊ DEVE CRIAR UM COMPORTAMENTO PARA O bt_navigator definir corretamente como ele deve mover o robô.
+
+## Como criar um comportamento (behavior)
+Para criar o comportamento, crie um **arquivo XML** usando os tipos de nós para comportamentos disponíveis. Este XML será fornecido ao bt_navigator para ser executado quando necessário.
+
+A **biblioteca Behavior Tree.CPP** fornece um conjunto de nós de comportamento já prontos. No entanto, o Nav2 incluiu seu próprio tipo de nós de comportamento. Neste capítulo, você aprenderá sobre os nós de comportamento que o Nav2 fornece.
+
+IMPORTANTE: Você não deve confundir nós ROS com nós de comportamento; são duas coisas diferentes. Para evitar confusão, nesta unidade, você escreverá nós ROS em letras normais e *nós* de comportamento em itálico.
+
+Exemplo de comportamento: o arquivo **behavior.xml** que você usou neste curso:
+
+```xml
+<!--
+  This Behavior Tree replans the global path periodically at 1 Hz, and it also has
+  recovery actions.
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <RateController hz="1.0">
+          <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+            <ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"/>
+          </RecoveryNode>
+        </RateController>
+        <RecoveryNode number_of_retries="1" name="FollowPath">
+          <FollowPath path="{path}" controller_id="FollowPath"/>
+          <ClearEntireCostmap service_name="local_costmap/clear_entirely_local_costmap"/>
+        </RecoveryNode>
+      </PipelineSequence>
+      <SequenceStar name="RecoveryActions">
+        <ClearEntireCostmap service_name="local_costmap/clear_entirely_local_costmap"/>
+        <ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"/>
+        <Spin spin_dist="1.57"/>
+        <Wait wait_duration="5"/>
+      </SequenceStar>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>
+```
+
+Esse comportamento especificado em XML pode ser representado por esta imagem:
+
+![bt](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/groot_behavior2.png)
+
+Agora analise os *nós* de comportamento envolvidos no comportamento anterior.
+
+Para cada comportamento, comece com as seguintes tags:
+
+```xml
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    ...
+  </BehaviorTree>
+</root>
+```
+
+* A tag **root** identifica a árvore principal a ser executada.
+* A tag **BehaviorTree** identifica o que se segue como uma árvore de comportamento com um nome específico (o ID contém o nome).
+
+Em seguida, dentro da tag **BehaviorTree**, inclua os nós da árvore de comportamento que você deseja usar e na ordem em que o comportamento desejado é construído. Por exemplo, para o comportamento padrão que você usou no curso de navegação, você queria o seguinte comportamento:
+
+* Replaneje o caminho global a cada segundo (1 Hz)
+* Siga esse caminho.
+* Se o robô estiver travado, faça o seguinte:
+  1. Limpe o Mapa de Custo local.
+  2. Limpe o Mapa de Custo global.
+  3. Gire para verificar os novos obstáculos e construa novamente os Mapas de Custo.
+  4. Aguarde 5 segundos e volte para o comportamento principal.
+
+Veja como ele é implementado usando os nós de comportamento fornecidos pelo Nav2.
+
+### Nós BT usados
+#### **RecoveryNode** (nó definido pelo Nav2)
+
+Este nó é usado para encapsular dois outros subnós e controlar sua ativação da seguinte maneira:
+
+1. Este nó iniciará a execução do primeiro subnó.
+2. Se o primeiro subnó retornar SUCESSO, o RecoveryNode retornará SUCESSO.
+3. Se o primeiro subnó retornar FALHA, ele executa o segundo subnó.
+4. Se o segundo subnó retornar SUCESSO, ele executa o primeiro subnó novamente.
+5. Se o segundo subnó retornar FALHA, ele retornará FALHA e encerrará.
+
+Geralmente, é usado para iniciar uma tarefa de navegação (o primeiro subnó) e definir sua ação de recuperação em caso de falha (o segundo subnó).
+
+Veja um exemplo do arquivo XML anterior:
+
+```xml
+<RecoveryNode number_of_retries="6" name="NavigateRecovery">
+    <PipelineSequence name="NavigateWithReplanning">
+      ...
+    </PipelineSequence>
+    <SequenceStar name="RecoveryActions">
+      ...
+    </SequenceStar>
+</RecoveryNode>
+```
+
+* Este nó é denominado *NavigateRecovery*.
+* Seu comportamento inicia iniciando o nó **PipelineSequence**, denominado *NavigateWithReplanning*.
+* Se o nó *NavigateWithReplanning* falhar, ele iniciará o nó **SequenceStar**, denominado *RecoveryActions*.
+* Se *RecoveryActions* for bem-sucedido, ele iniciará *NavigateWithReplanning* novamente.
+* Se *RecoveryActions* falhar, o nó *NavigateRecovery* também falhará e encerrará sua execução.
+
+No entanto, este *nó* fará até seis tentativas para concluir a sequência com sucesso. Se, após seis tentativas, ainda retornar FAILURE, ele também retornará FAILURE.
+
+**NOTA**: Lembre-se de que os *nós* de comportamento podem ter portas de entrada (o equivalente aos parâmetros passados ​​ao *nó*) e portas de saída (o equivalente aos resultados retornados pelo *nó*). Por exemplo, o **RecoveryNode** tem uma porta de entrada chamada **number_of_retries** (o nome é outra porta de entrada que existe para cada nó por padrão). Consulte a documentação de cada *nó* para obter a lista de portas de entrada e saída.
+
+#### **PipelineSequence** (nó definido por Nav2)
+
+Este nó ativará os subnós da seguinte maneira:
+
+1. O primeiro nó ativa o primeiro subnó até que ele retorne SUCCESS.
+2. Isso ativa o primeiro e o segundo subnós (novamente) até que o segundo retorne SUCCESS.
+3. Em seguida, ele ativa o primeiro, o segundo e o terceiro subnós (novamente) até que o terceiro retorne SUCCESS, e assim por diante.
+4. Ele será interrompido se algum dos subnós retornar FAILURE ou o último submódulo retornar SUCCESS.
+
+Veja um exemplo do arquivo XML anterior:
+
+```xml
+<PipelineSequence name="NavigateWithReplanning">
+    <RateController hz="1.0">
+    ...
+    </RateController>
+    <RecoveryNode number_of_retries="1" name="FollowPath">
+    ...
+    </RecoveryNode>
+</PipelineSequence>
+```
+
+Aqui, este nó é usado para calcular o caminho global a cada segundo e, em seguida, fazer o robô seguir o caminho recém-calculado. Isso é útil para considerar modificações na posição atual do robô, adaptando o caminho global a essas modificações.
+
+* Este nó é denominado *NavigateWithReplanning* e possui dois subnós.
+* O primeiro é um nó **RateController** (veja abaixo seu significado). Este nó inclui o cálculo do caminho até o objetivo.
+* O segundo é um nó **RecoveryNode**. Este é usado para fazer o robô seguir o caminho calculado.
+
+#### **RateController** (nó definido por Nav2)
+
+Este nó chamará os nós subsequentes em uma determinada frequência que você especificar como parâmetro.
+
+Exemplo do arquivo XML anterior:
+
+```xml
+<RateController hz="1.0">
+    <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+            ...
+    </RecoveryNode>
+</RateController>
+```
+
+Neste caso, o **RateController** chamará um RecoveryNode a 1 Hz.
+
+```xml
+<RecoveryNode number_of_retries="1" name="ComputePathToPose">
+   <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+   <ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"/>
+</RecoveryNode>
+```
+
+O RecoveryNode chamado *ComputePathToPose* possui dois subnós:
+
+1. Um nó **ComputePathToPose**
+2. Um nó **ClearEntireCostmap**
+
+Ambos são explicados abaixo.
+
+#### **ComputePathToPose** (nó definido por Nav2)
+
+Chamadas ao servidor de ações **ComputePathToPose** do ROS2 fornecido pelo nó ROS2 **nav2_planner** (o Servidor do Planejador) para calcular o caminho até o objetivo. O objetivo é introduzido no nó usando uma **variável do quadro-negro** (variável chamada {goal}). Em seguida, o resultado do planejador é introduzido em outra variável do quadro-negro chamada {path}.
+
+**O que é o quadro-negro?**
+
+O quadro-negro é como um espaço para variáveis ​​que todos os nós podem acessar. Ele é usado para compartilhar informações entre os nós. Um nó pode inserir um valor ali e outro nó pode lê-lo. 
+
+Exemplo do arquivo XML anterior:
+
+```xml
+<ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+```
+
+Nesse caso, alguém colocou o valor da variável {goal} no quadro-negro, e o nó está preenchendo a variável {path} com o caminho calculado resultante. *Goal e planner_id são as **portas de entrada** do nó, e path é sua **porta de saída**.
+
+#### **ClearEntireCostmap** (nó definido Nav2)
+Chama o serviço que limpa o Costmap. Você deve indicar qual servidor chamar para limpar o Costmap local ou global.
+
+Exemplo do arquivo XML anterior:
+
+```xml
+<ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"/>
+```
+
+#### **SequenceStar** (nó definido por BT)
+Funciona da mesma forma que o nó **PipelineSequence**, mas não ativará os nós que já concluíram com SUCCESS.
+
+Exemplo do arquivo XML anterior:
+
+```xml
+<SequenceStar name="RecoveryActions">
+    <ClearEntireCostmap service_name="local_costmap/clear_entirely_local_costmap"/>
+    <ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"/>
+    <Spin spin_dist="1.57"/>
+    <Wait wait_duration="5"/>
+</SequenceStar>
+```
+
+#### **FollowPath** (nó definido pelo Nav2)
+Chama o servidor de ações no controlador que enviará comandos às rodas do robô para seguir o caminho calculado.
+
+Exemplo do arquivo XML anterior:
+
+```xml
+<FollowPath path="{path}" controller_id="FollowPath"/>
+```
+
+#### **Spin** (nó definido pelo Nav2)
+Chama o servidor de ação spin ROS2 fornecido pelo nó ROS nav2_recoveries. Este servidor fará o robô girar no lugar o número de graus indicado no parâmetro spin_dist.
+
+Exemplo do arquivo XML anterior:
+
+```xml
+<Spin spin_dist="1.57"/>
+```
+
+#### **Wait** (nó definido pelo Nav2)
+Chame o servidor de ação ROS2 de espera fornecido pelo nó ROS nav2_recoveries. Isso fará com que o comportamento aguarde o número de segundos indicado.
+
+Exemplo do arquivo XML anterior:
+
+```xml
+<Wait wait_duration="5"/>
+```
+
+### Conclusões
+Existem muitos outros nós que você pode usar para o seu comportamento. [Confira aqui a lista oficial de nós Nav2 disponíveis](https://docs.nav2.org/configuration/packages/configuring-bt-xml.html) para saber mais sobre nós e como configurá-los.
+
+Além disso, se você precisa trabalhar bastante com comportamentos, deve aprender mais sobre árvores de comportamento em geral e sobre a biblioteca de implementação BehaviorTree.CPP. Confira os seguintes recursos:
+
+* [Documentação oficial do Nav2 BT Navigator](https://docs.nav2.org/configuration/packages/configuring-bt-xml.html#)
+* [Livro "Árvores de Comportamento e Robótica em IA"](https://arxiv.org/pdf/1709.00084)
+* [Documentação do BehaviorTree.CPP](https://www.behaviortree.dev/)
+
+## Como fornecer o comportamento ao bt_navigator
+Você deve especificar duas coisas para o nó bt_navigation durante a inicialização do nó:
+
+1. o arquivo **bt_navigator.yaml** com a configuração do nó.
+2. o arquivo **behavior.xml** usando o parâmetro **default_bt_xml_filename**.
+
+bt_navigator.yaml:
+
+```yaml
+bt_navigator:
+  ros__parameters:
+    use_sim_time: True
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /odom
+    bt_loop_duration: 10
+    default_bt_xml_filename: "/home/user/ros2_ws/src/path_planner_server/config/behavior.xml"
+    default_server_timeout: 20
+    plugin_lib_names:
+    - nav2_compute_path_to_pose_action_bt_node
+    - nav2_compute_path_through_poses_action_bt_node
+    - nav2_follow_path_action_bt_node
+    - nav2_back_up_action_bt_node
+    - nav2_spin_action_bt_node
+    - nav2_wait_action_bt_node
+    - nav2_clear_costmap_service_bt_node
+    - nav2_is_stuck_condition_bt_node
+    - nav2_goal_reached_condition_bt_node
+    - nav2_goal_updated_condition_bt_node
+    - nav2_initial_pose_received_condition_bt_node
+    - nav2_reinitialize_global_localization_service_bt_node
+    - nav2_rate_controller_bt_node
+    - nav2_distance_controller_bt_node
+    - nav2_speed_controller_bt_node
+    - nav2_truncate_path_action_bt_node
+    - nav2_goal_updater_node_bt_node
+    - nav2_recovery_node_bt_node
+    - nav2_pipeline_sequence_bt_node
+    - nav2_round_robin_node_bt_node
+    - nav2_transform_available_condition_bt_node
+    - nav2_time_expired_condition_bt_node
+    - nav2_distance_traveled_condition_bt_node
+    - nav2_single_trigger_bt_node
+    - nav2_is_battery_low_condition_bt_node
+    - nav2_navigate_through_poses_action_bt_node
+    - nav2_navigate_to_pose_action_bt_node
+    - nav2_remove_passed_goals_action_bt_node
+```
+
+No parâmetro **plugin_lib_names**, especifique a lista de nós de comportamento necessários para o seu arquivo de comportamento XML. Lembre-se de adicionar os que você precisa neste parâmetro.
+
+Uma lista completa de plugins de nós disponíveis pode ser encontrada [aqui](https://docs.nav2.org/plugins/index.html#behavior-tree-nodes).
+
+Verifique o código que você criou na unidade de Planejamento de Caminho, onde ele executa o carregamento do arquivo de configuração:
+
+```yaml
+bt_navigator_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'bt_navigator.yaml')
+...
+Node(
+    package='nav2_bt_navigator',
+    executable='bt_navigator',
+    name='bt_navigator',
+    output='screen',
+    parameters=[bt_navigator_yaml])
+```
+
+## Exemplo
+Crie um novo arquivo de comportamento chamado abort_when_low_battery.xml que execute o seguinte comportamento:
+
+1. Sempre que um novo destino for fornecido, o robô se deslocará até esse destino.
+2. Se a bateria estiver abaixo de 25% em qualquer momento, aborte o objetivo atual.
+3. Chame o tópico da bateria de /battery. Publique nesse tópico um status de bateria de 100%.
+4. Em algum momento, altere o valor publicado nesse tópico para 20%. O robô deve mudar seu comportamento e abortar seu objetivo naquele momento.
+
+**Notas:**
+* Existe um nó de comportamento do Nav2 usado para detectar o status da bateria: IsBatteryLow. [Consulte a documentação oficial](https://docs.nav2.org/configuration/packages/bt-plugins/conditions/IsBatteryLow.html) para aprender como usá-lo em seu código.
+* Como o nó IsBatteryLow retorna FALSE quando o nível da bateria está ok (porque está verificando IsBatteryLow), você precisará usar um nó BT chamado <Inverter> para negar essa verificação.
+* Para publicar em um tópico sobre bateria, use o seguinte comando (de acordo com seus testes necessários): `ros2 topic pub /battery sensor_msgs/BatteryState '{voltage: 12.0, percentage: 1.0, power_supply_status: 3}' `
+
+```xml
+<!--
+  This Behavior Tree replans the global path periodically at 1 Hz, and it also has
+  recovery actions.
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <Inverter>
+            <IsBatteryLow battery_topic="/battery" is_voltage="false" min_battery="0.25" />
+        </Inverter>
+        <RateController hz="1.0">                
+            <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+                <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+                <ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"/>
+            </RecoveryNode>
+        </RateController>
+        <RecoveryNode number_of_retries="1" name="FollowPath">
+            <FollowPath path="{path}" controller_id="FollowPath"/>
+            <ClearEntireCostmap service_name="local_costmap/clear_entirely_local_costmap"/>
+        </RecoveryNode>
+      </PipelineSequence>
+      <SequenceStar name="RecoveryActions">
+        <ClearEntireCostmap service_name="local_costmap/clear_entirely_local_costmap"/>
+        <ClearEntireCostmap service_name="global_costmap/clear_entirely_global_costmap"/>
+        <Spin spin_dist="1.57"/>
+        <Wait wait_duration="5"/>
+      </SequenceStar>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>
+```
+
+## Recovery Behaviors
