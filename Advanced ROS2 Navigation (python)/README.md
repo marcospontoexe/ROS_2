@@ -253,7 +253,61 @@ Node(
 ### Demo
 Nesta demonstração, use a ação FollowWaypoints para que seu robô se desloque do ponto de parada até um conjunto de pontos de inspeção. O plugin TaskExecutor,  waypoint follower do Nav2, captura imagens e escaneia RFID das prateleiras, que podem ser analisadas para gerenciamento de estoque. Veja esse script [**follow_waypoints.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_new_features/scripts/follow_waypoints.py) como exemplo.
 
-navigation.launch.py:
+Assim como você fez antes, use o vetor inspection_points como entrada para chamar o método followWaypoints(). Este método solicita que o robô siga um conjunto de pontos de referência (lista de mensagens PoseStamped). Isso executará o plugin TaskExecutor escolhido em cada pose.
+
 ```python
+i = 0
+while not navigator.isTaskComplete():
+    i = i + 1
+    feedback = navigator.getFeedback()
+    if feedback and i % 5 == 0:
+        print('Executing current waypoint: ' +
+              str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
+```
+
+Neste código, você está imprimindo o ponto de referência atual do robô. No entanto, lembre-se de que você poderia realizar outras tarefas (mais significativas) aqui.
+
+## Filtros de Costmap
+O Nav2 oferece um poderoso conjunto de recursos conhecidos como filtros de Mapa de Custo, que permitem modificar o comportamento de navegação do robô com base em áreas específicas do mapa. Um filtro de Mapa de Custo atua como uma camada adicional (ou máscara) aplicada aos seus Mapas de Custo existentes, permitindo estratégias de navegação mais dinâmicas e sensíveis ao contexto.
+
+Com esses filtros, você pode definir zonas específicas que influenciam a movimentação do robô. Por exemplo, você pode criar Zonas de Exclusão, que impedem o robô de entrar em áreas restritas, ou Zonas de Velocidade Restrita, onde a velocidade do robô é ajustada automaticamente dependendo da região designada. Esses recursos aumentam a segurança, a eficiência e a adaptabilidade da navegação em ambientes complexos.
+
+## Keepout Mask (Máscara de Exclusão)
+Revise como fazer o robô evitar certas zonas do ambiente usando um filtro de Máscara de Exclusão.
+
+A Máscara de Exclusão é um arquivo semelhante a um mapa, contendo a máscara a ser aplicada como Zona de Exclusão. Portanto, para aplicar uma máscara, você precisará de um arquivo de mapa do ambiente. Agora, você pintará de PRETO a área do mapa que deseja que seu robô evite. Um exemplo simples é o seguinte:
+
+![map_keepout](https://github.com/marcospontoexe/ROS_2/tree/main/Advanced%20ROS2%20Navigation%20(python)/imagens)
+
+Você pode se perguntar: "Por que preciso pintar de preto?". A tonalidade de cada pixel na máscara representa informações codificadas para o filtro Costmap específico que você usará. O arquivo de máscara recebido está sendo lido pelo Map-Server e convertido em valores de OccupancyGrid no intervalo [0 a 100], onde:
+* 0 significa célula livre
+* 100 significa célula ocupada
+
+Para a máscara do Filtro Keepout, quanto maior o valor, mais restrita é a área. Portanto, uma área preta corresponde ao valor 100 (o robô não pode navegar por ela). Para valores intermediários, o robô poderá se mover nessas áreas, mas sua presença será "indesejada" (quanto maior o valor, mais cedo os planejadores tentarão tirar o robô dessa área).
+
+Depois de editar seu mapa, carregue-o novamente. 
+
+### Launch the Costmap Filter nodes
+Após criar os arquivos de mapa editados, é hora de iniciar os nós necessários. Mas antes disso, atualize os arquivos de configuração. Primeiro, você atualizará a configuração do Costmap, que pode ser encontrada nos arquivos planner_server.yaml e controller.yaml, por exemplo
+
+Comece adicionando um parâmetro de filtro:
+
+```yaml
+filters: ["keepout_filter"]
+```
+
+E, claro, você tem que adicionar a configuração do filtro:
+
+```yaml
+keepout_filter:
+    plugin: "nav2_costmap_2d::KeepoutFilter"
+    enabled: True
+    filter_info_topic: "/costmap_filter_info"
+```
+
+Como você pode ver, você especifica o filtro a ser usado, **KeepoutFilter**.
+
+
+```yaml
 
 ```
