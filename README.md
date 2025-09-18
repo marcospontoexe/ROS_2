@@ -67,47 +67,56 @@ ROS 2 usa o padrão **DDS (Data Distribution Service)** para comunicação entre
 
 
 ```mermaid
-graph TD
-    subgraph "Ciclo de Operação do Robô"
+---
+config:
+  theme: redux
+  look: classic
+---
+stateDiagram-v2
+    direction LR
+    [*] --> Teleoperacao: Iniciar Nó
+    state Teleoperacao {
         direction LR
-
-        %% --- Definição dos Estados ---
-        S1[("Teleoperação  
-(LED Branco)")]
-        S2[("Mapeamento (SLAM)  
-(LED Azul)")]
-        S3[("Criação de Rotas  
-(LED Verde)")]
-
-        %% --- Transições Principais ---
-        S1 -- "Evento: select + start" --> S2
-        S2 -- "Evento: select + start" --> S3
-        S3 -- "Evento: select + start" --> S1
-
-        %% --- Transição de Atalho (Salvar Mapa) ---
-        S2 -- "Evento: select + R1  
-(Salvar Mapa)" --> S3
-
-        %% --- Ações Internas (Loops no mesmo estado) ---
-        S3 -- "select + A: Capturar Ponto  
-select + Y: Apagar Ponto  
-select + R1: Salvar Rota  
-select + L1/L2: Apagar Rotas" --> S3
-    end
-
-    %% --- Estado Inicial e Ações Globais ---
-    [*] --> S1: Iniciar Nó
-    S1 -- "Movimento do Joystick" --> S1
-    S2 -- "Movimento do Joystick" --> S2
-
-    subgraph "Ações Globais (Disponíveis em qualquer estado)"
+        description LED_Branco Velocidade_Máxima
+    }
+    state Mapeamento {
         direction LR
-        A1(Qualquer Estado)
-        A1 -- "select + analógico esquerdo  
-(Mudar Velocidade)" --> A1
-        A1 -- "select + analógico direito  
-(Desligar Robô)" --> Fim([Desligado])
-    end
+        description LED_Azul Velocidade_Mínima
+    }
+    state Criacao_de_Rotas {
+        direction LR
+        description LED_Verde Velocidade_Média
+        [*] --> Aguardando_Ponto
+        Aguardando_Ponto --> Capturando: select + A
+        Capturando --> Aguardando_Ponto: Ponto salvo
+        Aguardando_Ponto --> Apagando_Ponto: select + Y
+        Apagando_Ponto --> Aguardando_Ponto: Ponto apagado
+        Aguardando_Ponto --> Salvando_Rota: select + R1
+        Salvando_Rota --> Aguardando_Ponto: Rota salva
+    }
+    Teleoperacao --> Mapeamento: select + start
+    Mapeamento --> Criacao_de_Rotas: select + start
+    Criacao_de_Rotas --> Teleoperacao: select + start
+    Mapeamento --> Criacao_de_Rotas: select + R1 (Salvar Mapa)
+    note right of Teleoperacao
+        Ações disponíveis:
+        * Mover robô
+        * Mudar velocidade (select + analógico esquerdo)
+        * Desligar robô (select + analógico esquerdo)   
+    end note
+    note right of Mapeamento
+        Ações disponíveis:
+        * Mover robô
+        * Mudar velocidade (select + analógico esquerdo)
+        * Desligar robô (select + analógico esquerdo) 
+    end note
+    note right of Criacao_de_Rotas
+        Ações disponíveis:
+        * Mover robô
+        * Mudar velocidade (select + analógico esquerdo)
+        * Desligar robô (select + analógico esquerdo) 
+        * Apagar rotas (select + L1/L2)
+    end note
 
 
 ```
