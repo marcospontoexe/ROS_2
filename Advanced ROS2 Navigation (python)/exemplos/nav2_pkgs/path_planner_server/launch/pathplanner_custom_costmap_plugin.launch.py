@@ -8,8 +8,8 @@ def generate_launch_description():
 
     controller_yaml = os.path.join(get_package_share_directory(
         'path_planner_server'), 'config', 'custom_costmap', 'controller.yaml')
-    default_bt_xml_path = os.path.join(get_package_share_directory(
-        'path_planner_server'), 'config', 'low_battery.xml')
+    #default_bt_xml_path = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'low_battery.xml')
+    default_bt_xml_path = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'behavior.xml')
     planner_yaml = os.path.join(get_package_share_directory(
         'path_planner_server'), 'config', 'custom_costmap', 'planner_server.yaml')
     recovery_yaml = os.path.join(get_package_share_directory(
