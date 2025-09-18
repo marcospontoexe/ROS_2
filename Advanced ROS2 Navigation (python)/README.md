@@ -1519,4 +1519,140 @@ Vamos comentar cada TAG XML:
 #### Configure o CMakelists.txt e o package.xml para compilação
 Esta última etapa é necessária para dizer ao ROS para compilar seu plugin como uma biblioteca e exportá-lo para o sistema de plugins, para que ele possa ser encontrado e usado.
 
-[**CMakelists.txt**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin/CMakeLists.txt):
+Vamos analisar o [**CMakelists.txt**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin/CMakeLists.txt):
+
+**Configurando o nome da biblioteca:**
+Primeiro, defina uma variável chamada **lib_name** que contém o nome que você selecionou para sua biblioteca de plugins quando compilada:
+
+```txt
+set(lib_name ${PROJECT_NAME}_core)
+```
+
+Neste caso, o nome é ${PROJECT_NAME}_core = custom_nav2_costmap_plugin_core
+
+É por isso que, no arquivo de informações do plugin gradient_layer.xml, você define custom_nav2_costmap_plugin_core como o caminho.
+
+```txt
+<library path="custom_nav2_costmap_plugin_core">
+```
+
+**lista de dependências de nomes de conjuntos:**
+
+```txt
+set(dep_pkgs
+    rclcpp
+    nav2_costmap_2d
+    pluginlib)
+```
+
+Nomeie **dep_pkgs** a lista de dependências na sua biblioteca que você usará depois.
+
+**Adicionando a biblioteca:**
+
+```txt
+add_library(${lib_name} SHARED
+            src/gradient_layer.cpp)
+```
+
+Declare aqui Compile o arquivo
+
+```txt
+gradient_layer.cpp into a library named lib_name=custom_nav2_costmap_plugin_core.
+```
+
+**incluir definição de pasta:**
+Incluir os arquivos de cabeçalho dentro da pasta include do pacote
+
+```txt
+include_directories(include)
+```
+
+**instalar a biblioteca compilada:**
+
+```txt
+install(TARGETS ${lib_name}
+        DESTINATION lib)
+```
+
+**disponibilizar a biblioteca para o sistema de plugins:**
+```txt
+pluginlib_export_plugin_description_file(nav2_costmap_2d gradient_layer.xml)
+ament_target_dependencies(${lib_name} ${dep_pkgs})
+```
+
+Diga ao pacote onde encontrar todas as informações relacionadas ao seu plugin no arquivo [**package.xml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin/package.xml).
+
+Esta é a única linha alterada:
+
+```xml
+<costmap_2d plugin="${prefix}/gradient_layer.xml" />
+```
+
+#### Configure, Compile and Test
+
+**Configure:**
+Crie um novo lançamento do [**Pathplanner**](https://github.com/marcospontoexe/ROS_2/tree/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server) que carregue seu plugin personalizado. Para isso, crie um novo lançamento e alguns novos arquivos de configuração:
+
+```shell
+cd ~/ros2_ws/
+touch ~/ros2_ws/src/nav2_pkgs/path_planner_server/launch/pathplanner_custom_costmap_plugin.launch.py
+mkdir ~/ros2_ws/src/nav2_pkgs/path_planner_server/custom_costmap
+cd ~/ros2_ws/src/nav2_pkgs/path_planner_server/custom_costmap
+touch controller.yaml
+touch planner_server.yaml
+```
+
+Você adicionará o plugin no Mapa de Custo **Local** e no Mapa de Custo **Global**.
+
+Veja aqui o arquivo [**controller.yaml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/config/custom_costmap/controller.yaml).
+
+* Como você pode ver, você substituiu a **inflation_layer** pela **custom_gradient_layer**.
+* Use o nome custom_nav2_costmap_plugin/GradientLayer especificado no arquivo gradient_layer.xml.
+
+```yaml
+# plugins: ["voxel_layer", "inflation_layer"]
+plugins: ["voxel_layer", "custom_gradient_layer"]
+
+...
+# inflation_layer:
+#   plugin: "nav2_costmap_2d::InflationLayer"
+#   cost_scaling_factor: 3.0
+#   inflation_radius: 0.55
+...
+custom_gradient_layer:
+    plugin: "custom_nav2_costmap_plugin/GradientLayer"
+    enabled: True
+```
+
+Veja aqui o arquivo [**planner_server.yaml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/config/custom_costmap/planner_server.yaml).
+
+E aqui, no mesmo procedimento, você substituiu a **inflation_layer** pela sua **custom_gradient_layer**. Você não precisaria adicionar nenhum dos outros plugins, pois estaria sobrescrevendo os dados deles, devido à forma como definiu o método **updateCosts()**.
+
+Veja aqui o arquivo [**pathplanner_custom_costmap_plugin.launch.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/launch/pathplanner_custom_costmap_plugin.launch.py)
+
+Altere os arquivos dos quais você obtém e carrega os parâmetros para os nós **controller_server** e **planner_server**.
+
+```python
+# Custom Plugin
+controller_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'custom_costmap', 'controller.yaml')
+# Custom Plugin
+planner_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'custom_costmap', 'planner_server.yaml')
+```
+
+Altere o arquivo [**setup.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/setup.py):
+
+Para encontrar a nova pasta **config/custom_costmap** e seus arquivos, adicione-os ao setup.py.
+
+Adicionando esta linha de código:
+
+```python
+(os.path.join('share', package_name, 'config/custom_costmap'), glob('config/custom_costmap/*.yaml')),
+```
+
+Compile e execute: `ros2 launch path_planner_server pathplanner_custom_costmap_plugin.launch.py`
+
+Agora você deve ver algo parecido com isto:
+
+![customgradientcostmap_nav2_plugins](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/customgradientcostmap_nav2_plugins.png)
+
+Como você pode ver, o controlador não consegue mover o robô. Isso ocorre porque o Costmap tem uma configuração que não permite que o robô se mova livremente.
