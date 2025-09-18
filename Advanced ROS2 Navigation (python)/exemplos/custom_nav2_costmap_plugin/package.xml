@@ -4,7 +4,7 @@
   <name>custom_nav2_costmap_plugin</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="user@todo.todo">user</maintainer>
+  <maintainer email="duckfrost@gmail.com">tgrip</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -17,6 +17,8 @@
   <test_depend>ament_lint_common</test_depend>
 
   <export>
+    <costmap_2d plugin="${prefix}/gradient_layer.xml" />
     <build_type>ament_cmake</build_type>
   </export>
+
 </package>

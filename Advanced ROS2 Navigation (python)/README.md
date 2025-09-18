@@ -1505,3 +1505,18 @@ Usar isso como um plugin na pilha ROS2 Nav2 é vital. Então, aqui você define 
 ```cpp
 PLUGINLIB_EXPORT_CLASS(NAMESPACE_OF_OUR_CUSTOM_PLUGIN::NAME_OF_CUSTOM_CLASS, BASE_CLASS_NAMESPACE::BASE_CLASS)
 ```
+
+#### Crie o arquivo XML de informações do plugin
+Para que o sistema carregue seu plugin, crie um arquivo de informações em formato **XML** ([**gradient_layer.xml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin/gradient_layer.xml)). Este arquivo conterá todas as informações necessárias para encontrar a **biblioteca** compilada do seu plugin, o **nome** que você deu a ele e o **namespace** e a **classe** que ele utiliza.
+
+Vamos comentar cada TAG XML:
+
+* **library path**: Este é o nome que você dá à biblioteca ao compilá-la. Você o define dentro do **CMakelists.txt**, que será revisado na próxima etapa.
+* **class type**: Este nome indica o **CUSTOM_PLUGIN_NAMESPACE** e a **CUSTOM_CLASS** que você definiu nos arquivos **.cpp e .hpp.** No seu caso, é CUSTOM_PLUGIN_NAMESPACE=custom_nav2_costmap_plugin, CUSTOM_CLASS=GradientLayer.
+* **class base_class_type**: Aqui você declara novamente a **BASE CLASS** com seu namespace no qual sua classe personalizada é baseada.
+* **class name**: Esta tag é opcional; se não for inserida, o nome fornecido será o mesmo do tipo de classe. Mas é melhor usá-la porque torna seu código mais legível. Neste caso, o nome é custom_nav2_costmap_plugin/GradientLayer.
+
+#### Configure o CMakelists.txt e o package.xml para compilação
+Esta última etapa é necessária para dizer ao ROS para compilar seu plugin como uma biblioteca e exportá-lo para o sistema de plugins, para que ele possa ser encontrado e usado.
+
+[**CMakelists.txt**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin/CMakeLists.txt):
