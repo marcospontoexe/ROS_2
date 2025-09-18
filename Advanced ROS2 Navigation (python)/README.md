@@ -1267,3 +1267,241 @@ cd ~/ros2_ws
 colcon build --packages-select custom_nav2_costmap_plugin
 source install/setup.bash
 ```
+
+Vamos analisar o código [**gradient_layer.hpp**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin/include/custom_nav2_costmap_plugin/gradient_layer.hpp):
+
+Primeiro, vamos comentar os princípios básicos do arquivo `*.hpp`:
+
+Primeiro, defina um namespace para a classe do seu plugin. Isso evita que o sistema se confunda com métodos que têm o mesmo nome de outros plugins. No seu caso, o namespace usado é **custom_nav2_costmap_plugin**.
+
+```cpp
+namespace custom_nav2_costmap_plugin
+{
+  ..CUSTOM CLASS DEFINITION  
+}
+```
+
+O nome da sua classe personalizada é **GradientLayer** e herda da classe base chamada **nav2_costmap_2d::Layer**. É a partir dela que você herda os métodos e os substitui.
+
+```cpp
+class GradientLayer : public nav2_costmap_2d::Layer
+{
+        ...CLASS METHODS AND VARIABLES
+};
+```
+
+Todos os métodos que você substituirá da classe base estão dentro da seção pública da sua classe:
+
+```cpp
+public:
+  GradientLayer();
+
+  virtual void onInitialize();
+  virtual void updateBounds(
+    double robot_x, double robot_y, double robot_yaw, double * min_x,
+    double * min_y,
+    double * max_x,
+    double * max_y);
+  virtual void updateCosts(
+    nav2_costmap_2d::Costmap2D & master_grid,
+    int min_i, int min_j, int max_i, int max_j);
+
+  virtual void reset()
+  {
+    return;
+  }
+
+  virtual void onFootprintChanged();
+
+  virtual bool isClearable() {return false;}
+```
+
+* **updateBounds()**: OBRIGATÓRIO. Como este método é obrigatório, você PRECISA DEFINI-LO AQUI no seu plugin. Ele é o responsável por decidir quanto do Costmap será atualizado com base nos limites, posição, etc. do robô. Quanto menor a área, mais rápido será o seu plugin.
+
+* **updateCosts()**: OBRIGATÓRIO. Ele atualiza os custos dentro dos limites definidos no método **updateBlounds()**. Isso pode ser feito adicionando-os aos custos já existentes calculados por plugins anteriores em execução, ou você pode sobrescrever os valores anteriores completamente.
+
+* **reset()**: OBRIGATÓRIO. Quando o sistema do plugin de navegação reinicia o plugin, por exemplo, por meio das árvores de comportamento, este é o método executado.
+
+* **onInitialize()**: NÃO OBRIGATÓRIO. Insira aqui qualquer código que precise ser executado ao iniciar o plugin, como buscar parâmetros, inicializar variáveis ​​e contadores.
+
+* **matchSize()**: NÃO OBRIGATÓRIO. Você o chama quando o tamanho do mapa é alterado.
+
+* **onFootprintChanged()**: NÃO OBRIGATÓRIO. Isso é útil se você tiver um robô que pode alterar o footprint, como conversíveis, anexar ferramentas ou carregar objetos maiores do que footprint original. Execute aqui o que for necessário quando isso acontecer.
+
+Como você pode ver no exemplo, aqui você não definiu **matchSize()**, mas como NÃO É OBRIGATÓRIO, ele usará o método padrão (que não faz nada, porque não está implementado na classe base CPP layer.hpp, layer.cpp).
+
+Vamos analisar o código [**gradient_layer.cpp**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin/src/gradient_layer.cpp):
+
+**onInitialize()**:
+
+```cpp
+void
+GradientLayer::onInitialize()
+{
+  auto node = node_.lock(); 
+  declareParameter("enabled", rclcpp::ParameterValue(true));
+  node->get_parameter(name_ + "." + "enabled", enabled_);
+
+  need_recalculation_ = false;
+  current_ = true;
+}
+```
+
+Aqui, você está buscando um parâmetro chamado **enabled**. Este parâmetro está no arquivo **.yaml**, onde você carregará o plugin e seus parâmetros, neste caso, enabled, como mostrado abaixo:
+
+```cpp
+custom_gradient_layer:
+    plugin: "custom_nav2_costmap_plugin/GradientLayer"
+    enabled: True
+```
+
+**updateBounds()**:
+
+```cpp
+void
+GradientLayer::updateBounds(
+  double /*robot_x*/, double /*robot_y*/, double /*robot_yaw*/, double * min_x,
+  double * min_y, double * max_x, double * max_y)
+{
+  if (need_recalculation_) {
+    last_min_x_ = *min_x;
+    last_min_y_ = *min_y;
+    last_max_x_ = *max_x;
+    last_max_y_ = *max_y;
+
+    *min_x = -std::numeric_limits<float>::max();
+    *min_y = -std::numeric_limits<float>::max();
+    *max_x = std::numeric_limits<float>::max();
+    *max_y = std::numeric_limits<float>::max();
+    need_recalculation_ = false;
+  } else {
+    double tmp_min_x = last_min_x_;
+    double tmp_min_y = last_min_y_;
+    double tmp_max_x = last_max_x_;
+    double tmp_max_y = last_max_y_;
+    last_min_x_ = *min_x;
+    last_min_y_ = *min_y;
+    last_max_x_ = *max_x;
+    last_max_y_ = *max_y;
+    *min_x = std::min(tmp_min_x, *min_x);
+    *min_y = std::min(tmp_min_y, *min_y);
+    *max_x = std::max(tmp_max_x, *max_x);
+    *max_y = std::max(tmp_max_y, *max_y);
+  }
+}
+```
+
+Aqui você pode ver:
+
+Os parâmetros de entrada para os métodos, alguns comentados no arquivo .cpp:
+
+```cpp
+double /*robot_x*/, double /*robot_y*/, double /*robot_yaw*/
+```
+
+* Isso evita que compiladores excessivamente pedantes reclamem de variáveis ​​não utilizadas definidas como parâmetros. Você não está usando esses parâmetros, mas precisa tê-los, pois os métodos virtuais da classe base são assim. Portanto, faça isso para evitar avisos ou até mesmo erros de parâmetros UNUSED.
+* Este código obtém os maiores limites e, em seguida, é atualizado com os valores fornecidos como parâmetros.
+
+**onFootprintChanged():**
+
+```cpp
+void
+GradientLayer::onFootprintChanged()
+{
+  need_recalculation_ = true;
+
+  RCLCPP_DEBUG(rclcpp::get_logger(
+      "nav2_costmap_2d"), "GradientLayer::onFootprintChanged(): num footprint points: %lu",
+    layered_costmap_->getFootprint().size());
+}
+```
+
+É uma função fictícia que imprime uma mensagem quandofootprint é alterado e define **need_recalculation_** como true, para forçar novamente essa seção no método **updateBounds()**.
+
+**updateCosts():**
+
+```cpp
+void
+GradientLayer::updateCosts(
+  nav2_costmap_2d::Costmap2D & master_grid, int min_i, int min_j,
+  int max_i,
+  int max_j)
+{
+  if (!enabled_) {
+    return;
+  }
+
+  // master_array - is a direct pointer to the resulting master_grid.
+  // master_grid - is a resulting costmap combined from all layers.
+  // By using this pointer all layers will be overwritten!
+  // To work with costmap layer and merge it with other costmap layers,
+  // please use costmap_ pointer instead (this is pointer to current
+  // costmap layer grid) and then call one of updates methods:
+  // - updateWithAddition()
+  // - updateWithMax()
+  // - updateWithOverwrite()
+  // - updateWithTrueOverwrite()
+  // In this case, using master_array pointer is equal to modifying local costmap_
+  // pointer and then calling updateWithTrueOverwrite():
+  unsigned char * master_array = master_grid.getCharMap();
+  unsigned int size_x = master_grid.getSizeInCellsX(), size_y = master_grid.getSizeInCellsY();
+
+  // {min_i, min_j} - {max_i, max_j} - are update-window coordinates.
+  // These variables are used to update the costmap only within this window
+  // avoiding the updates of whole area.
+  //
+  // Fixing window coordinates with map size if necessary.
+  min_i = std::max(0, min_i);
+  min_j = std::max(0, min_j);
+  max_i = std::min(static_cast<int>(size_x), max_i);
+  max_j = std::min(static_cast<int>(size_y), max_j);
+
+  // Simply computing one-by-one cost per each cell
+  int gradient_index;
+  for (int j = min_j; j < max_j; j++) {
+    // Reset gradient_index each time when reaching the end of re-calculated window
+    // by OY axis.
+    gradient_index = 0;
+    for (int i = min_i; i < max_i; i++) {
+      int index = master_grid.getIndex(i, j);
+      // setting the gradient cost
+      unsigned char cost = (LETHAL_OBSTACLE - gradient_index*GRADIENT_FACTOR)%255;
+      if (gradient_index <= GRADIENT_SIZE) {
+        gradient_index++;
+      } else {
+        gradient_index = 0;
+      }
+      master_array[index] = cost;
+    }
+  }
+}
+```
+
+Neste método, você sobrescreve quaisquer custos que estavam anteriormente em **master_grid**.
+
+Se você quisesse trabalhar com base nos filtros anteriores do Costmap, como consta no código, você teria que usar os métodos e **costmap_** em vez de **master_grid**:
+
+```cpp
+updateWithAddition()
+updateWithMax()
+updateWithOverwrite()
+updateWithTrueOverwrite()
+```
+
+Você atualiza os custos com base na posição no Mapa de Custos e em um padrão fixo e repetitivo. Não é útil, mas é uma maneira de saber como gerenciar Mapas de Custos.
+
+* O conceito mais importante aqui é o valor do custo. Ele varia de 0 a 255, sendo 0 SEM custo, e 255, o custo máximo. Ou, em outras palavras: 0 SEM perigo de bater em um obstáculo, 255 RISCO MUITO ALTO de bater em um obstáculo.
+* i e j são equivalentes a x e y no mapa. A única diferença é que não se trata de distância, mas de quadrados de grade, nos quais o mapa é dividido para calcular os Mapas de Custos.
+
+**Export Plugin MACRO:**
+
+```cpp
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(custom_nav2_costmap_plugin::GradientLayer, nav2_costmap_2d::Layer)
+```
+
+Usar isso como um plugin na pilha ROS2 Nav2 é vital. Então, aqui você define o seguinte:
+
+```cpp
+PLUGINLIB_EXPORT_CLASS(NAMESPACE_OF_OUR_CUSTOM_PLUGIN::NAME_OF_CUSTOM_CLASS, BASE_CLASS_NAMESPACE::BASE_CLASS)
+```
