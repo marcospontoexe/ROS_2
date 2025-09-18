@@ -64,3 +64,50 @@ ROS 2 usa o padrão **DDS (Data Distribution Service)** para comunicação entre
 * [Veja nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/tf) como usar TF no Ros2.
 * [Veja nesse repositório](https://github.com/marcospontoexe/ROS_2/tree/main/Behavior%20Trees%20for%20ROS2%20(C%2B%2B)) Behavior Trees para Ros2 usando C++.
 
+
+
+```mermaid
+graph TD
+    subgraph "Ciclo de Operação do Robô"
+        direction LR
+
+        %% --- Definição dos Estados ---
+        S1[("Teleoperação  
+(LED Branco)")]
+        S2[("Mapeamento (SLAM)  
+(LED Azul)")]
+        S3[("Criação de Rotas  
+(LED Verde)")]
+
+        %% --- Transições Principais ---
+        S1 -- "Evento: select + start" --> S2
+        S2 -- "Evento: select + start" --> S3
+        S3 -- "Evento: select + start" --> S1
+
+        %% --- Transição de Atalho (Salvar Mapa) ---
+        S2 -- "Evento: select + R1  
+(Salvar Mapa)" --> S3
+
+        %% --- Ações Internas (Loops no mesmo estado) ---
+        S3 -- "select + A: Capturar Ponto  
+select + Y: Apagar Ponto  
+select + R1: Salvar Rota  
+select + L1/L2: Apagar Rotas" --> S3
+    end
+
+    %% --- Estado Inicial e Ações Globais ---
+    [*] --> S1: Iniciar Nó
+    S1 -- "Movimento do Joystick" --> S1
+    S2 -- "Movimento do Joystick" --> S2
+
+    subgraph "Ações Globais (Disponíveis em qualquer estado)"
+        direction LR
+        A1(Qualquer Estado)
+        A1 -- "select + analógico esquerdo  
+(Mudar Velocidade)" --> A1
+        A1 -- "select + analógico direito  
+(Desligar Robô)" --> Fim([Desligado])
+    end
+
+
+```
