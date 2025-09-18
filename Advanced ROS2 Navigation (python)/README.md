@@ -1258,6 +1258,7 @@ Antes de se aprofundar na criação de plugins personalizados, você precisa de 
 ### Costmap Plugin
 Neste primeiro exemplo, você aprenderá os conceitos fundamentais para criar seu próprio plugin no Nav2. Especificamente, você desenvolverá um plugin personalizado de filtragem de Costmap, que permite modificar a maneira como a pilha de navegação processa os mapas de custo. Esse conhecimento servirá como base para a construção de plugins mais avançados posteriormente.
 
+#### Crie um pacote
 Crie um novo pacote ROS 2 ([**custom_nav2_costmap_plugin**](https://github.com/marcospontoexe/ROS_2/tree/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_costmap_plugin)) para armazenar todos os plugins do Costmaps. Execute os seguintes comandos para isso:
 
 ```shell
@@ -1656,3 +1657,245 @@ Agora você deve ver algo parecido com isto:
 ![customgradientcostmap_nav2_plugins](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/customgradientcostmap_nav2_plugins.png)
 
 Como você pode ver, o controlador não consegue mover o robô. Isso ocorre porque o Costmap tem uma configuração que não permite que o robô se mova livremente.
+
+### Planner Plugin
+Agora, você explorará um novo exemplo focado na criação de um plugin de planejamento que gera caminhos em linha reta sem considerar obstáculos. Este planejador simples servirá como base para a compreensão de como os planejadores de caminhos personalizados funcionam dentro da estrutura Nav2.
+
+Como muitos dos conceitos fundamentais permanecem consistentes entre os diferentes tipos de plugins, este exemplo será um pouco menos detalhado do que o anterior. No entanto, seguindo os passos fornecidos, você ganhará experiência prática na implementação e integração de um planejador personalizado à pilha de navegação.
+
+#### Crie um pacote
+Crie um pacote ([**custom_nav2_planner_plugin**](https://github.com/marcospontoexe/ROS_2/tree/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_planner_plugin)) onde você armazenará todos os plugins para planejadores. Execute os seguintes comandos:
+
+```shell
+cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_cmake custom_nav2_planner_plugin --dependencies rclcpp rclcpp_action rclcpp_lifecycle std_msgs visualization_msgs nav2_util nav2_msgs nav_msgs geometry_msgs builtin_interfaces tf2_ros nav2_costmap_2d nav2_core pluginlib
+cd ~/ros2_ws
+colcon build --packages-select custom_nav2_planner_plugin
+source install/setup.bash
+```
+
+Vamos dar uma olhada no arquivo [**straight_line_planner.hpp**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_planner_plugin/include/custom_nav2_planner_plugin/straight_line_planner.hpp).
+
+Todos os métodos que você substituirá da classe base nav2_core::GlobalPlanner estão dentro da seção pública da sua classe:
+
+```cpp
+public:
+  StraightLine() = default;
+  ~StraightLine() = default;
+
+  void configure(
+    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
+    std::string name, std::shared_ptr<tf2_ros::Buffer> tf,
+    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros) override;
+
+
+  void cleanup() override;
+  void activate() override;
+  void deactivate() override;
+
+  nav_msgs::msg::Path createPlan(
+    const geometry_msgs::msg::PoseStamped & start,
+    const geometry_msgs::msg::PoseStamped & goal) override;
+```
+
+* **configure()**: OBRIGATÓRIO. Este método é chamado quando o nó está no estado configure. Isso significa que é aqui que você deve carregar todos os parâmetros e inicializar todas as variáveis.
+* **activate()**: OBRIGATÓRIO. Ao ativar este método, ele será executado, portanto, coloque tudo o que você precisa aqui antes que o plugin seja ativado.
+* **deactivate()**: OBRIGATÓRIO.
+* **cleanup()**: OBRIGATÓRIO. Ao entrar no estado clean, libera memória para tarefas e similares.
+* **createPlan()**: OBRIGATÓRIO. Os métodos são chamados quando o servidor deseja gerar um caminho global com base em start e goal_pose. Este método retorna um nav_msgs::msg::Path que será usado como o caminho global planejado.
+
+Agora, dê uma olhada no código do [**straight_line_planner.cpp**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_planner_plugin/src/straight_line_planner.cpp). Há basicamente dois métodos que valem a pena comentar:
+
+**configure():**
+
+```cpp
+void StraightLine::configure(
+  const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
+  std::string name, std::shared_ptr<tf2_ros::Buffer> tf,
+  std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
+{
+  node_ = parent.lock();
+  name_ = name;
+  tf_ = tf;
+  costmap_ = costmap_ros->getCostmap();
+  global_frame_ = costmap_ros->getGlobalFrameID();
+
+  // Parameter initialization
+  nav2_util::declare_parameter_if_not_declared(
+    node_, name_ + ".interpolation_resolution", rclcpp::ParameterValue(
+      0.1));
+  node_->get_parameter(name_ + ".interpolation_resolution", interpolation_resolution_);
+}
+```
+
+Aqui você obtém o valor do parâmetro **interpolation_resolution** que será usado para a geração do caminho em linha reta. Ele será definido no arquivo YAML:
+
+```yaml
+planner_plugins: ["GridBased"]    
+GridBased:
+  plugin: StraightLineCustomPlugin
+  interpolation_resolution: 0.1
+```
+
+**createPlan():**
+
+```cpp
+nav_msgs::msg::Path StraightLine::createPlan(
+  const geometry_msgs::msg::PoseStamped & start,
+  const geometry_msgs::msg::PoseStamped & goal)
+{
+  nav_msgs::msg::Path global_path;
+
+  // Checking if the goal and start state is in the global frame
+  if (start.header.frame_id != global_frame_) {
+    RCLCPP_ERROR(
+      node_->get_logger(), "Planner will only except start position from %s frame",
+      global_frame_.c_str());
+    return global_path;
+  }
+
+  if (goal.header.frame_id != global_frame_) {
+    RCLCPP_INFO(
+      node_->get_logger(), "Planner will only except goal position from %s frame",
+      global_frame_.c_str());
+    return global_path;
+  }
+
+  global_path.poses.clear();
+  global_path.header.stamp = node_->now();
+  global_path.header.frame_id = global_frame_;
+  // calculating the number of loops for current value of interpolation_resolution_
+  int total_number_of_loop = std::hypot(
+    goal.pose.position.x - start.pose.position.x,
+    goal.pose.position.y - start.pose.position.y) /
+    interpolation_resolution_;
+  double x_increment = (goal.pose.position.x - start.pose.position.x) / total_number_of_loop;
+  double y_increment = (goal.pose.position.y - start.pose.position.y) / total_number_of_loop;
+
+  for (int i = 0; i < total_number_of_loop; ++i) {
+    geometry_msgs::msg::PoseStamped pose;
+    pose.pose.position.x = start.pose.position.x + x_increment * i;
+    pose.pose.position.y = start.pose.position.y + y_increment * i;
+    pose.pose.position.z = 0.0;
+    pose.pose.orientation.x = 0.0;
+    pose.pose.orientation.y = 0.0;
+    pose.pose.orientation.z = 0.0;
+    pose.pose.orientation.w = 1.0;
+    pose.header.stamp = node_->now();
+    pose.header.frame_id = global_frame_;
+    global_path.poses.push_back(pose);
+  }
+
+  global_path.poses.push_back(goal);
+
+        RCLCPP_WARN(
+      node_->get_logger(), "Plann Straight line DONE");
+
+  return global_path;
+}
+```
+
+Aqui você pode ver:
+
+* Os parâmetros de entrada para o método são **start e goal**.
+* Você está calculando a distância entre esses dois pontos 2D e dividindo-a pela **interpolation_resolution**:
+
+```cpp
+int total_number_of_loop = std::hypot(
+    goal.pose.position.x - start.pose.position.x,
+    goal.pose.position.y - start.pose.position.y) /
+    interpolation_resolution_;
+```
+
+Isso nos dará o número de partes em que o caminho em linha reta será dividido. Quanto maior a distância, maior o número de partes que o caminho terá.
+
+```cpp
+for (int i = 0; i < total_number_of_loop; ++i) {
+    geometry_msgs::msg::PoseStamped pose;
+    pose.pose.position.x = start.pose.position.x + x_increment * i;
+    pose.pose.position.y = start.pose.position.y + y_increment * i;
+    pose.pose.position.z = 0.0;
+    pose.pose.orientation.x = 0.0;
+    pose.pose.orientation.y = 0.0;
+    pose.pose.orientation.z = 0.0;
+    pose.pose.orientation.w = 1.0;
+    pose.header.stamp = node_->now();
+    pose.header.frame_id = global_frame_;
+    global_path.poses.push_back(pose);
+  }
+```
+
+E aqui, você está gerando os pontos desse caminho, usando incrementos lineares para gerar uma linha de caminho perfeitamente reta.
+
+#### Crie o arquivo XML de informações do plugin
+Veja aqui o arquivo [**straight_line_plugin_info.xml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_planner_plugin/straight_line_plugin_info.xml)
+
+#### Configure o CMakelists.txt e o package.xml para compilação
+Vamos analisar o [**CMakelists.txt**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_planner_plugin/CMakeLists.txt)
+
+Mesmo procedimento, exceto para alguns elementos:
+
+**target_compile_definitions**: Isso se deve à necessidade de desabilitar as funções BOOST ao compilar este plugin.
+
+```txt
+target_compile_definitions(${straight_plugin_name} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+```
+
+Diga ao pacote onde encontrar todas as informações relacionadas ao seu plugin no arquivo [**package.xml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_planner_plugin/package.xml)
+
+#### Configure
+Crie um novo lançamento do Pathplanner que carregue seu plugin personalizado. Para isso, crie um novo lançamento e alguns novos arquivos de configuração:
+
+```shell
+cd ~/ros2_ws/
+touch ~/ros2_ws/src/nav2_pkgs/path_planner_server/launch/pathplanner_straightlineplanner_plugin.launch.py
+mkdir ~/ros2_ws/src/nav2_pkgs/path_planner_server/config/straightline_planner
+cd ~/ros2_ws/src/nav2_pkgs/path_planner_server/config/straightline_planner
+touch planner_server.yaml
+```
+
+Aqui você só precisa do [**planner_server.yaml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/config/straightline_planner/planner_server.yaml) porque seu plugin é para o servidor do planejador que gerou os caminhos globais.
+
+* Como você pode ver, você não alterou o nome do parâmetro. Você usa o **GridBased**. Por enquanto, se isso for alterado, ocorrerão erros.
+* Você está carregando o plugin com o nome que você deu a ele no **straight_line_plugin_info.xml**, **StraightLineCustomPlugin**.
+
+```yaml
+planner_plugins: ["GridBased"]    
+GridBased:
+  plugin: StraightLineCustomPlugin
+  interpolation_resolution: 0.1
+```
+
+De uma olhada no [**pathplanner_straightlineplanner_plugin.launch.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/launch/pathplanner_straightlineplanner_plugin.launch.py).
+
+Como você pode ver, você altera apenas o **planner_yaml**. O restante é a configuração padrão.
+
+```py
+# Custom Plugin
+planner_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'straightline_planner', 'planner_server.yaml')
+```
+
+Para encontrar a nova pasta **config/straightline_planner** e seus arquivos, você precisa adicioná-los ao [**setup.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/setup.py).
+
+Adicionando esta linha de código:
+
+```py
+(os.path.join('share', package_name, 'config/straightline_planner'), glob('config/straightline_planner/*.yaml')),
+```
+
+Esta linha adiciona o config/straightline_planner e os arquivos internos.
+
+Compile e execute: `ros2 launch path_planner_server pathplanner_straightlineplanner_plugin.launch.py`.
+
+Agora você deve ver algo parecido com isto:
+
+![rout](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/imagens/Capturar.PNG)
+
+Como você pode ver, agora todos os caminhos são LINHAS RETAS.
+
+Mesmo aqueles que ATRAVESSAM OBSTÁCULOS. Você pode ver que ele não planeja o caminho global em torno dele. MAS o robô para porque o Planejamento de Caminho LOCAL entra em ação. Mas esse local não se recupera bem porque, no final, é o Caminho Global que faz tudo funcionar e se adaptar.
+
+### Controller Plugin
+Neste exemplo final, você criará um plugin personalizado para o planejador local. Embora muitos planejadores locais já tenham sido implementados, este é baseado no algoritmo Pure Pursuit desenvolvido por Steve Macenski. Você pode [encontrar o código original aqui](https://github.com/ros-navigation/navigation2/tree/b92561bd8deba1589f5739ffffd71594adadc2f4/nav2_regulated_pure_pursuit_controller). Esta abordagem oferece uma nova perspectiva sobre o controle local, com o objetivo de aprimorar os métodos existentes. Ela é inspirada no artigo de pesquisa [SOURCE](https://www.enseignement.polytechnique.fr/profs/informatique/Eric.Goubault/MRIS/coulter_r_craig_1992_1.pdf).
+
+Em vez de usar o controlador DWB tradicional, este planejador baseado em Pure Pursuit olha para a frente ao longo do caminho para gerar uma trajetória. O grau de aderência ao caminho depende da distância de observação à frente — uma distância maior resulta em um acompanhamento mais solto, enquanto uma distância menor mantém o robô mais alinhado com o caminho.
