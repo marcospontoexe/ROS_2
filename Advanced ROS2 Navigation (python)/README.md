@@ -1899,3 +1899,31 @@ Mesmo aqueles que ATRAVESSAM OBSTÁCULOS. Você pode ver que ele não planeja o 
 Neste exemplo final, você criará um plugin personalizado para o planejador local. Embora muitos planejadores locais já tenham sido implementados, este é baseado no algoritmo Pure Pursuit desenvolvido por Steve Macenski. Você pode [encontrar o código original aqui](https://github.com/ros-navigation/navigation2/tree/b92561bd8deba1589f5739ffffd71594adadc2f4/nav2_regulated_pure_pursuit_controller). Esta abordagem oferece uma nova perspectiva sobre o controle local, com o objetivo de aprimorar os métodos existentes. Ela é inspirada no artigo de pesquisa [SOURCE](https://www.enseignement.polytechnique.fr/profs/informatique/Eric.Goubault/MRIS/coulter_r_craig_1992_1.pdf).
 
 Em vez de usar o controlador DWB tradicional, este planejador baseado em Pure Pursuit olha para a frente ao longo do caminho para gerar uma trajetória. O grau de aderência ao caminho depende da distância de observação à frente — uma distância maior resulta em um acompanhamento mais solto, enquanto uma distância menor mantém o robô mais alinhado com o caminho.
+
+#### Crie um novo pacote ROS 2
+Crie um novo pacote ([**custom_nav2_controller_plugin**](https://github.com/marcospontoexe/ROS_2/tree/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_controller_plugin)) ROS 2 com os seguintes comandos:
+
+```shell
+cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_cmake custom_nav2_controller_plugin --dependencies rclcpp geometry_msgs nav2_costmap_2d pluginlib nav_msgs nav2_util nav2_core tf2
+cd ~/ros2_ws
+colcon build --packages-select custom_nav2_controller_plugin
+source install/setup.bash
+```
+
+Veja aqui o código [**regulated_pure_pursuit_controller.cpp**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_controller_plugin/src/regulated_pure_pursuit_controller.cpp).
+
+
+Veja aqui o código [**regulated_pure_pursuit_controller.hpp**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_controller_plugin/include/custom_nav2_controller_plugin/regulated_pure_pursuit_controller.hpp).
+
+Como antes, esta classe é baseada, neste caso, em **nav2_core::Controller**. Esta classe base possui vários métodos que precisam estar dentro do seu plugin para funcionar plug and play. Todos eles são OBRIGATÓRIOS, e alguns são os mesmos do nav2_core::GlobalPlanner usado no Exemplo anterior.
+
+* configure(): OBRIGATÓRIO.
+* activate(): OBRIGATÓRIO.
+* deactivate(): OBRIGATÓRIO.
+* cleanup(): OBRIGATÓRIO.
+* setPlan(): OBRIGATÓRIO. Chame-o quando o plano global for atualizado.
+* computeVelocityCommands(): OBRIGATÓRIO. Gera os comandos de velocidade enviados ao robô para seguir o plano global gerado no plugin global path planner. Retorna uma função geometry_msgs::msg::TwistStamped usada para mover o robô. Como parâmetros, possui a pose atual do robô e a velocidade atual.
+
+#### Crie o arquivo XML de informações do plugin
+Vamos analisar o arquivo [**regulated_pure_pursuit_controller_info.xml**]()
