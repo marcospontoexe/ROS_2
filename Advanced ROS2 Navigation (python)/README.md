@@ -1926,4 +1926,246 @@ Como antes, esta classe é baseada, neste caso, em **nav2_core::Controller**. Es
 * computeVelocityCommands(): OBRIGATÓRIO. Gera os comandos de velocidade enviados ao robô para seguir o plano global gerado no plugin global path planner. Retorna uma função geometry_msgs::msg::TwistStamped usada para mover o robô. Como parâmetros, possui a pose atual do robô e a velocidade atual.
 
 #### Crie o arquivo XML de informações do plugin
-Vamos analisar o arquivo [**regulated_pure_pursuit_controller_info.xml**]()
+Vamos analisar o arquivo [**regulated_pure_pursuit_controller_info.xml**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/custom_nav2_controller_plugin/regulated_pure_pursuit_controller_info.xml)
+
+Observe que isso é um pouco diferente. Também pode ser feito desta forma. Observe que:
+
+* Você tem uma **class_libraries** extra. Isso está disponível em versões mais recentes do ROS2 e é recomendado.
+* Não há <nome da classe>. Isso significa que, ao adicionar este plugin ao arquivo .yaml, o nome é o mesmo do tipo de classe. Neste caso, custom_nav2_controller_plugin_namespace_name::RegulatedPurePursuitController.
+
+#### Configure
+Veja o arquivo de configuração [**controller.yaml*](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/config/pure_pursuit_controller/controller.yaml)
+
+Como você pode ver, este plugin possui muitos PARÂMETROS. Mas os mais importantes que afetam o comportamento são:
+
+* **desired_linear_vel**: Isso faz com que o robô se mova muito rápido. Neste caso, a velocidade é definida como 2,5 metros por segundo, o que é rápido.
+* **lookahead_dist**: Isso regula a distância até a qual você verifica se há colisões no caminho. Quanto maior, mais suaves serão as trajetórias, mas menos precisas ao seguir o caminho. É limitado pelos parâmetros min_lookahead_dist e max_lookahead_dist.
+
+Veja o arquivo [**pathplanner_purepursuit_controller_plugin.launch.py**](https://github.com/marcospontoexe/ROS_2/blob/main/Advanced%20ROS2%20Navigation%20(python)/exemplos/nav2_pkgs/path_planner_server/launch/pathplanner_purepursuit_controller_plugin.launch.py)
+
+Execute em um terminal: 
+
+```shell
+cd ~/ros2_ws
+source install/setup.bash;reset;ros2 launch localization_server localization.launch.py
+```
+
+Execute em outro terminal: 
+
+```shell
+cd ~/ros2_ws
+source install/setup.bash;reset;ros2 launch path_planner_server pathplanner_purepursuit_controller_plugin.launch.py
+```
+
+Agora você precisa acessar as Ferramentas Gráficas (que devem abrir automaticamente) e alterar o arquivo de configuração do RVIZ para planejamento de caminho. 
+
+Vá em Arquivo -> Abrir Configuração e selecione o arquivo.
+
+Você pode ver que o robô se move MUITO RÁPIDO. Isso porque você definiu a velocidade máxima de 2,5 m/s.
+
+# Controller Server In Depth
+O Servidor do Controlador é um componente-chave do Navigation2 (Nav2) que gerencia a execução do caminho gerando comandos de velocidade para o robô. Ele desempenha um papel vital para garantir uma navegação suave e eficiente, selecionando e executando plugins do controlador.
+
+Nesta unidade, você analisará em detalhes como o Servidor do Controlador funciona, explorará sua arquitetura e analisará alguns aspectos críticos de sua funcionalidade. Você também examinará diferentes plugins do controlador e seu impacto no desempenho da navegação.
+
+## Controller Server Config
+O controller_server é onde as velocidades da roda são calculadas. Esta é a chave para resolver problemas quando o seu robô não se comporta corretamente. Portanto, você precisa dominar como ele funciona.
+
+Se você verificar o arquivo de configuração do controller_server, verá a configuração geral dele no início:
+
+```yaml
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.5
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["general_goal_checker"] 
+    controller_plugins: ["FollowPath"]
+```
+
+Esta parte indica os parâmetros básicos para controlar o controller_server. No final desta parte, você pode ver que três plugins importantes são usados:
+
+* o **progress_checker_plugin**
+* os **goal_checker_plugins**
+* os **controller_plugins**
+
+Você precisa dominá-los para adaptar o Nav2 às suas necessidades.
+
+**IMPORTANTE**: Enquanto isso, o progress_checker_plugin requer a especificação de um único plugin. Os goal_checker_plugins e os controller_plugins podem conter mais de um plugin.
+
+## Controller Server Plugins
+O controller_server controla seu comportamento usando esses três plugins. Portanto, você deve especificá-los para sua tarefa de navegação.
+
+### 1. progress_checker_plugin
+Este plugin verifica se o robô está progredindo em direção à meta, ou seja, se o robô está apresentando alguma melhora em relação à meta.
+
+Este plugin é chamado pelo controlador.
+
+Atualmente, há apenas um plugin disponível no Nav2 como progress_check_plugin: o plugin **SimpleProgressChecker**.
+
+```yaml
+    # Progress checker parameters
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+```
+
+O nav2_controller fornece o plugin atualmente disponível. Ele verifica se o robô se moveu uma determinada quantidade (especificada em **required_movement_radius**) em um determinado período de tempo (que você especifica em **movement_time_allowance**).
+
+Este é um plugin simples. Ele não verifica se o movimento faz sentido ou se está em direção ao objetivo. Em vez disso, verifica se o robô se moveu pelo menos required_movement_radius metros em movement_time_allowance segundos.
+
+Este plugin é básico. Você pode tentar implementar plugins mais complexos por conta própria. Revise a unidade sobre como criar seus próprios plugins para o Nav2.
+
+### 2. goal_checker_plugins
+Este plugin verifica se o robô atingiu a posição desejada dentro de tolerâncias específicas. Lembre-se de que diminuir demais as tolerâncias pode fazer com que o robô nunca atinja a posição desejada. Por outro lado, aumentar demais as tolerâncias pode fazer com que a posição final fique longe do esperado.
+
+O nav2_controller fornece o plugin atualmente disponível. Atualmente (ROS2 Galactic), o Nav2 fornece duas implementações de goal_checker_plugins:
+
+#### 1. SimpleGoalChecker
+Veja um exemplo de parâmetros de configuração:
+
+```yaml
+    # Goal checker parameters
+    general_goal_checker:
+      stateful: True
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25    # m
+      yaw_goal_tolerance: 0.25   # rad
+```
+
+Verifique se o robô está dentro da faixa de tolerância indicada pelos parâmetros de tolerância. Em seguida, você pode especificar as tolerâncias para a posição e a orientação alcançadas.
+
+#### 2. StoppedGoalChecker
+
+```yaml
+    # Goal checker parameters
+    general_goal_checker:
+      stateful: True
+      plugin: "nav2_controller::StopedGoalChecker"
+      xy_goal_tolerance: 0.25        # m
+      yaw_goal_tolerance: 0.25       # rad
+      trans_stopped_velocity: 0.25   # m/s
+      rot_stopped_velocity: 0.25     # rad/s
+```
+
+Semelhante ao anterior, ele verifica se o robô está dentro das tolerâncias para a meta e se as velocidades (linear e rotacional) estão abaixo do valor indicado nos parâmetros.
+
+### 3. controller_plugins
+Eles são responsáveis ​​por calcular o plano local, as velocidades das rodas para seguir esse caminho e considerar os obstáculos próximos.
+
+Atualmente, existem dois controller_plugins disponíveis:
+
+#### 1. DWBLocalPlanner controller
+Este controlador é fornecido pelo dwb_core. É uma implementação do algoritmo de prevenção de obstáculos DWA.
+
+```yaml
+    # DWB parameters
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: True
+      trajectory_generator_name: “dwb_plugins::StandardTrajectoryGenerator”
+      min_vel_x: 0.0
+      min_vel_y: 0.0
+      max_vel_x: 0.26
+      max_vel_y: 0.0
+      max_vel_theta: 1.0
+      min_speed_xy: 0.0
+      max_speed_xy: 0.26
+      min_speed_theta: 0.0
+      acc_lim_x: 2.5
+      acc_lim_y: 0.0
+      acc_lim_theta: 3.2
+      decel_lim_x: -2.5
+      decel_lim_y: 0.0
+      decel_lim_theta: -3.2
+      vx_samples: 20
+      vy_samples: 5
+      vtheta_samples: 20
+      sim_time: 1.7
+      linear_granularity: 0.05
+      angular_granularity: 0.025
+      transform_tolerance: 0.2
+      xy_goal_tolerance: 0.25
+      trans_stopped_velocity: 0.25
+      short_circuit_trajectory_evaluation: True
+      stateful: True
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      BaseObstacle.scale: 0.02
+      PathAlign.scale: 32.0
+      PathAlign.forward_point_distance: 0.1
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.1
+      PathDist.scale: 32.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.lookahead_time: -1.0
+```
+
+Para uma explicação completa de cada um dos parâmetros, consulte a [documentação oficial aqui](https://docs.nav2.org/configuration/packages/dwb-params/controller.html).
+
+As partes mais importantes de sua configuração são explicadas aqui: o plugin gerador de trajetória e os críticos de trajetória.
+
+##### Plugin Gerador de Trajetória
+Este plugin implementa o cálculo da trajetória local. Atualmente, apenas dois plugins possíveis estão disponíveis:
+
+**Definições da documentação oficial**
+
+1. **StandardTrajectoryGenerator**: É semelhante ao algoritmo de implementação de trajetória usado no base_local_planner no ROS 1.
+2. **LimitedAccelGenerator**: É semelhante ao DWA usado no ROS 1.
+
+##### Críticas (Critics) de Trajetória do DWB
+Críticas são pequenos plugins que afetam o comportamento do DWB para forçar mais ou menos o seguimento da trajetória global, especialmente diante de obstáculos inesperados que ainda não estão incluídos no Mapa de Custo global.
+
+Cada crítica pontuará as diferentes trajetórias calculadas pelo plugin gerador de trajetórias.
+
+**Definições da documentação oficial**
+
+* **BaseObstacle**: Pontua uma trajetória com base em onde o caminho passa sobre o Mapa de Custo. Para usar isso corretamente, você deve usar a **camada de inflação** no Mapa de Custo para expandir os obstáculos pelo raio do robô.
+* **GoalAlign**: Pontua uma trajetória com base em quão bem alinhada a trajetória está com a pose-alvo.
+* **GoalDist**: Pontua uma trajetória com base em quão perto a trajetória leva o robô da pose-alvo.
+* **ObstacleFootprint**: Pontua uma trajetória com base na verificação de que todos os pontos ao longo da pegada do robô não tocam em um obstáculo marcado no Mapa de Custo.
+* **Oscillation**: Impede que o robô se mova para frente e para trás.
+* **PathAlign**: Pontua uma trajetória com base em quão bem ela está alinhada ao caminho fornecido pelo planejador global.
+* **PathDist**: Pontua uma trajetória com base em quão longe ela termina do caminho fornecido pelo planejador global.
+* **PreferForward**: Pontua trajetórias que movem o robô para frente mais alto.
+* **RotateToGoal**: Permite que o robô gire para a orientação do objetivo somente quando estiver suficientemente próximo do local do objetivo.
+* **Twirling**: Impede que robôs holonômicos girem à medida que avançam em direção ao objetivo.
+
+#### 2. Regulated Pure Pursuit
+Este plugin foi desenvolvido especificamente para aplicações industriais onde a segurança em velocidade é fundamental. Ele regula as velocidades lineares pela curvatura da trajetória para ajudar a reduzir o excesso de velocidade em altas velocidades em curvas cegas, permitindo que as operações sejam muito mais seguras.
+
+```yaml
+FollowPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      desired_linear_vel: 0.5
+      lookahead_dist: 0.6
+      min_lookahead_dist: 0.3
+      max_lookahead_dist: 0.9
+      lookahead_time: 1.5
+      rotate_to_heading_angular_vel: 1.8
+      transform_tolerance: 0.1
+      use_velocity_scaled_lookahead_dist: false
+      min_approach_linear_velocity: 0.05
+      max_allowed_time_to_collision_up_to_carrot: 1.0
+      use_regulated_linear_velocity_scaling: true
+      use_cost_regulated_linear_velocity_scaling: false
+      regulated_linear_scaling_min_radius: 0.9
+      regulated_linear_scaling_min_speed: 0.25
+      use_rotate_to_heading: true
+      allow_reversing: false
+      rotate_to_heading_min_angle: 0.785
+      max_angular_accel: 3.2
+      max_robot_pose_search_dist: 10.0
+      use_interpolation: false
+```
+
+Confira a documentação completa desse plugin [aqui](https://docs.nav2.org/configuration/packages/configuring-regulated-pp.html).
+
+#### 3. TEB planner
+Mesmo que anunciado, este plugin voltado para robôs holonômicos ou semelhantes a carros ainda não está disponível.
