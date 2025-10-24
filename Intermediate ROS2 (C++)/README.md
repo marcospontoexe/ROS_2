@@ -1217,7 +1217,7 @@ Agora, considere o máximo que deve transcorrer entre a publicação de uma mens
 
 A variável regula isso:
 
-* **Duration**: Tempo entre a publicação de mensagens subsequentes.
+* **Duration**: O tempo máximo esperado entre mensagens subsequentes publicadas em um tópico.
 
 [Veja um exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/subscriber_deadline.cpp) (**subscriber_deadline.cpp**)
 
@@ -1309,6 +1309,8 @@ E o publisher também não apresenta erro porque está publicando algo com um pe
 ## Lifespan
 É definido pela duração, o tempo entre a publicação e o recebimento da mensagem, após o qual a mensagem se torna obsoleta. Isso é importante para dados de sensores, como varreduras a laser ou câmeras, porque, normalmente, você está interessado em ter os valores mais recentes, e dados que chegam depois são inúteis.
 
+* Duration: O tempo máximo esperado entre mensagens subsequentes publicadas em um tópico.
+  
 **Primeiro**, a duração do tempo de vida só é útil se você a usar com **reliable e transient_local**. O motivo é que, se você não garantir o recebimento da mensagem (**Reliable**) e não esperar que os assinantes atrasados ​​a recebam (**transient_local**), não será possível avaliar a duração da mensagem publicada.
 
 É por isso que você define a QoS no publicador e nos assinantes:
@@ -1406,9 +1408,12 @@ Como você pode ver, a mensagem "Age" tem 0,000424 segundos, então, em teoria, 
 ```
 
 ## Liveliness and LeaseDuration
-A vivacidade é usada para saber se um publicador ou nó está ativo. Isso significa que ele é publicado a uma taxa regular.
+A Liveliness é usada para saber se um publicador ou nó está ativo. Isso significa que ele é publicado a uma taxa regular.
+* Automatic: O sistema considerará todos os publicadores do nó como ativos por outra “lease duration” quando qualquer um de seus publicadores tiver publicado uma mensagem.
+* Manual by topic: O sistema considerará o publicador ativo por outra “lease duration” se ele afirmar manualmente que ele ainda está ativo (por meio de uma chamada à API do publicador).
 
 A duração do lease é o período em que você considera que o publicador deve fornecer alguma mensagem ou sinal de que está ativo; caso contrário, considere-o inativo.
+* Duration: O período máximo de tempo que um editor tem para indicar que está ativo antes que o sistema considere que ele perdeu a atividade (perder a atividade pode ser uma indicação de falha).
 
 [Veja esse exemplo](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/qos_tests_pkg/src/subscriber_liveliness.cpp) (**subscriber_liveliness.cpp**)
 
