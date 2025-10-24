@@ -1201,6 +1201,17 @@ Você também pode usar um comando de terminal simples. Defina o comando echo co
 
 Defina a confiabilidade (**reliability**) além da durabilidade; caso contrário, não funcionará. Este problema no Galactic será resolvido na próxima versão do ROS2: `ros2 topic echo --qos-durability transient_local --qos-reliability reliable /qos_test`
 
+## History
+* Keep last: armazena apenas até N amostras, configuráveis ​​por meio da opção de profundidade da fila.
+* Keep all: armazenar todas as amostras, sujeitas aos limites de recursos configurados pelo fornecedor do DDS.
+
+## Depth
+* Size of the queue: somente honrado se usado junto com “keep last”.
+
+## Reliability.
+* Best effort: Tenta entregar amostras, mas pode perdê-las se a rede não for robusta.
+* Reliable: Garantir que as amostras sejam entregues, pode tentar novamente várias vezes.
+
 ## Deadline
 Agora, considere o máximo que deve transcorrer entre a publicação de uma mensagem e a próxima para considerar o tópico saudável. Isso é útil para comandos de controle, como cmd_vel, ou outros comandos mais críticos que precisam ser regulares, como detecção de obstáculos, por exemplo.
 
