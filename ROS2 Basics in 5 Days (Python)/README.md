@@ -1,3 +1,14 @@
+# Índice
+
+1.  [Pacotes](#pacotes)
+    *   [Criando um pacote](#criando-um-pacote)
+        *   [Criando um arquivo Python](#criando-um-arquivo-python)
+        *   [Modificando o arquivo setup.py para executar programas Python](#modificando-o-arquivo-setuppy-para-executar-programas-python)
+        *   [Criando um novo método e modificando o setup.py para executa-lo](#criando-um-novo-método-e-modificando-o-setuppy-para-executa-lo)
+        *   [Crie um novo método e entry point para que possamos iniciar ao mesmo tempo dois nós diferentes](#crie-um-novo-método-e-entry-point-para-que-possamos-iniciar-ao-mesmo-tempo-dois-nós-diferentes)
+        *   [Criando um arquivo launch](#criando-um-arquivo-launch)
+
+
 # Pacotes
 O ROS 2 utiliza pacotes para organizar seus programas. Você pode pensar em um pacote como uma coleção de todos os arquivos relacionados a um programa ROS 2 específico; todos os seus arquivos CPP, arquivos Python, arquivos de configuração, arquivos de compilação, arquivos de inicialização e arquivos de parâmetros. Além disso, organizar seus programas ROS 2 em pacotes facilita muito o compartilhamento com outros desenvolvedores/usuários.
 
