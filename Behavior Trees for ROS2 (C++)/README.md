@@ -1,3 +1,21 @@
+# Índice
+
+1.  [Behavior Trees](#behavior-trees)
+    *   [Arquitetura de Software. Árvores de Comportamento (Behavior Trees) - ROS2](#arquitetura-de-software-árvores-de-comportamento-behavior-trees---ros2)
+    *   [Conceito de Árvores de Comportamento](#conceito-de-árvores-de-comportamento)
+    *   [BT em Ação](#bt-em-ação)
+    *   [Notação de nó BT](#notação-de-nó-bt)
+    *   [Abordagem para BT](#abordagem-para-bt)
+        *   [Desafios com FSMs, transição para BTs](#desafios-com-fsms-transição-para-bts)
+    *   [Principais vantagens do BT](#principais-vantagens-do-bt)
+    *   [Exemplo](#exemplo-1)
+    *   [Arquitetura de Árvores de Comportamento](#arquitetura-de-árvores-de-comportamento)
+    *   [Tipos de Nós e Comportamento. O Modelo de Fluxo Lógico BT em Formato XML](#tipos-de-nós-e-comportamento-o-modelo-de-fluxo-lógico-bt-em-formato-xml)
+    *   [Esquema XML](#esquema-xml)
+        *   [Nós aninhados](#nós-aninhados)
+        *   [Nós assíncronos (nó sequencial reativo)](#nós-assíncronos-nó-sequencial-reativo)
+    *   [Concorrência](#concorrência)
+
 # Behavior Trees
 Nesta unidade, você entenderá o conceito de BT e a arquitetura de software simplificada que pode ser acomodada no framework ROS2. As Árvores de Comportamento são usadas para criar uma lógica para decidir o que **fazer** e **quando**.
 
