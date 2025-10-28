@@ -1,3 +1,22 @@
+# Índice
+
+1.  [C++](#c)
+    *   [Pacotes compilados](#pacotes-compilados)
+    *   [INCLUDE](#include)
+    *   [namespace](#namespace)
+        *   [namespace std](#namespace-std)
+    *   [return 0](#return-0)
+    *   [break](#break)
+    *   [continue](#continue)
+    *   [Listas](#listas)
+    *   [Dicionários](#dicionários)
+    *   [Arrays](#arrays)
+    *   [Saída de dados na tela](#saida-de-dados-na-tela)
+        *   [printf](#printf)
+        *   [cout](#cout)
+    *   [Ponteiro](#ponteiro)
+        *   [Usando ponteiro em funções](#usando-ponteiro-em-funções)
+
 # C++
 Programas em C++ podem ser um pouco complicados de executar. Primeiramente, para um programa escrito em C++, o nome do arquivo precisa ser algo como **nome.cpp**, onde a extensão .cpp especifica a linguagem de programação que estamos usando.
 
