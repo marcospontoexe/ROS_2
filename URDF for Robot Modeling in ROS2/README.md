@@ -1,11 +1,3 @@
-# Índice
-
-1.  [URDF](#urdf)
-    *   [O que o URDF descreve?Com certeza! Aqui está o índice em formato Markdown para o texto que você forneceu.
-
-```markdown
-# Índice
-
 1.  [URDF](#urdf)
     *   [O que o URDF descreve?](#o-que-o-urdf-descreve)
     *   [Por que preciso de URDFs?](#por-que-preciso-de-urdfs)
