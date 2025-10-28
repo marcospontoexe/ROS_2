@@ -1,3 +1,38 @@
+
+# Índice
+
+1.  [tf (Transform Library)](#tf-transform-library)
+2.  [Sistemas de Coordenadas, Referenciais e Quadros de Coordenadas](#sistemas-de-coordenadas-referenciais-e-quadros-de-coordenadas)
+3.  [Quadro de Coordenadas Global](#quadro-de-coordenadas-global)
+4.  [Quadro de Coordenadas Local e nomes de quadros de coordenadas](#quadro-de-coordenadas-local-e-nomes-de-quadros-de-coordenadas)
+5.  [Convenções](#convenções)
+    *   [Quadro de coordenadas Left-handed vs right-handed](#quadro-de-coordenadas-left-handed-vs-right-handed)
+6.  [Criando um Quadro de Coordenadas](#criando-um-quadro-de-coordenadas)
+7.  [Visualize transformações e quadros de coordenadas no RVIZ](#visualize-transformações-e-quadros-de-coordenadas-no-rviz)
+8.  [Os vários quadros de coordenadas de um robô](#os-vários-quadros-de-coordenadas-de-um-robô)
+9.  [Ferramentas e Visualização TF](#ferramentas-e-visualização-tf)
+    *   [CAM_BOT](#cam_bot)
+    *   [TARTARUGA](#tartaruga)
+        *   [Onde está a tartaruga?](#onde-está-a-tartaruga)
+    *   [Ver quadros TF em formato PDF](#ver-quadros-tf-em-formato-pdf)
+    *   [Visualizar quadros TF usando rqt_tf_tree](#visualizar-quadros-tf-usando-rqt_tf_tree)
+    *   [Visualizar quadros TF no terminal usando tf_echo](#visualizar-quadros-tf-no-terminal-usando-tf_echo)
+        *   [Exemplo](#exemplo)
+    *   [Visualizar quadros TF usando RVIZ2](#visualizar-quadros-tf-usando-rviz2)
+        *   [Exemplo](#exemplo-1)
+10. [Broadcast & Listen nos dados de TF](#broadcast--listen-nos-dados-de-tf)
+    *   [TF Broadcaster](#tf-broadcaster)
+    *   [tf2_monitor](#tf2_monitor)
+    *   [Static Broadcaster](#static-broadcaster)
+        *   [Static Broadcaster usando a linha de comando](#static-broadcaster-usando-a-linha-de-comando)
+        *   [Static Broadcaster por meio de um arquivo de inicialização (launch)](#static-broadcaster-por-meio-de-um-arquivo-de-inicialização-launch)
+        *   [Static Broadcaster via Python script](#static-broadcaster-via-python-script)
+    *   [TF Listener (Ouvinte)](#tf-listener-ouvinte)
+11. [Robot State Publisher](#robot-state-publisher)
+    *   [Exemplo](#exemplo-2)
+    *   [Robot State Publisher](#robot-state-publisher-1)
+        *   [Exemplo](#exemplo-3)
+
 # tf (Transform Library) 
 O TF é essencial para rastrear as posições e orientações de diferentes quadros de coordenadas ao longo do tempo, permitindo que os robôs entendam suas relações espaciais.
 
