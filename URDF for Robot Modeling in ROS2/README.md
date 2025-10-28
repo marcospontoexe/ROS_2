@@ -1,3 +1,52 @@
+# Índice
+
+1.  [URDF](#urdf)
+    *   [O que o URDF descreve?Com certeza! Aqui está o índice em formato Markdown para o texto que você forneceu.
+
+```markdown
+# Índice
+
+1.  [URDF](#urdf)
+    *   [O que o URDF descreve?](#o-que-o-urdf-descreve)
+    *   [Por que preciso de URDFs?](#por-que-preciso-de-urdfs)
+    *   [Por que preciso de um modelo de robô?](#por-que-preciso-de-um-modelo-de-robô)
+2.  [Construindo um modelo de robô com URDF](#construindo-um-modelo-de-robô-com-urdf)
+    *   [O que é um arquivo URDF](#o-que-é-um-arquivo-urdf)
+    *   [O que é um LINK (Elo)](#o-que-é-um-link-elo)
+        *   [Visualize arquivos URDF no RVIZ2](#visualize-arquivos-urdf-no-rviz2)
+    *   [O que é uma junta (joint)](#o-que-é-uma-junta-joint)
+        *   [TF Frames e LINKS](#tf-frames-e-links)
+    *   [Tipos de Juntas (joints)](#tipos-de-juntas-joints)
+        *   [Mover as juntas com Publisher Joint State](#mover-as-juntas-com-publisher-joint-state)
+    *   [Materiais URDF](#materiais-urdf)
+    *   [Malhas (meshes) URDF](#malhas-meshes-urdf)
+    *   [Elementos especiais de juntas](#elementos-especiais-de-juntas)
+        *   [<limit>](#limit-necessário-apenas-para-juntas-revolutas-e-prismáticas)
+        *   [<mimic>](#mimic-opcional)
+    *   [Elementos de simulação](#elementos-de-simulação)
+        *   [<dynamics>](#dynamics-optional)
+        *   [<safety_controller>](#safety_controller-optional)
+        *   [<calibration>](#calibration-optional)
+3.  [Inicie o RVIZ2 por meio de um arquivo de inicialização](#inicie-o-rviz2-por-meio-de-um-arquivo-de-inicialização)
+4.  [Criando um robô de duas rodas](#criando-um-robô-de-duas-rodas)
+    *   [Links](#links)
+    *   [JOINTS](#joints)
+    *   [MESHES](#meshes)
+5.  [Usando URDF para Gazebo](#usando-urdf-para-gazebo)
+    *   [Adquira modelos de Gazebo pré-fabricados](#adquira-modelos-de-gazebo-pré-fabricados)
+    *   [Criando um mundo gazebo](#criando-um-mundo-gazebo)
+    *   [Adaptando um modelo de robô para uma simulação de gazebo](#adaptando-um-modelo-de-robô-para-uma-simulação-de-gazebo)
+        *   [Colisões e inércia](#colisões-e-inércia)
+        *   [Colisões](#colisões)
+        *   [Inércia](#inércia)
+        *   [Complete o robô](#complete-o-robô)
+    *   [Gerando o modelo de robô no Gazebo](#gerando-o-modelo-de-robô-no-gazebo)
+    *   [Propriedades físicas](#propriedades-físicas)
+6.  [Moving the robot](#moving-the-robot)
+7.  [Detecção](#detecção)
+8.  [XACRO Basics](#xacro-basics)
+9.  [Exportação de Montagem de Robôs](#exportação-de-montagem-de-robôs)
+
 # URDF
 URDF (Unified Robot Description Format) é um formato de arquivo em XML usado no ROS para descrever a estrutura física de um robô — como seus links (partes rígidas), juntas (articulações), sensores e outras propriedades.
 
