@@ -1226,7 +1226,7 @@ Como você pode ver, /scan tem:
 
 * Reliability = BEST_EFFORT. Esta é a maneira padrão de defini-la em sensores, pois você está interessado em obter um fluxo de dados. Não importa se você perder uma ou duas mensagens.
 * Durability = Volatile. Também é a maneira padrão para sensores, especialmente sensores com alto volume de geração de dados. Você não precisa salvar mensagens antigas para assinantes que se inscreveram tardiamente. Se você perder mensagens antigas, isso é irrelevante.
-ALiveliness = Automatic. Esta é a maneira padrão, especialmente para sensores. Considere que o publicador está ativo se QUALQUER um de seus tópicos publicados tiver publicado algo dentro do tempo definido pela duração do lease.
+* ALiveliness = Automatic. Esta é a maneira padrão, especialmente para sensores. Considere que o publicador está ativo se QUALQUER um de seus tópicos publicados tiver publicado algo dentro do tempo definido pela duração do lease.
 * Deadline = "9223372036,854775807" segundos (VALOR INFINITO). Isso significa que NÃO há Prazo. Você não está definindo nenhum requisito para o período entre cada mensagem publicada do tópico /scan. Um sensor real não deve ser definido dessa forma, pois, normalmente, os sensores têm uma taxa de publicação específica. No entanto, esta é uma simulação, então você pode ser menos rigoroso.
 * Lifespan = "9223372036,854775807" segundos (VALOR INFINITO). Novamente, isso significa que NÃO há limitação. Não importa a idade de uma mensagem, ela é válida. Isso, novamente, normalmente não é feito em sistemas reais, pois dados antigos de sensores são inúteis. Você é menos rigoroso porque isso não acontece na simulação.
 
