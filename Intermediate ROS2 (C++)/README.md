@@ -2264,7 +2264,7 @@ Um Gerenciador de Ciclo de Vida é um programa para gerenciar a transição de e
 
 Todos os nós gerenciados fornecem esse serviço que permite que pessoas de fora alterem seu estado. O Gerenciador de Ciclo de Vida se conecta a ele por meio de um cliente de serviço e gerencia a mudança de estado do nó.
 
-Um exemplo é [esse programa](**lifecycle_manager.cpp**), que ao ser executado (`ros2 launch managed_scan start_managed_scan_2.launch.py`) faz a transição do managed_scan_node para o estado ativo.
+Um exemplo é [esse programa](https://github.com/marcospontoexe/ROS_2/blob/main/Intermediate%20ROS2%20(C%2B%2B)/exemplos/managed_scan/launch/start_managed_scan_2.launch.py), que ao ser executado (`ros2 launch managed_scan start_managed_scan_2.launch.py`) faz a transição do managed_scan_node para o estado ativo.
 
 Isso deve iniciar dois nós:
 
